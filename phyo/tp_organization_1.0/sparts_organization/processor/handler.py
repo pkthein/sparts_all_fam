@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ------------------------------------------------------------------------------
-
+################################################################################
+#                               LIBS & DEPS                                    #
+################################################################################
 import hashlib
 import logging
 import json
@@ -25,8 +27,9 @@ from sawtooth_sdk.processor.exceptions import InternalError
 from sawtooth_sdk.processor.handler import TransactionHandler
 
 LOGGER = logging.getLogger(__name__)
-
-
+################################################################################
+#                               HANDLER OBJ                                    #
+################################################################################
 class OrganizationTransactionHandler:
     def __init__(self, namespace_prefix):
         self._namespace_prefix = namespace_prefix
@@ -46,14 +49,15 @@ class OrganizationTransactionHandler:
     @property
     def namespaces(self):
         return [self._namespace_prefix]
-
+################################################################################
+#                                 FUNCTIONS                                    #
+################################################################################
     def apply(self, transaction, context):
 
         # 1. Deserialize the transaction and verify it is valid
         # header = TransactionHeader()
         # header.ParseFromString(transaction.header)
 
-        
         try:
             # The payload is csv utf-8 encoded string
             id,alias,name,type,description,url,action,part_id = transaction.payload.decode().split(",")
@@ -72,31 +76,28 @@ class OrganizationTransactionHandler:
         if len(state_entries) != 0:
             try:
 
-                    stored_organization_id, stored_organization_str = \
-                    state_entries[0].data.decode().split(",",1)
-                    
-                    print("ID", stored_organization_id)
-                    print("str", stored_organization_str)
+                stored_organization_id, stored_organization_str = \
+                state_entries[0].data.decode().split(",",1)
+                
+                print("ID", stored_organization_id)
+                print("str", stored_organization_str)
 
-                    stored_organization = json.loads(stored_organization_str)
+                stored_organization = json.loads(stored_organization_str)
             except ValueError:
                 raise InternalError("Failed to deserialize data.")
             
         else:
             stored_organization_id = stored_organization = None
             
-      
         if action == "create" and stored_organization_id is not None:
             raise InvalidTransaction("Invalid Action-organization already exists.")
-               
-           
+    
         if action == "create":
             organization = create_organization(id,alias,name,type,description,url)
             stored_organization_id = id
             stored_organization = organization
             _display("Created an organization.")
         
-    
         if action == "AddPart":
             if part_id not in stored_organization_str:
                 organization = add_part(part_id,stored_organization)
@@ -114,7 +115,6 @@ class OrganizationTransactionHandler:
         # ])
         return addresses
 
-
 def add_part(uuid,parent_organization):    
     organization_list = parent_organization['parts']
     organization_dic = {'part_id': uuid}
@@ -126,8 +126,6 @@ def add_part(uuid,parent_organization):
 def create_organization(id,alias,name,type,description,url):
     organizationD = {'id': id,'alias':alias,'name': name,'type':type,'description':description,'url': url,'parts':[]}
     return organizationD 
-         
-
 
 def validate_transaction(id,action):
     if not id:
@@ -138,11 +136,9 @@ def validate_transaction(id,action):
     if action not in ('create',"AddPart"):
         raise InvalidTransaction('Invalid action: {}'.format(action))
 
-    
 def make_organization_address(namespace_prefix,id):
     return namespace_prefix + \
         hashlib.sha512(id.encode('utf-8')).hexdigest()[:64]
-
 
 def _display(msg):
     n = msg.count("\n")
@@ -158,3 +154,6 @@ def _display(msg):
     for line in msg:
         LOGGER.debug("+ " + line.center(length) + " +")
     LOGGER.debug("+" + (length + 2) * "-" + "+")
+################################################################################
+#                                                                              #
+################################################################################

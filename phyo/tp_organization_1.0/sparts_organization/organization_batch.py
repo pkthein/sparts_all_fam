@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ------------------------------------------------------------------------------
-
+################################################################################
+#                               LIBS & DEPS                                    #
+################################################################################
 import hashlib
 import base64
 from base64 import b64encode
@@ -35,21 +37,25 @@ from sawtooth_sdk.protobuf.batch_pb2 import BatchHeader
 from sawtooth_sdk.protobuf.batch_pb2 import Batch
 
 from sparts_organization.exceptions import OrganizationException
-
+################################################################################
+#                            GLOBAL FUNCTIONS                                  #
+################################################################################
 
 def _sha512(data):
     return hashlib.sha512(data).hexdigest()
 
-
+################################################################################
+#                                  CLASS                                       #
+################################################################################
 class OrganizationBatch:
    
     def __init__(self, base_url):
         self._base_url = base_url
-
-    
+################################################################################
+#                            PUBLIC FUNCTIONS                                  #
+################################################################################
     def create(self,id,alias,name,type,description,url,privatekey,publickey):
-        return self.create_organization_transaction(id,alias,name,type,description,url, "create",privatekey,publickey,""
-                                )
+        return self.create_organization_transaction(id,alias,name,type,description,url, "create",privatekey,publickey,"")
 
     def add_part(self,id,part_id,privatekey,publickey):
         return self.create_organization_transaction(id,"","","","","","AddPart",privatekey,publickey,part_id)
@@ -71,8 +77,6 @@ class OrganizationBatch:
         except BaseException:
             return None
 
-   
-
     def retrieve_organization(self, id):
         address = self._get_address(id)
 
@@ -83,7 +87,9 @@ class OrganizationBatch:
 
         except BaseException:
             return None
-
+################################################################################
+#                            PRIVATE FUNCTIONS                                 #
+################################################################################
     def _get_prefix(self):
         return _sha512('organization'.encode('utf-8'))[0:6]
 
@@ -184,3 +190,6 @@ class OrganizationBatch:
             header_signature=signature
         )
         return BatchList(batches=[batch])
+################################################################################
+#                                                                              #
+################################################################################
