@@ -1,0 +1,30 @@
+version: '2.1'
+
+services:
+    shell:
+        image: phyohtut/sparts-test:category
+        environment:
+            - NAME_=phyo
+            - EMAIL_=phyo.htut@windriver.com
+            - ROLE_=admin
+        container_name: phyo
+        tty: true
+        volumes:
+            - ./phyo:/project/src
+        entrypoint: "bash -c \"\
+            cd /project/src/tp_category_1.0 && \
+            python3 setup.py install && \
+            cd /project/src/tp_organization_1.0 && \
+            python3 setup.py install && \
+            cd /project/ledger-startup-scripts && \
+            ./sparts_ledger.sh && \
+            cd /project/src && \
+            curl http://localhost:818/ledger/api/v1/keys > keys.txt && echo '' >> keys.txt && \
+            echo '====================READY TO EXECUTE THE BASH====================' && \
+            echo 'docker exec -it phyo bash' && \
+            python3 lazy_user.py && \
+            rm -rf keys.txt && \
+            echo '====================READY TO EXECUTE THE BASH====================' && \
+            tail -f /dev/null \
+            \""
+            
