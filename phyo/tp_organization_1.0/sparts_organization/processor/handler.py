@@ -104,7 +104,11 @@ class OrganizationTransactionHandler:
             # stored_organization_id = org_id
             # stored_organization = organization
             _display("Created an organization.")
-        
+        elif action == "update" and stored_organization_id is not None:
+            organization = create_organization(org_id, org_alias, org_name, 
+                                org_type, description, org_url, prev, cur, 
+                                timestamp)
+            _display("Updated an organization.")
         elif action == "AddPart":
             if part_id not in stored_organization_str:
                 organization = add_part(part_id,stored_organization)
@@ -140,7 +144,7 @@ def validate_transaction(org_id, action):
     if not action:
         raise InvalidTransaction('Action is required')
 
-    if action not in ('create', "AddPart"):
+    if action not in ('create', "update", "AddPart"):
         raise InvalidTransaction('Invalid action: {}'.format(action))
 
 def make_organization_address(namespace_prefix, org_id):

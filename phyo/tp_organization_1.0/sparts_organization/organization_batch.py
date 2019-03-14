@@ -84,16 +84,86 @@ class OrganizationBatch:
         except BaseException:
             return None
 
-    def retrieve_organization(self, org_id):
-        address = self._get_address(org_id)
-
-        result = self._send_request("state/{}".format(address), org_id=org_id)
+    def retrieve_organization(self, org_id, all_flag=False, range_flag=None):
+        if all_flag:
+            
+            retVal = []
+            
+            response = self.retrieve_organization(org_id).decode()
+            
+            response = response[response.find("{"):]
+            response = json.loads(response)
+            
+            if range_flag != None:
+                curTime = int(response["timestamp"].split()[0].replace("-", ""))
+                if (curTime <= int(range_flag[1]) and 
+                        curTime >= int(range_flag[0])):
+                    jresponse = json.dumps(response)
+                    retVal.append(jresponse)
+            else:
+                jresponse = json.dumps(response)
+                retVal.append(jresponse)
+                
+            while str(response["prev_block"]) != "0":
+                
+                response = json.loads(self._get_payload_(
+                                int(response["prev_block"])).decode())
+                
+                timestamp       = response["timestamp"] 
+                
+                del response["action"]
+                
+                jresponse = json.dumps(response)
+                
+                if range_flag != None:
+                    curTime = int(timestamp.split()[0].replace("-", ""))
+                    if curTime < int(range_flag[0]):
+                        break
+                    elif curTime <= int(range_flag[1]):
+                        retVal.append(jresponse)
+                else:
+                    retVal.append(jresponse)
+            
+            retVal = str(retVal).replace("'", '')
+            
+            return json.dumps(retVal)
+        else:
+            address = self._get_address(org_id)
+    
+            result = self._send_request("state/{}".format(address), 
+                        org_id=org_id)
+            
+            try:
+                return base64.b64decode(yaml.safe_load(result)["data"])
+    
+            except BaseException:
+                return None
+    
+    def update(self, org_id, org_alias, org_name, org_type, description, 
+                    org_url, private_key, public_key):
+        response_bytes = self.retrieve_organization(org_id)
         
-        try:
-            return base64.b64decode(yaml.safe_load(result)["data"])
-
-        except BaseException:
-            return None
+        if response_bytes != None:
+            response = str(response_bytes)
+            response = response[response.find("{") : response.find("}") + 1]
+            
+            jresponse = json.loads(response)
+            
+            if (jresponse["organization_alias"] == org_alias and
+                jresponse["organization_name"] == org_name and
+                jresponse["organization_type"] == org_type and
+                jresponse["description"] == description and
+                jresponse["organization_url"] == org_url):
+                return None
+            else:
+                cur = self._get_block_num()
+                return self.create_organization_transaction(org_id, org_alias, 
+                            org_name, org_type, description, org_url, "update", 
+                            private_key, public_key, jresponse["cur_block"], 
+                            cur, str(datetime.datetime.utcnow()), "")
+                            
+        return None
+        
             
     def test_org(self):
         print('@')
@@ -118,6 +188,21 @@ class OrganizationBatch:
         if result != None or result != "":
             result = json.loads(result)
             return str(len(result["data"]))
+        return None
+    
+    def _get_payload_(self, blocknum):
+        organization_prefix = self._get_prefix()
+
+        result = self._send_request(
+            "blocks?={}".format(organization_prefix)
+        )
+        
+        if result != None or result != "":
+            result = json.loads(result)
+            payload = result["data"][-(blocknum + 1)]["batches"][0]\
+                        ["transactions"][0]["payload"]
+            
+            return base64.b64decode(payload)
         return None
     
     def _send_request(

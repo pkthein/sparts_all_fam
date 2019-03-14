@@ -114,7 +114,6 @@ def add_create_parser(subparsers, parent_parser):
         type=str,
         help='provide URL')
     
-    
     parser.add_argument(
         'private_key',
         type=str,
@@ -141,6 +140,19 @@ def add_retrieve_parser(subparsers, parent_parser):
         'id',
         type=str,
         help='an identifier for the organization')
+        
+    parser.add_argument(
+        "-a", "--all",
+        action="store_true",
+        default=False,
+        help="show history of uuid")
+        
+    parser.add_argument(
+        "--range",
+        nargs=2,
+        metavar=("START", "END"),
+        default=None,
+        help="show history of uuid within the range; FORMAT : yyyymmdd")
     
 def add_part_parser(subparsers, parent_parser):
     parser = subparsers.add_parser('AddPart', parents=[parent_parser])
@@ -164,6 +176,56 @@ def add_part_parser(subparsers, parent_parser):
         'public_key',
         type=str,
         help='Provide User Public Key')
+
+def add_update_parser(subparsers, parent_parser):
+    parser = subparsers.add_parser('update', parents=[parent_parser])
+    
+    parser.add_argument(
+        'id',
+        type=str,
+        help='an identifier for the organization')
+    
+    parser.add_argument(
+        'alias',
+        type=str,
+        help='Alias for the organization')
+    
+    parser.add_argument(
+        'name',
+        type=str,
+        help='Provide organization name')
+    
+    parser.add_argument(
+        'type',
+        type=str,
+        help='type of organization')
+    
+    parser.add_argument(
+        'description',
+        type=str,
+        help='description ')
+
+    parser.add_argument(
+        'url',
+        type=str,
+        help='provide URL')
+    
+    
+    parser.add_argument(
+        'private_key',
+        type=str,
+        help='Provide User Private Key')
+    
+    parser.add_argument(
+        'public_key',
+        type=str,
+        help='Provide User Public Key')
+
+    parser.add_argument(
+        '--disable-client-validation',
+        action='store_true',
+        default=False,
+        help='disable client validation')
         
 def add_test_category_parser(subparsers, parent_parser):
     subparsers.add_parser("test", parents=[parent_parser])
@@ -189,9 +251,7 @@ def create_parent_parser(prog_name):
         .format(version),
         help='print version information')
 
-
     return parent_parser
-
 
 def create_parser(prog_name):
     parent_parser = create_parent_parser(prog_name)
@@ -206,11 +266,11 @@ def create_parser(prog_name):
     add_list_organization_parser(subparsers, parent_parser)
     add_retrieve_parser(subparsers, parent_parser)
     add_part_parser(subparsers, parent_parser)
+    add_update_parser(subparsers, parent_parser)
     
     add_test_category_parser(subparsers, parent_parser)
     
     return parser
-
 ################################################################################
 #                               FUNCTIONS                                      #
 ################################################################################
@@ -235,15 +295,26 @@ def do_list_organization(args, config):
         raise OrganizationException("Could not retrieve organization listing.")
 
 def do_retrieve(args, config):
+    all_flag = args.all
+    range_flag = args.range
+    
     org_id = args.id
+    
+    if range_flag != None:
+        all_flag = True
     
     b_url = config.get('DEFAULT', 'url')
     client = OrganizationBatch(base_url=b_url)
+    data = client.retrieve_organization(org_id, all_flag, range_flag)
     
-    data = client.retrieve_organization(org_id)
     if data is not None:
-    
-        output = ret_msg("success", "OK", "OrganizationRecord", data.decode())
+        
+        if all_flag == False:
+            output = ret_msg("success", "OK", "OrganizationRecord", 
+                        data.decode())
+        else:
+            output = ret_msg("success", "OK", "OrganizationRecord", 
+                        json.loads(data))
         
         print(output)
     else:
@@ -288,7 +359,47 @@ def do_create(args, config):
             print(output)
     else:
         print(output)
+
+def do_update(args, config):
+    org_id = args.id
+    org_alias = args.alias
+    org_name = args.name
+    org_type = args.type
+    description = args.description
+    org_url = args.url
+    private_key = args.private_key
+    public_key = args.public_key
+
+    payload = "{}"
+    key = json.loads(payload)
+    key["publickey"] = public_key
+    key["privatekey"] = private_key
+    key["allowedrole"] = [{"role" : "admin"}, {"role" : "member"}]
+    payload = json.dumps(key)
+       
+    headers = {'content-type': 'application/json'}
+    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth", 
+                    data=json.dumps(key), headers=headers)
     
+    output = response.content.decode("utf-8").strip()
+    statusinfo = json.loads(output)
+
+    if statusinfo.get('status')and statusinfo.get('message'):
+            
+        status = statusinfo['status']
+        message = statusinfo['message']
+            
+        if status == 'success' and message == 'authorized':
+            b_url = config.get('DEFAULT', 'url')
+            client = OrganizationBatch(base_url=b_url)
+            response = client.update(org_id, org_alias, org_name, org_type, 
+                            description, org_url, private_key, public_key)
+            print_msg(response)
+        else:
+            print(output)
+    else:
+        print(output)
+
 def do_addpart(args, config):
     org_id = args.id
     part_id = args.part_id
@@ -333,10 +444,16 @@ def do_test(args, config):
 #                                  PRINT                                       #
 ################################################################################   
 def print_msg(response):
-    if "batch_statuses?id" in response:
-        print ("{\"status\":\"success\"}")
+    if response == None:
+        print(ret_msg("failed","Exception raised","EmptyRecord","{}"))
+    elif "batch_statuses?id" in response:
+        print(ret_msg("success","OK","EmptyRecord","{}"))
     else:
-        print ("{\"status\":\"exception\"}")
+        print(ret_msg("failed","Exception raised","EmptyRecord","{}"))
+    # if "batch_statuses?id" in response:
+    #     print ("{\"status\":\"success\"}")
+    # else:
+    #     print ("{\"status\":\"exception\"}")
 
 def load_config():
     config = configparser.ConfigParser()
@@ -378,7 +495,9 @@ def main(prog_name=os.path.basename(sys.argv[0]), args=None):
     elif args.command == 'retrieve':
         do_retrieve(args, config)
     elif args.command == 'AddPart':
-        do_addpart(args, config) 
+        do_addpart(args, config)
+    elif args.command == 'update':
+        do_update(args, config)
     elif args.command == 'test':
         do_test(args, config)
     else:

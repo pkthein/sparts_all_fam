@@ -46,6 +46,11 @@ os.system(
 	# 'category update 8001 {} {} {} {} &&'.format('start', 'genesis', pri_key, pub_key) +
 	# 'category update 8002 {} {} {} {} &&'.format('start', 'genesis', pri_key, pub_key) +
 	
+	'organization update {} ali name type des url {} {} &&'.format('8001', pri_key, pub_key) +
+	'organization update {} alia name type des url {} {} &&'.format('8001', pri_key, pub_key) +
+	'organization update {} alias name type des url {} {} &&'.format('8001', pri_key, pub_key) +
+	'organization update {} ali name type des url {} {} &&'.format('8002', pri_key, pub_key) +
+	
 	'echo "====================PLEASE RUN THE FOLLOWING CHECKS====================" &&' +
 	'echo category update 9000 {} {} {} {} &&'.format('genesis', 'start', pri_key, pub_key) +
 	'echo category create 8000 {} {} {} {} &&'.format('start', 'genesis', pri_key, pub_key) +
