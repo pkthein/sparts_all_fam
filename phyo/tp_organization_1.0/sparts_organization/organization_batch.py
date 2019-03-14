@@ -21,7 +21,8 @@ from base64 import b64encode
 import time
 import requests
 import yaml
-
+import datetime
+import json
 # import sawtooth_signing.secp256k1_signer as signing
 #
 from sawtooth_signing import create_context
@@ -54,11 +55,16 @@ class OrganizationBatch:
 ################################################################################
 #                            PUBLIC FUNCTIONS                                  #
 ################################################################################
-    def create(self,id,alias,name,type,description,url,privatekey,publickey):
-        return self.create_organization_transaction(id,alias,name,type,description,url, "create",privatekey,publickey,"")
+    def create(self, org_id, org_alias, org_name, org_type, description, 
+                    org_url, private_key, public_key):
+        return self.create_organization_transaction(org_id, org_alias, org_name, 
+                    org_type, description, org_url, "create", private_key, 
+                    public_key, str(datetime.datetime.utcnow()), "")
 
-    def add_part(self,id,part_id,privatekey,publickey):
-        return self.create_organization_transaction(id,"","","","","","AddPart",privatekey,publickey,part_id)
+    def add_part(self, org_id, part_id, private_key, public_key):
+        return self.create_organization_transaction(org_id, "", "", "", "", "", 
+                    "AddPart", private_key, public_key, 
+                    str(datetime.datetime.utcnow()), part_id)
 
     def list_organization(self):
         organization_prefix = self._get_prefix()
@@ -77,30 +83,33 @@ class OrganizationBatch:
         except BaseException:
             return None
 
-    def retrieve_organization(self, id):
-        address = self._get_address(id)
+    def retrieve_organization(self, org_id):
+        address = self._get_address(org_id)
 
-        result = self._send_request("state/{}".format(address), id=id)
+        result = self._send_request("state/{}".format(address), org_id=org_id)
         
         try:
             return base64.b64decode(yaml.safe_load(result)["data"])
 
         except BaseException:
             return None
+            
+    def test_org(self):
+        print('@')
 ################################################################################
 #                            PRIVATE FUNCTIONS                                 #
 ################################################################################
     def _get_prefix(self):
         return _sha512('organization'.encode('utf-8'))[0:6]
 
-    def _get_address(self, id):
+    def _get_address(self, org_id):
         organization_prefix = self._get_prefix()
-        address = _sha512(id.encode('utf-8'))[0:64]
+        address = _sha512(org_id.encode('utf-8'))[0:64]
         return organization_prefix + address
 
     def _send_request(
             self, suffix, data=None,
-            content_type=None, id=None):
+            content_type=None, org_id=None):
         
         if self._base_url.startswith("http://"):
             url = "{}/{}".format(self._base_url, suffix)
@@ -129,16 +138,19 @@ class OrganizationBatch:
 
         return result.text
 
-    def create_organization_transaction(self, id,alias,name,type,description,url, action,privatekey,publickey,part_id=""
-                     ):
+    def create_organization_transaction(self, org_id, org_alias, org_name, 
+                org_type, description, org_url, action, private_key, public_key, 
+                timestamp, part_id=''):
         
-        self._public_key = publickey
-        self._private_key = privatekey
+        self._public_key = public_key
+        self._private_key = private_key
         
-        payload = ",".join([id,str(alias),str(name),str(type),str(description),str(url), action,str(part_id)]).encode()
+        payload = ",".join([org_id, str(org_alias), str(org_name), str(org_type)
+                                , str(description), str(org_url), action, 
+                                str(part_id), timestamp]).encode()
 
         # Construct the address
-        address = self._get_address(id)
+        address = self._get_address(org_id)
 
         header = TransactionHeader(
             signer_public_key=self._public_key,

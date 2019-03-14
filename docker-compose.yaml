@@ -12,8 +12,6 @@ services:
         volumes:
             - ./phyo:/project/src
         entrypoint: "bash -c \"\
-            cd /project/src/tp_category_1.0 && \
-            python3 setup.py install && \
             cd /project/src/tp_organization_1.0 && \
             python3 setup.py install && \
             cd /project/ledger-startup-scripts && \

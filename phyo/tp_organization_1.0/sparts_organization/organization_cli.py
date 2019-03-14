@@ -164,6 +164,9 @@ def add_part_parser(subparsers, parent_parser):
         'public_key',
         type=str,
         help='Provide User Public Key')
+        
+def add_test_category_parser(subparsers, parent_parser):
+    subparsers.add_parser("test", parents=[parent_parser])
 ################################################################################
 #                                   CREATE                                     #
 ################################################################################
@@ -203,7 +206,9 @@ def create_parser(prog_name):
     add_list_organization_parser(subparsers, parent_parser)
     add_retrieve_parser(subparsers, parent_parser)
     add_part_parser(subparsers, parent_parser)
-
+    
+    add_test_category_parser(subparsers, parent_parser)
+    
     return parser
 
 ################################################################################
@@ -217,35 +222,40 @@ def do_list_organization(args, config):
     result = client.list_organization()
 
     if result is not None:
+        
         result = refine_output_organization(str(result))
         result = refine_output(result)
-        output = ret_msg("success","OK","ListOf:OrganizationRecord",result)
+        result = json.loads(result)
+        result.sort(key=lambda x:x["timestamp"], reverse=True)
+        result = json.dumps(result)
+        
+        output = ret_msg("success", "OK", "ListOf:OrganizationRecord", result)
         
         print(output)
     else:
         raise OrganizationException("Could not retrieve organization listing.")
 
 def do_retrieve(args, config):
-    id = args.id
+    org_id = args.id
     
     b_url = config.get('DEFAULT', 'url')
     client = OrganizationBatch(base_url=b_url)
     
-    data = client.retrieve_organization(id)
+    data = client.retrieve_organization(org_id)
     if data is not None:
         data = filter_output(str(data))
         output = ret_msg("success","OK","OrganizationRecord",data)
         print(output)
     else:
-        raise OrganizationException("Organization not found: {}".format(id))
+        raise OrganizationException("Organization not found: {}".format(org_id))
 
 def do_create(args, config):
-    id = args.id
-    alias = args.alias
-    name = args.name
-    type = args.type
+    org_id = args.id
+    org_alias = args.alias
+    org_name = args.name
+    org_type = args.type
     description = args.description
-    url = args.url
+    org_url = args.url
     private_key = args.private_key
     public_key = args.public_key
 
@@ -253,7 +263,7 @@ def do_create(args, config):
     key = json.loads(payload)
     key["publickey"] = public_key
     key["privatekey"] = private_key
-    key["allowedrole"]=[{"role":"admin"},{"role":"member"}]
+    key["allowedrole"] = [{"role" : "admin"}, {"role" : "member"}]
     payload = json.dumps(key)
        
     headers = {'content-type': 'application/json'}
@@ -271,7 +281,8 @@ def do_create(args, config):
         if status == 'success' and message == 'authorized':
             b_url = config.get('DEFAULT', 'url')
             client = OrganizationBatch(base_url=b_url)
-            response = client.create(id,alias,name,type,description,url,private_key,public_key)
+            response = client.create(org_id, org_alias, org_name, org_type, 
+                            description, org_url, private_key, public_key)
             print_msg(response)
         else:
             print(output)
@@ -279,7 +290,7 @@ def do_create(args, config):
         print(output)
     
 def do_addpart(args, config):
-    id = args.id
+    org_id = args.id
     part_id = args.part_id
     private_key = args.private_key
     public_key = args.public_key
@@ -305,19 +316,26 @@ def do_addpart(args, config):
         if status == 'success' and message == 'authorized':
             b_url = config.get('DEFAULT', 'url')
             client = OrganizationBatch(base_url=b_url)
-            response = client.add_part(id,part_id,private_key,public_key)
+            response = client.add_part(org_id, part_id, private_key, public_key)
             print_msg(response)
         else:
             print(output)
     else:
         print(output)
+        
+def do_test(args, config):
+    b_url = config.get("DEFAULT", "url")
+  
+    client = OrganizationBatch(base_url=b_url)
+
+    org_test = client.test_org()        
 ################################################################################
 #                                  PRINT                                       #
 ################################################################################   
 def filter_output(result):
     organizationlist = result.split(',',1)
     orgstr = organizationlist[1]
-    jsonStr = orgstr.replace('id','uuid')
+    jsonStr = orgstr.replace('organization_id','uuid')
     jsonStr = jsonStr[:-1]
     if jsonStr == "":
         jsonStr = "[]"
@@ -341,7 +359,7 @@ def refine_output_organization(inputstr):
     return output
 
 def amend_organization_fields(inputstr):
-    output = inputstr.replace("\\","").replace('id','uuid')
+    output = inputstr.replace("\\","").replace('organization_id','uuid')
     return output
  
 def refine_output(inputstr):
@@ -402,6 +420,8 @@ def main(prog_name=os.path.basename(sys.argv[0]), args=None):
         do_retrieve(args, config)
     elif args.command == 'AddPart':
         do_addpart(args, config) 
+    elif args.command == 'test':
+        do_test(args, config)
     else:
         raise OrganizationException("invalid command: {}".format(args.command))
 

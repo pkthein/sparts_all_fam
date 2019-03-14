@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ------------------------------------------------------------------------------
-
+################################################################################
+#                               LIBS & DEPS                                    #
+################################################################################
 from __future__ import print_function
 
 import argparse
@@ -45,8 +47,7 @@ from sparts_organization.exceptions import OrganizationException
 
 
 DISTRIBUTION_NAME = 'sparts-organization-family'
-
-
+################################################################################
 def create_console_handler(verbose_level):
     clog = logging.StreamHandler()
     formatter = ColoredFormatter(
@@ -73,13 +74,13 @@ def create_console_handler(verbose_level):
 
     return clog
 
-
 def setup_loggers(verbose_level):
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     logger.addHandler(create_console_handler(verbose_level))
-
-
+################################################################################
+#                                   OBJ                                        #
+################################################################################
 def add_create_parser(subparsers, parent_parser):
     parser = subparsers.add_parser('create', parents=[parent_parser])
 
@@ -130,11 +131,8 @@ def add_create_parser(subparsers, parent_parser):
         default=False,
         help='disable client validation')
 
-
-
 def add_list_organization_parser(subparsers, parent_parser):
     subparsers.add_parser('list-organization', parents=[parent_parser])
-
 
 def add_retrieve_parser(subparsers, parent_parser):
     parser = subparsers.add_parser('retrieve', parents=[parent_parser])
@@ -144,8 +142,6 @@ def add_retrieve_parser(subparsers, parent_parser):
         type=str,
         help='an identifier for the organization')
     
-    
-
 def add_part_parser(subparsers, parent_parser):
     parser = subparsers.add_parser('AddPart', parents=[parent_parser])
     
@@ -168,10 +164,12 @@ def add_part_parser(subparsers, parent_parser):
         'public_key',
         type=str,
         help='Provide User Public Key')
-    
-
-
-
+        
+def add_test_category_parser(subparsers, parent_parser):
+    subparsers.add_parser("test", parents=[parent_parser])
+################################################################################
+#                                   CREATE                                     #
+################################################################################
 def create_parent_parser(prog_name):
     parent_parser = argparse.ArgumentParser(prog=prog_name, add_help=False)
     parent_parser.add_argument(
@@ -208,10 +206,14 @@ def create_parser(prog_name):
     add_list_organization_parser(subparsers, parent_parser)
     add_retrieve_parser(subparsers, parent_parser)
     add_part_parser(subparsers, parent_parser)
-
+    
+    add_test_category_parser(subparsers, parent_parser)
+    
     return parser
 
-
+################################################################################
+#                               FUNCTIONS                                      #
+################################################################################
 def do_list_organization(args, config):
     b_url = config.get('DEFAULT', 'url')
     
@@ -220,54 +222,124 @@ def do_list_organization(args, config):
     result = client.list_organization()
 
     if result is not None:
+        
         result = refine_output_organization(str(result))
         result = refine_output(result)
-        output = ret_msg("success","OK","ListOf:OrganizationRecord",result)
+        result = json.loads(result)
+        result.sort(key=lambda x:x["timestamp"], reverse=True)
+        result = json.dumps(result)
+        
+        output = ret_msg("success", "OK", "ListOf:OrganizationRecord", result)
         
         print(output)
     else:
         raise OrganizationException("Could not retrieve organization listing.")
-	
-def refine_output_organization(inputstr):
-    inputstr = inputstr[1:-1]
-    output = re.sub(r'\[.*?\]', '',inputstr)
-    output = "["+output+"]"  
-    return output
-
-def amend_organization_fields(inputstr):
-        output = inputstr.replace("\\","").replace('id','uuid')
-        return output
- 
-def refine_output(inputstr):
-                
-                subpartstr = "\"parts\": ,"
-                outputstr=inputstr.replace(subpartstr,"").replace('b\'','').replace('}\'','}').replace(", \"parts\": ","")
-                outputstr=outputstr.replace('b\'','').replace('}\'','}')
-                slist = outputstr.split("},")
-                organizationlist = []
-                for line in slist:
-                        record = "{"+line.split(",{",1)[-1]+"}"
-                        organizationlist.append(record)
-                joutput = str(organizationlist)
-                joutput = joutput.replace("'{","{").replace("}'","}").replace(", { {",", {").replace("}]}]","}]")
-                joutput = amend_organization_fields(joutput)
-                if joutput == "[{[]}]":
-                    joutput = "[]"
-                return joutput
 
 def do_retrieve(args, config):
-    id = args.id
+    org_id = args.id
     
     b_url = config.get('DEFAULT', 'url')
     client = OrganizationBatch(base_url=b_url)
     
-    data = client.retrieve_organization(id)
+    data = client.retrieve_organization(org_id)
     if data is not None:
         data = filter_output(str(data))
         output = ret_msg("success","OK","OrganizationRecord",data)
         print(output)
     else:
-        raise OrganizationException("Organization not found: {}".format(id))
+        raise OrganizationException("Organization not found: {}".format(org_id))
+
+def do_create(args, config):
+    org_id = args.id
+    org_alias = args.alias
+    org_name = args.name
+    org_type = args.type
+    description = args.description
+    org_url = args.url
+    private_key = args.private_key
+    public_key = args.public_key
+
+    payload = "{}"
+    key = json.loads(payload)
+    key["publickey"] = public_key
+    key["privatekey"] = private_key
+    key["allowedrole"] = [{"role" : "admin"}, {"role" : "member"}]
+    payload = json.dumps(key)
+       
+    headers = {'content-type': 'application/json'}
+    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth", 
+                    data=json.dumps(key), headers=headers)
+    
+    output = response.content.decode("utf-8").strip()
+    statusinfo = json.loads(output)
+
+    if statusinfo.get('status')and statusinfo.get('message'):
+            
+        status = statusinfo['status']
+        message = statusinfo['message']
+            
+        if status == 'success' and message == 'authorized':
+            b_url = config.get('DEFAULT', 'url')
+            client = OrganizationBatch(base_url=b_url)
+            response = client.create(org_id, org_alias, org_name, org_type, 
+                            description, org_url, private_key, public_key)
+            print_msg(response)
+        else:
+            print(output)
+    else:
+        print(output)
+    
+def do_addpart(args, config):
+    org_id = args.id
+    part_id = args.part_id
+    private_key = args.private_key
+    public_key = args.public_key
+   
+    payload = "{}"
+    key = json.loads(payload)
+    key["publickey"] = public_key
+    key["privatekey"] = private_key
+    key["allowedrole"] = [{"role" : "admin"}, {"role" : "member"}]
+    payload = json.dumps(key)
+       
+    headers = {'content-type': 'application/json'}
+    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth", 
+                data=json.dumps(key), headers=headers)
+    output = response.content.decode("utf-8").strip()
+    statusinfo = json.loads(output)
+       
+    if statusinfo.get('status')and statusinfo.get('message'):
+            
+        status = statusinfo['status']
+        message = statusinfo['message']
+            
+        if status == 'success' and message == 'authorized':
+            b_url = config.get('DEFAULT', 'url')
+            client = OrganizationBatch(base_url=b_url)
+            response = client.add_part(org_id, part_id, private_key, public_key)
+            print_msg(response)
+        else:
+            print(output)
+    else:
+        print(output)
+        
+def do_test(args, config):
+    b_url = config.get("DEFAULT", "url")
+  
+    client = OrganizationBatch(base_url=b_url)
+
+    org_test = client.test_org()        
+################################################################################
+#                                  PRINT                                       #
+################################################################################   
+def filter_output(result):
+    organizationlist = result.split(',',1)
+    orgstr = organizationlist[1]
+    jsonStr = orgstr.replace('organization_id','uuid')
+    jsonStr = jsonStr[:-1]
+    if jsonStr == "":
+        jsonStr = "[]"
+    return jsonStr
 
 def removekey(d,key):
     r = dict(d)
@@ -280,92 +352,51 @@ def print_msg(response):
     else:
         print ("{\"status\":\"exception\"}")
 
-def filter_output(result):
-    
-    organizationlist = result.split(',',1)
-    orgstr = organizationlist[1]
-    jsonStr = orgstr.replace('id','uuid')
-    jsonStr = jsonStr[:-1]
-    if jsonStr == "":
-        jsonStr = "[]"
-    return jsonStr
+def refine_output_organization(inputstr):
+    inputstr = inputstr[1:-1]
+    output = re.sub(r'\[.*?\]', '',inputstr)
+    output = "["+output+"]"  
+    return output
 
+def amend_organization_fields(inputstr):
+    output = inputstr.replace("\\","").replace('organization_id','uuid')
+    return output
+ 
+def refine_output(inputstr):
+                
+    subpartstr = "\"parts\": ,"
+    outputstr=inputstr.replace(subpartstr,"").replace('b\'','').replace('}\'','}').replace(", \"parts\": ","")
+    outputstr=outputstr.replace('b\'','').replace('}\'','}')
+    slist = outputstr.split("},")
+    organizationlist = []
+    for line in slist:
+            record = "{"+line.split(",{",1)[-1]+"}"
+            organizationlist.append(record)
+    joutput = str(organizationlist)
+    joutput = joutput.replace("'{","{").replace("}'","}").replace(", { {",", {").replace("}]}]","}]")
+    joutput = amend_organization_fields(joutput)
+    if joutput == "[{[]}]":
+        joutput = "[]"
+    return joutput
 
-def do_create(args, config):
-    id = args.id
-    alias = args.alias
-    name = args.name
-    type = args.type
-    description = args.description
-    url = args.url
-    private_key = args.private_key
-    public_key = args.public_key
-
-    payload = "{}"
-    key = json.loads(payload)
-    key["publickey"] = public_key
-    key["privatekey"] = private_key
-    key["allowedrole"]=[{"role":"admin"},{"role":"member"}]
-    payload = json.dumps(key)
-       
-    headers = {'content-type': 'application/json'}
-    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth",data=json.dumps(key),headers=headers)
-    output = response.content.decode("utf-8").strip()
-    statusinfo = json.loads(output)
-
-    if statusinfo.get('status')and statusinfo.get('message'):
-            
-        status = statusinfo['status']
-        message = statusinfo['message']
-            
-        if status == 'success' and message == 'authorized':
-            b_url = config.get('DEFAULT', 'url')
-            client = OrganizationBatch(base_url=b_url)
-            response = client.create(id,alias,name,type,description,url,private_key,public_key)
-            print_msg(response)
-        else:
-            print(output)
-    else:
-        print(output)
-    
-def do_addpart(args, config):
-    id = args.id
-    part_id = args.part_id
-    private_key = args.private_key
-    public_key = args.public_key
-   
-    payload = "{}"
-    key = json.loads(payload)
-    key["publickey"] = public_key
-    key["privatekey"] = private_key
-    key["allowedrole"]=[{"role":"admin"},{"role":"member"}]
-    payload = json.dumps(key)
-       
-    headers = {'content-type': 'application/json'}
-    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth",data=json.dumps(key),headers=headers)
-    output = response.content.decode("utf-8").strip()
-    statusinfo = json.loads(output)
-       
-    if statusinfo.get('status')and statusinfo.get('message'):
-            
-        status = statusinfo['status']
-        message = statusinfo['message']
-            
-        if status == 'success' and message == 'authorized':
-            b_url = config.get('DEFAULT', 'url')
-            client = OrganizationBatch(base_url=b_url)
-            response = client.add_part(id,part_id,private_key,public_key)
-            print_msg(response)
-        else:
-            print(output)
-    else:
-        print(output)
-    
 def load_config():
     config = configparser.ConfigParser()
     config.set('DEFAULT', 'url', 'http://127.0.0.1:8008')
     return config
-
+    
+def ret_msg(status,message,result_type,result):
+    msgJSON = "{}"
+    key = json.loads(msgJSON)
+    key["status"] = status
+    key["message"] = message
+    key["result_type"] = result_type
+    key["result"] = json.loads(result)
+   
+    msgJSON = json.dumps(key)
+    return msgJSON
+################################################################################
+#                                   MAIN                                       #
+################################################################################
 def main(prog_name=os.path.basename(sys.argv[0]), args=None):
     if args is None:
         args = sys.argv[1:]
@@ -389,20 +420,10 @@ def main(prog_name=os.path.basename(sys.argv[0]), args=None):
         do_retrieve(args, config)
     elif args.command == 'AddPart':
         do_addpart(args, config) 
+    elif args.command == 'test':
+        do_test(args, config)
     else:
         raise OrganizationException("invalid command: {}".format(args.command))
-
-
-def ret_msg(status,message,result_type,result):
-    msgJSON = "{}"
-    key = json.loads(msgJSON)
-    key["status"] = status
-    key["message"] = message
-    key["result_type"] = result_type
-    key["result"] = json.loads(result)
-   
-    msgJSON = json.dumps(key)
-    return msgJSON
 
 def main_wrapper():
     try:
@@ -424,3 +445,6 @@ def main_wrapper():
     except BaseException as err:
         traceback.print_exc(file=sys.stderr)
         sys.exit(1)
+################################################################################
+#                                                                              #
+################################################################################

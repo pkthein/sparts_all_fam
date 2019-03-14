@@ -36,12 +36,12 @@ os.system(
 	'artifact create {} al name type sum lab chain {} {} &&'.format('8002', pri_key, pub_key) +
 	'artifact create {} al name type sum lab chain {} {} &&'.format('8003', pri_key, pub_key) +
 	
-	'organization create {} al name type des lab url {} {} &&'.format('8000', pri_key, pub_key) +
-	'organization create {} al name type des lab url {} {} &&'.format('8001', pri_key, pub_key) +
-	'organization create {} al name type des lab url {} {} &&'.format('8002', pri_key, pub_key) +
-	'organization create {} al name type des lab url {} {} &&'.format('8003', pri_key, pub_key) +
+	'organization create {} al name type des url {} {} &&'.format('8000', pri_key, pub_key) +
+	'organization create {} al name type des url {} {} &&'.format('8001', pri_key, pub_key) +
+	'organization create {} al name type des url {} {} &&'.format('8002', pri_key, pub_key) +
+	'organization create {} al name type des url {} {} &&'.format('8003', pri_key, pub_key) +
 	
-	# 'category update 8001 {} {} {} {} &&'.format('phyo', 'troll', pri_key, pub_key) +
+	'category update 8001 {} {} {} {} &&'.format('phyo', 'troll', pri_key, pub_key) +
 	# 'category update 8001 {} {} {} {} &&'.format('trol', 'phyo', pri_key, pub_key) +
 	# 'category update 8001 {} {} {} {} &&'.format('start', 'genesis', pri_key, pub_key) +
 	# 'category update 8002 {} {} {} {} &&'.format('start', 'genesis', pri_key, pub_key) +

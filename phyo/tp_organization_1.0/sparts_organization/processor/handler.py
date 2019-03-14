@@ -54,35 +54,29 @@ class OrganizationTransactionHandler:
 ################################################################################
     def apply(self, transaction, context):
 
-        # 1. Deserialize the transaction and verify it is valid
-        # header = TransactionHeader()
-        # header.ParseFromString(transaction.header)
-
         try:
             # The payload is csv utf-8 encoded string
-            id,alias,name,type,description,url,action,part_id = transaction.payload.decode().split(",")
+            (org_id, org_alias, org_name, org_type, description, org_url, 
+                action, part_id, timestamp) = transaction.payload.decode() \
+                .split(",")
+            
         except ValueError:
             raise InvalidTransaction("Invalid payload serialization")
 
-        validate_transaction(id,action)
+        validate_transaction(org_id, action)
                
-        data_address = make_organization_address(self._namespace_prefix,id)
-        print("data address: ", data_address)
-          
-        # state_entries = state_store.get([data_address])
+        data_address = make_organization_address(self._namespace_prefix, org_id)
+        
         state_entries = context.get_state([data_address])
-        print("state entries:", state_entries)
         
         if len(state_entries) != 0:
             try:
 
                 stored_organization_id, stored_organization_str = \
                 state_entries[0].data.decode().split(",",1)
-                
-                print("ID", stored_organization_id)
-                print("str", stored_organization_str)
 
                 stored_organization = json.loads(stored_organization_str)
+                
             except ValueError:
                 raise InternalError("Failed to deserialize data.")
             
@@ -93,8 +87,9 @@ class OrganizationTransactionHandler:
             raise InvalidTransaction("Invalid Action-organization already exists.")
     
         if action == "create":
-            organization = create_organization(id,alias,name,type,description,url)
-            stored_organization_id = id
+            organization = create_organization(org_id, org_alias, org_name, 
+                                org_type, description, org_url, timestamp)
+            stored_organization_id = org_id
             stored_organization = organization
             _display("Created an organization.")
         
@@ -107,38 +102,36 @@ class OrganizationTransactionHandler:
         stored_org_str = json.dumps(stored_organization)
         data=",".join([stored_organization_id,stored_org_str]).encode()
         addresses = context.set_state({data_address:data})
-        # addresses = state_store.set([
-        #     StateEntry(
-        #         address=data_address,
-        #         data=",".join([stored_organization_id, stored_org_str]).encode()
-        #     )
-        # ])
+        
         return addresses
 
-def add_part(uuid,parent_organization):    
+def add_part(uuid, parent_organization):    
     organization_list = parent_organization['parts']
     organization_dic = {'part_id': uuid}
     organization_list.append(organization_dic)
     parent_organization['parts'] = organization_list
     return parent_organization    
 
+def create_organization(org_id, org_alias, org_name, org_type, 
+                            description, org_url, timestamp):
+    
+    return {'organization_id' : org_id, 'organization_alias' : org_alias, 
+            'organization_name' : org_name, 'type' : org_type, 
+            'description' : description, 'organization_url' : org_url, 
+            'parts' : [], 'timestamp' : timestamp} 
 
-def create_organization(id,alias,name,type,description,url):
-    organizationD = {'id': id,'alias':alias,'name': name,'type':type,'description':description,'url': url,'parts':[]}
-    return organizationD 
-
-def validate_transaction(id,action):
-    if not id:
+def validate_transaction(org_id, action):
+    if not org_id:
         raise InvalidTransaction('Organization ID is required') 
     if not action:
         raise InvalidTransaction('Action is required')
 
-    if action not in ('create',"AddPart"):
+    if action not in ('create', "AddPart"):
         raise InvalidTransaction('Invalid action: {}'.format(action))
 
-def make_organization_address(namespace_prefix,id):
+def make_organization_address(namespace_prefix, org_id):
     return namespace_prefix + \
-        hashlib.sha512(id.encode('utf-8')).hexdigest()[:64]
+        hashlib.sha512(org_id.encode('utf-8')).hexdigest()[:64]
 
 def _display(msg):
     n = msg.count("\n")
