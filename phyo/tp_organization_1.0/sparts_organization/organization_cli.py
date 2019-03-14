@@ -222,9 +222,8 @@ def do_list_organization(args, config):
     result = client.list_organization()
 
     if result is not None:
-        
-        result = refine_output_organization(str(result))
-        result = refine_output(result)
+        result = ("[" + str(result)[3:-2] + "]").replace("b'", "") \
+                    .replace("'", "")
         result = json.loads(result)
         result.sort(key=lambda x:x["timestamp"], reverse=True)
         result = json.dumps(result)
@@ -243,8 +242,9 @@ def do_retrieve(args, config):
     
     data = client.retrieve_organization(org_id)
     if data is not None:
-        data = filter_output(str(data))
-        output = ret_msg("success","OK","OrganizationRecord",data)
+    
+        output = ret_msg("success", "OK", "OrganizationRecord", data.decode())
+        
         print(output)
     else:
         raise OrganizationException("Organization not found: {}".format(org_id))
@@ -332,52 +332,11 @@ def do_test(args, config):
 ################################################################################
 #                                  PRINT                                       #
 ################################################################################   
-def filter_output(result):
-    organizationlist = result.split(',',1)
-    orgstr = organizationlist[1]
-    jsonStr = orgstr.replace('organization_id','uuid')
-    jsonStr = jsonStr[:-1]
-    if jsonStr == "":
-        jsonStr = "[]"
-    return jsonStr
-
-def removekey(d,key):
-    r = dict(d)
-    del r[key]
-    return r
-
 def print_msg(response):
     if "batch_statuses?id" in response:
         print ("{\"status\":\"success\"}")
     else:
         print ("{\"status\":\"exception\"}")
-
-def refine_output_organization(inputstr):
-    inputstr = inputstr[1:-1]
-    output = re.sub(r'\[.*?\]', '',inputstr)
-    output = "["+output+"]"  
-    return output
-
-def amend_organization_fields(inputstr):
-    output = inputstr.replace("\\","").replace('organization_id','uuid')
-    return output
- 
-def refine_output(inputstr):
-                
-    subpartstr = "\"parts\": ,"
-    outputstr=inputstr.replace(subpartstr,"").replace('b\'','').replace('}\'','}').replace(", \"parts\": ","")
-    outputstr=outputstr.replace('b\'','').replace('}\'','}')
-    slist = outputstr.split("},")
-    organizationlist = []
-    for line in slist:
-            record = "{"+line.split(",{",1)[-1]+"}"
-            organizationlist.append(record)
-    joutput = str(organizationlist)
-    joutput = joutput.replace("'{","{").replace("}'","}").replace(", { {",", {").replace("}]}]","}]")
-    joutput = amend_organization_fields(joutput)
-    if joutput == "[{[]}]":
-        joutput = "[]"
-    return joutput
 
 def load_config():
     config = configparser.ConfigParser()

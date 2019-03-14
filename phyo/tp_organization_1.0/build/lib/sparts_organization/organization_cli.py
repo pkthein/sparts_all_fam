@@ -222,9 +222,8 @@ def do_list_organization(args, config):
     result = client.list_organization()
 
     if result is not None:
-        
-        result = refine_output_organization(str(result))
-        result = refine_output(result)
+        result = ("[" + str(result)[3:-2] + "]").replace("b'", "") \
+                    .replace("'", "")
         result = json.loads(result)
         result.sort(key=lambda x:x["timestamp"], reverse=True)
         result = json.dumps(result)
@@ -243,8 +242,9 @@ def do_retrieve(args, config):
     
     data = client.retrieve_organization(org_id)
     if data is not None:
-        data = filter_output(str(data))
-        output = ret_msg("success","OK","OrganizationRecord",data)
+    
+        output = ret_msg("success", "OK", "OrganizationRecord", data.decode())
+        
         print(output)
     else:
         raise OrganizationException("Organization not found: {}".format(org_id))

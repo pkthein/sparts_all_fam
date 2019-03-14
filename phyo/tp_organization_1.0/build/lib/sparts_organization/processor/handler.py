@@ -53,12 +53,24 @@ class OrganizationTransactionHandler:
 #                                 FUNCTIONS                                    #
 ################################################################################
     def apply(self, transaction, context):
-
+        
         try:
             # The payload is csv utf-8 encoded string
-            (org_id, org_alias, org_name, org_type, description, org_url, 
-                action, part_id, timestamp) = transaction.payload.decode() \
-                .split(",")
+            # (org_id, org_alias, org_name, org_type, description, org_url, 
+            #     action, part_id, timestamp) = transaction.payload.decode() \
+            #     .split(",")
+            payload = json.loads(transaction.payload.decode())
+            org_id      = payload["organization_id"]
+            org_alias   = payload["organization_alias"]
+            org_name    = payload["organization_name"]
+            org_type    = payload["organization_type"]
+            description = payload["description"]
+            org_url     = payload["organization_url"]
+            action      = payload["action"]
+            prev        = payload["prev_block"]
+            cur         = payload["cur_block"]
+            timestamp   = payload["timestamp"]
+            part_id     = payload["part_id"]
             
         except ValueError:
             raise InvalidTransaction("Invalid payload serialization")
@@ -72,10 +84,9 @@ class OrganizationTransactionHandler:
         if len(state_entries) != 0:
             try:
 
-                stored_organization_id, stored_organization_str = \
-                state_entries[0].data.decode().split(",",1)
-
+                stored_organization_str = state_entries[0].data.decode()
                 stored_organization = json.loads(stored_organization_str)
+                stored_organization_id = stored_organization['organization_id']
                 
             except ValueError:
                 raise InternalError("Failed to deserialize data.")
@@ -86,21 +97,23 @@ class OrganizationTransactionHandler:
         if action == "create" and stored_organization_id is not None:
             raise InvalidTransaction("Invalid Action-organization already exists.")
     
-        if action == "create":
+        elif action == "create":
             organization = create_organization(org_id, org_alias, org_name, 
-                                org_type, description, org_url, timestamp)
-            stored_organization_id = org_id
-            stored_organization = organization
+                                org_type, description, org_url, prev, cur, 
+                                timestamp)
+            # stored_organization_id = org_id
+            # stored_organization = organization
             _display("Created an organization.")
         
-        if action == "AddPart":
+        elif action == "AddPart":
             if part_id not in stored_organization_str:
                 organization = add_part(part_id,stored_organization)
-                stored_organization = organization  
+                # stored_organization = organization  
             
         # Put data back in state storage
-        stored_org_str = json.dumps(stored_organization)
-        data=",".join([stored_organization_id,stored_org_str]).encode()
+        # stored_org_str = json.dumps(stored_organization)
+        # data = stored_org_str.encode()
+        data = json.dumps(organization).encode()
         addresses = context.set_state({data_address:data})
         
         return addresses
@@ -113,12 +126,13 @@ def add_part(uuid, parent_organization):
     return parent_organization    
 
 def create_organization(org_id, org_alias, org_name, org_type, 
-                            description, org_url, timestamp):
+                            description, org_url, prev, cur, timestamp):
     
-    return {'organization_id' : org_id, 'organization_alias' : org_alias, 
-            'organization_name' : org_name, 'type' : org_type, 
-            'description' : description, 'organization_url' : org_url, 
-            'parts' : [], 'timestamp' : timestamp} 
+    return {"organization_id" : org_id, "organization_alias" : org_alias, 
+            "organization_name" : org_name, "organization_type" : org_type, 
+            "description" : description, "organization_url" : org_url, 
+            "parts" : [], "prev_block" : prev, "cur_block" : cur,
+            "timestamp" : timestamp} 
 
 def validate_transaction(org_id, action):
     if not org_id:

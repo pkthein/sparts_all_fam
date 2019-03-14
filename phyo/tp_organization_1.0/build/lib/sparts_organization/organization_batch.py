@@ -57,13 +57,14 @@ class OrganizationBatch:
 ################################################################################
     def create(self, org_id, org_alias, org_name, org_type, description, 
                     org_url, private_key, public_key):
+        cur = self._get_block_num()
         return self.create_organization_transaction(org_id, org_alias, org_name, 
                     org_type, description, org_url, "create", private_key, 
-                    public_key, str(datetime.datetime.utcnow()), "")
+                    public_key, "0", cur, str(datetime.datetime.utcnow()), "")
 
     def add_part(self, org_id, part_id, private_key, public_key):
         return self.create_organization_transaction(org_id, "", "", "", "", "", 
-                    "AddPart", private_key, public_key, 
+                    "AddPart", private_key, public_key, "0", "0",
                     str(datetime.datetime.utcnow()), part_id)
 
     def list_organization(self):
@@ -106,7 +107,19 @@ class OrganizationBatch:
         organization_prefix = self._get_prefix()
         address = _sha512(org_id.encode('utf-8'))[0:64]
         return organization_prefix + address
+    
+    def _get_block_num(self):
+        category_prefix = self._get_prefix()
 
+        result = self._send_request(
+            "blocks?={}".format(category_prefix)
+        )
+        
+        if result != None or result != "":
+            result = json.loads(result)
+            return str(len(result["data"]))
+        return None
+    
     def _send_request(
             self, suffix, data=None,
             content_type=None, org_id=None):
@@ -135,34 +148,48 @@ class OrganizationBatch:
 
         except BaseException as err:
             raise OrganizationException(err)
-
+        
         return result.text
 
     def create_organization_transaction(self, org_id, org_alias, org_name, 
                 org_type, description, org_url, action, private_key, public_key, 
-                timestamp, part_id=''):
+                prev, cur, timestamp, part_id):
         
         self._public_key = public_key
         self._private_key = private_key
         
-        payload = ",".join([org_id, str(org_alias), str(org_name), str(org_type)
-                                , str(description), str(org_url), action, 
-                                str(part_id), timestamp]).encode()
+        # payload = ",".join([org_id, str(org_alias), str(org_name), str(org_type)
+        #                         , str(description), str(org_url), action, 
+        #                         str(part_id), timestamp]).encode()
+        payload  = {
+            "organization_id"       : str(org_id),
+            "organization_alias"    : str(org_alias),
+            "organization_name"     : str(org_name),
+            "organization_type"     : str(org_type),
+            "description"           : str(description),
+            "organization_url"      : str(org_url),
+            "action"                : str(action),
+            "timestamp"             : str(timestamp),
+            "part_id"               : str(part_id),
+            "prev_block"            : str(prev),
+            "cur_block"             : str(cur)
+        }
+        payload = json.dumps(payload).encode()
 
         # Construct the address
         address = self._get_address(org_id)
 
         header = TransactionHeader(
-            signer_public_key=self._public_key,
-            family_name="organization",
-            family_version="1.0",
-            inputs=[address],
-            outputs=[address],
-            dependencies=[],
+            signer_public_key = self._public_key,
+            family_name = "organization",
+            family_version = "1.0",
+            inputs = [address],
+            outputs = [address],
+            dependencies = [],
             # payload_encoding="csv-utf8",
-            payload_sha512=_sha512(payload),
-            batcher_public_key=self._public_key,
-            nonce=time.time().hex().encode()
+            payload_sha512 = _sha512(payload),
+            batcher_public_key = self._public_key,
+            nonce = time.time().hex().encode()
         ).SerializeToString()
 
         # signature = signing.sign(header, self._private_key)
@@ -171,13 +198,12 @@ class OrganizationBatch:
 
 
         transaction = Transaction(
-            header=header,
-            payload=payload,
-            header_signature=signature
+            header = header,
+            payload = payload,
+            header_signature = signature
         )
 
         batch_list = self._create_batch_list([transaction])
-        
         
         return self._send_request(
             "batches", batch_list.SerializeToString(),
@@ -188,8 +214,8 @@ class OrganizationBatch:
         transaction_signatures = [t.header_signature for t in transactions]
 
         header = BatchHeader(
-            signer_public_key=self._public_key,
-            transaction_ids=transaction_signatures
+            signer_public_key = self._public_key,
+            transaction_ids = transaction_signatures
         ).SerializeToString()
 
         # signature = signing.sign(header, self._private_key)
@@ -197,9 +223,9 @@ class OrganizationBatch:
             .new_signer(Secp256k1PrivateKey.from_hex(self._private_key)).sign(header)
 
         batch = Batch(
-            header=header,
-            transactions=transactions,
-            header_signature=signature
+            header = header,
+            transactions = transactions,
+            header_signature = signature
         )
         return BatchList(batches=[batch])
 ################################################################################
