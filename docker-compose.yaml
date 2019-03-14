@@ -2,7 +2,10 @@ version: '2.1'
 
 services:
     shell:
-        image: phyohtut/sparts-test:category
+        # build:
+        #     context: .
+        #     dockerfile: sParts.Dockerfile
+        image: phyohtut/sparts-test:organization
         environment:
             - NAME_=phyo
             - EMAIL_=phyo.htut@windriver.com
@@ -12,8 +15,6 @@ services:
         volumes:
             - ./phyo:/project/src
         entrypoint: "bash -c \"\
-            cd /project/src/tp_organization_1.0 && \
-            python3 setup.py install && \
             cd /project/ledger-startup-scripts && \
             ./sparts_ledger.sh && \
             cd /project/src && \
