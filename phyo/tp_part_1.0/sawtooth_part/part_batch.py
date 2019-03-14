@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ------------------------------------------------------------------------------
-
+################################################################################
+#                               LIBS & DEPS                                    #
+################################################################################
 import hashlib
 import base64
 from base64 import b64encode
@@ -38,15 +40,21 @@ from sawtooth_sdk.protobuf.batch_pb2 import Batch
 
 
 from sawtooth_part.exceptions import PartException
-
-
+################################################################################
+#                            GLOBAL FUNCTIONS                                  #
+################################################################################
 def _sha512(data):
     return hashlib.sha512(data).hexdigest()
-
-
+################################################################################
+#                                  CLASS                                       #
+################################################################################
 class PartBatch:
     
-    
+    def __init__(self, base_url):
+        self._base_url = base_url
+################################################################################
+#                            PUBLIC FUNCTIONS                                  #
+################################################################################    
     def create(self,pt_id,pt_name,checksum,version,alias,licensing,label,description,private_key,public_key):
         return self.create_part_transaction(pt_id,pt_name,checksum,version,alias,licensing,label,description,"create",private_key,public_key,"","",""
                                  )
@@ -54,16 +62,11 @@ class PartBatch:
     def add_supplier(self,pt_id,supplier_id,private_key,public_key):
         return self.create_part_transaction(pt_id,"","","","","","","","AddSupplier",private_key,public_key,"","",supplier_id)
     
-    def __init__(self, base_url):
-        self._base_url = base_url
-
-
     def add_category(self,pt_id,category_id,private_key,public_key):
         return self.create_part_transaction(pt_id,"","","","","","","","AddCategory",private_key,public_key,"",category_id,"")
    
     def add_artifact(self,pt_id,artifact_id,private_key,public_key):
         return self.create_part_transaction(pt_id,"","","","","","","","AddArtifact",private_key,public_key,artifact_id,"","")
-
 
     def list_part(self):
         part_prefix = self._get_prefix()
@@ -92,9 +95,9 @@ class PartBatch:
 
         except BaseException:
             return None
-
-  
-
+################################################################################
+#                            PRIVATE FUNCTIONS                                 #
+################################################################################
     def _get_prefix(self):
         return _sha512('pt'.encode('utf-8'))[0:6]
     
@@ -196,3 +199,6 @@ class PartBatch:
             header_signature=signature
         )
         return BatchList(batches=[batch])
+################################################################################
+#                                                                              #
+################################################################################

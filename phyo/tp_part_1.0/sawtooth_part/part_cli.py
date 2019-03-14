@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ------------------------------------------------------------------------------
-
+################################################################################
+#                               LIBS & DEPS                                    #
+################################################################################
 from __future__ import print_function
 
 import argparse
@@ -46,8 +48,7 @@ from sawtooth_part.exceptions import PartException
 
 
 DISTRIBUTION_NAME = 'sawtooth-part'
-
-
+################################################################################
 def create_console_handler(verbose_level):
     clog = logging.StreamHandler()
     formatter = ColoredFormatter(
@@ -79,8 +80,9 @@ def setup_loggers(verbose_level):
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     logger.addHandler(create_console_handler(verbose_level))
-
-
+################################################################################
+#                                   OBJ                                        #
+################################################################################
 def add_create_parser(subparsers, parent_parser):
     parser = subparsers.add_parser('create', parents=[parent_parser])
 
@@ -141,11 +143,8 @@ def add_create_parser(subparsers, parent_parser):
         default=False,
         help='disable client validation')
 
-
-
 def add_list_part_parser(subparsers, parent_parser):
     subparsers.add_parser('list-part', parents=[parent_parser])
-
 
 def add_retrieve_parser(subparsers, parent_parser):
     parser = subparsers.add_parser('retrieve', parents=[parent_parser])
@@ -155,8 +154,6 @@ def add_retrieve_parser(subparsers, parent_parser):
         type=str,
         help='part identifier')
     
-
-
 def add_artifact_parser(subparsers, parent_parser):
     parser = subparsers.add_parser('AddArtifact', parents=[parent_parser])
     
@@ -179,49 +176,6 @@ def add_artifact_parser(subparsers, parent_parser):
         'public_key',
         type=str,
         help='Provide User Public Key')
-
-
-def create_parent_parser(prog_name):
-    parent_parser = argparse.ArgumentParser(prog=prog_name, add_help=False)
-    parent_parser.add_argument(
-        '-v', '--verbose',
-        action='count',
-        help='enable more verbose output')
-
-    try:
-        version = pkg_resources.get_distribution(DISTRIBUTION_NAME).version
-    except pkg_resources.DistributionNotFound:
-        version = 'UNKNOWN'
-
-    parent_parser.add_argument(
-        '-V', '--version',
-        action='version',
-        version=(DISTRIBUTION_NAME + ' (Hyperledger Sawtooth) version {}')
-        .format(version),
-        help='print version information')
-
-    return parent_parser
-
-
-def create_parser(prog_name):
-    parent_parser = create_parent_parser(prog_name)
-
-    parser = argparse.ArgumentParser(
-        parents=[parent_parser],
-        formatter_class=argparse.RawDescriptionHelpFormatter)
-
-    subparsers = parser.add_subparsers(title='subcommands', dest='command')
-
-    add_create_parser(subparsers, parent_parser)
-   
-    add_list_part_parser(subparsers, parent_parser)
-    add_retrieve_parser(subparsers, parent_parser)
-    add_artifact_parser(subparsers, parent_parser)
-    add_supplier_parser(subparsers,parent_parser)
-    add_category_parser(subparsers,parent_parser)
-
-    return parser
-
 
 def add_category_parser(subparsers, parent_parser):
     parser = subparsers.add_parser('AddCategory', parents=[parent_parser])
@@ -269,7 +223,52 @@ def add_supplier_parser(subparsers, parent_parser):
         'public_key',
         type=str,
         help='Provide User Public Key')
-    
+################################################################################
+#                                   CREATE                                     #
+################################################################################
+def create_parent_parser(prog_name):
+    parent_parser = argparse.ArgumentParser(prog=prog_name, add_help=False)
+    parent_parser.add_argument(
+        '-v', '--verbose',
+        action='count',
+        help='enable more verbose output')
+
+    try:
+        version = pkg_resources.get_distribution(DISTRIBUTION_NAME).version
+    except pkg_resources.DistributionNotFound:
+        version = 'UNKNOWN'
+
+    parent_parser.add_argument(
+        '-V', '--version',
+        action='version',
+        version=(DISTRIBUTION_NAME + ' (Hyperledger Sawtooth) version {}')
+        .format(version),
+        help='print version information')
+
+    return parent_parser
+
+
+def create_parser(prog_name):
+    parent_parser = create_parent_parser(prog_name)
+
+    parser = argparse.ArgumentParser(
+        parents=[parent_parser],
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+
+    subparsers = parser.add_subparsers(title='subcommands', dest='command')
+
+    add_create_parser(subparsers, parent_parser)
+   
+    add_list_part_parser(subparsers, parent_parser)
+    add_retrieve_parser(subparsers, parent_parser)
+    add_artifact_parser(subparsers, parent_parser)
+    add_supplier_parser(subparsers,parent_parser)
+    add_category_parser(subparsers,parent_parser)
+
+    return parser
+################################################################################
+#                               FUNCTIONS                                      #
+################################################################################    
 def do_list_part(args, config):
     b_url = config.get('DEFAULT', 'url')
    
@@ -282,7 +281,6 @@ def do_list_part(args, config):
         print(output)
     else:
         raise PartException("Could not retrieve part listing.")
-
 
 def do_retrieve(args, config):
     
@@ -301,41 +299,6 @@ def do_retrieve(args, config):
      
     else:
         raise PartException("Part not found: {}".format(pt_id))
-
-
-
-def filter_output(inputstr):
-    
-    ptlist = inputstr.split(',',1)
-    ptstr = ptlist[1]
-    jsonstr = ptstr.replace('pt_id','uuid').replace('pt_name','name')
-    data = json.loads(jsonstr)
-    jsonstr = json.dumps(data)
-    return jsonstr
-
-
-def amend_part_fields(inputstr):
-    output = inputstr.replace("\\","").replace('pt_id','uuid').replace('pt_name','name')
-    return output
-
-        
-def refine_output(inputstr):
-    inputstr = inputstr[1:-1]
-    outputstr = inputstr.replace('b\'','').replace('}\'','}')  
-    outputstr = outputstr[:-1]
-    slist = outputstr.split("},")
-    supplierlist = []
-    for line in slist:
-        record = "{"+line.split(",{",1)[-1]+"}"
-        supplierlist.append(record)
-    joutput = str(supplierlist)
-    joutput = joutput.replace("'{","{").replace("}'","}").replace(", { {",", {")
-    joutput = amend_part_fields(joutput)
-    
-    if joutput == "[{}]":
-                    joutput = "[]"
-    return joutput
-
 
 def do_create(args, config): 
     pt_id = args.pt_id
@@ -380,9 +343,6 @@ def do_create(args, config):
     else:
         print(output)
    
-
-
-
 def add_Category(args, config):
     pt_id = args.pt_id
     category_id = args.category_id
@@ -422,7 +382,6 @@ def add_Category(args, config):
     else:
         print(output)
   
-
 def do_add_artifact(args, config):
     pt_id = args.pt_id
     artifact_id = args.artifact_id
@@ -462,7 +421,6 @@ def do_add_artifact(args, config):
     else:
         print(output)
    
-
 # add the relationship between parent artifact and supplier
 def add_Supplier(args, config):
     pt_id = args.pt_id
@@ -502,22 +460,65 @@ def add_Supplier(args, config):
             print(output)
     else:
         print(output)
-  
-def print_msg(response):
+################################################################################
+#                                  PRINT                                       #
+################################################################################ 
+def filter_output(inputstr):
     
-    if "batch_statuses?id" in response:
+    ptlist = inputstr.split(',',1)
+    ptstr = ptlist[1]
+    jsonstr = ptstr.replace('pt_id','uuid').replace('pt_name','name')
+    data = json.loads(jsonstr)
+    jsonstr = json.dumps(data)
+    return jsonstr
+
+def amend_part_fields(inputstr):
+    output = inputstr.replace("\\","").replace('pt_id','uuid').replace('pt_name','name')
+    return output
+
+def refine_output(inputstr):
+    inputstr = inputstr[1:-1]
+    outputstr = inputstr.replace('b\'','').replace('}\'','}')  
+    outputstr = outputstr[:-1]
+    slist = outputstr.split("},")
+    supplierlist = []
+    for line in slist:
+        record = "{"+line.split(",{",1)[-1]+"}"
+        supplierlist.append(record)
+    joutput = str(supplierlist)
+    joutput = joutput.replace("'{","{").replace("}'","}").replace(", { {",", {")
+    joutput = amend_part_fields(joutput)
+    
+    if joutput == "[{}]":
+                    joutput = "[]"
+    return joutput
+
+def print_msg(response):
+    if response == None:
+        print(ret_msg("failed","Exception raised","EmptyRecord","{}"))
+    elif "batch_statuses?id" in response:
         print(ret_msg("success","OK","EmptyRecord","{}"))
     else:
         print(ret_msg("failed","Exception raised","EmptyRecord","{}"))
         
-
 def load_config():
-   
     config = configparser.ConfigParser()
     config.set('DEFAULT', 'url', 'http://127.0.0.1:8008')
     return config
 
-
+def ret_msg(status,message,result_type,result):
+    msgJSON = "{}"
+    key = json.loads(msgJSON)
+    key["status"] = status
+    key["message"] = message
+    key["result_type"] = result_type
+    key["result"] = json.loads(result)
+    
+    msgJSON = json.dumps(key)
+    return msgJSON
+################################################################################
+#                                   MAIN                                       #
+################################################################################
 def main(prog_name=os.path.basename(sys.argv[0]), args=None):
     if args is None:
         args = sys.argv[1:]
@@ -549,22 +550,6 @@ def main(prog_name=os.path.basename(sys.argv[0]), args=None):
     else:
         raise PartException("invalid command: {}".format(args.command))
 
-def removekey(d,key):
-    r = dict(d)
-    del r[key]
-    return r
-
-def ret_msg(status,message,result_type,result):
-    msgJSON = "{}"
-    key = json.loads(msgJSON)
-    key["status"] = status
-    key["message"] = message
-    key["result_type"] = result_type
-    key["result"] = json.loads(result)
-    
-    msgJSON = json.dumps(key)
-    return msgJSON
-
 def main_wrapper():
     try:
         main()
@@ -585,3 +570,6 @@ def main_wrapper():
     except BaseException as err:
         traceback.print_exc(file=sys.stderr)
         sys.exit(1)
+################################################################################
+#                                                                              #
+################################################################################
