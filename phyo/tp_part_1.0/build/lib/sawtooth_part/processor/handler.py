@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ------------------------------------------------------------------------------
-
+################################################################################
+#                               LIBS & DEPS                                    #
+################################################################################
 import hashlib
 import logging
 import json
@@ -22,10 +24,10 @@ from sawtooth_sdk.processor.exceptions import InternalError
 # from sawtooth_sdk.protobuf.transaction_pb2 import TransactionHeader
 from sawtooth_sdk.processor.handler import TransactionHandler
 
-
 LOGGER = logging.getLogger(__name__)
-
-
+################################################################################
+#                               HANDLER OBJ                                    #
+################################################################################
 class PartTransactionHandler:
     def __init__(self, namespace_prefix):
         self._namespace_prefix = namespace_prefix
@@ -45,93 +47,98 @@ class PartTransactionHandler:
     @property
     def namespaces(self):
         return [self._namespace_prefix]
-
+################################################################################
+#                                 FUNCTIONS                                    #
+################################################################################
     def apply(self, transaction, context):
-
-        # header = TransactionHeader()
-        # header.ParseFromString(transaction.header)
-    
-
+        
         try:
             # The payload is csv utf-8 encoded string
-            pt_id,pt_name,checksum,version,alias,licensing,label,description,action,artifact_id,category_id,supplier_id = transaction.payload.decode().split(",")
+            # (pt_id, pt_name, checksum, version, alias, licensing, label, 
+            # description, action, artifact_id, category_id, 
+            # supplier_id) = transaction.payload.decode().split(",")
+            payload = json.loads(transaction.payload.decode())
+            pt_id       = payload["pt_id"]
+            pt_name     = payload["pt_name"]
+            checksum    = payload["pt_checksum"]
+            version     = payload["pt_version"]
+            alias       = payload["pt_alias"]
+            licensing   = payload["pt_licensing"]
+            label       = payload["pt_label"]
+            description = payload["description"]
+            action      = payload["action"]
+            prev        = payload["prev_block"]
+            cur         = payload["cur_block"]
+            timestamp   = payload["timestamp"]
+            artifact_id = payload["artifact_id"]
+            category_id = payload["category_id"] 
+            supplier_id = payload["supplier_id"]
+            
         except ValueError:
             raise InvalidTransaction("Invalid payload serialization")
         
         validate_transaction( pt_id,action)  
              
-        data_address = make_part_address(self._namespace_prefix,pt_id)
+        data_address = make_part_address(self._namespace_prefix, pt_id)
         
-        # Retrieve the data from state storage  
-        # state_entries = state_store.get([data_address])
         state_entries = context.get_state([data_address])
      
         if len(state_entries) != 0:
             try:
                    
-                    stored_pt_id, stored_pt_str = \
-                    state_entries[0].data.decode().split(",",1)
-                             
+                    # stored_pt_id, stored_pt_str = \
+                    # state_entries[0].data.decode().split(",",1)
+                    stored_pt_str = state_entries[0].data.decode()
                     stored_pt = json.loads(stored_pt_str)
+                    stored_pt_id = stored_pt["pt_id"]
+                    
             except ValueError:
                 raise InternalError("Failed to deserialize data.")
-            
-
+        
         else:
             stored_pt_id = stored_pt = None
       
-        
         if action == "create" and stored_pt_id is not None:
             raise InvalidTransaction("Invalid part already exists.")
 
-        elif action == "AddArtifact" or action == "AddSupplier" or action == "AddCategory":
+        elif (action == "AddArtifact" or action == "AddSupplier" 
+                or action == "AddCategory"):
             if stored_pt_id is None:
                 raise InvalidTransaction(
                     "Invalid the operation requires an existing part."
                 )
-           
-        if action == "create":
-            pt = create_part(pt_id,pt_name,checksum,version,alias,licensing,label,description)
-            stored_pt_id = pt_id
-            stored_pt = pt
+        elif action == "create":
+            pt = create_part(pt_id, pt_name, checksum, version, alias, 
+                    licensing, label, description, prev, cur, timestamp)
+            # stored_pt_id = pt_id
+            # stored_pt = pt
             _display("Created a part.")
-          
-         
-        if action == "AddArtifact":
+        elif action == "update" and stored_pt_id is not None:
+            pt = create_part(pt_id, pt_name, checksum, version, alias, 
+                    licensing, label, description, prev, cur, timestamp, 
+                    artifact_id, category_id, supplier_id)
+            _display("Updated a category.")
+        elif action == "AddArtifact":
             if artifact_id not in stored_pt_str:
-                pt = add_artifact(artifact_id,stored_pt)
-                stored_pt = pt
-                
-                
-            
-        if action == "AddSupplier":
+                pt = add_artifact(artifact_id, stored_pt)
+                # stored_pt = pt
+        elif action == "AddSupplier":
             if supplier_id not in stored_pt_str:
-                pt = add_supplier(supplier_id,stored_pt)
-                stored_pt = pt
-        
-        if action == "AddCategory":
+                pt = add_supplier(supplier_id, stored_pt)
+                # stored_pt = pt
+        elif action == "AddCategory":
             if category_id not in stored_pt_str:
-                pt = add_category(category_id,stored_pt)
-                stored_pt = pt
-        
+                pt = add_category(category_id, stored_pt)
+                # stored_pt = pt
          
         # 6. Put data back in state storage
-        stored_pt_str = json.dumps(stored_pt)
-
-        data=",".join([stored_pt_id,stored_pt_str]).encode()
+        # stored_pt_str = json.dumps(stored_pt)
+        # data=",".join([stored_pt_id,stored_pt_str]).encode()
+        data = json.dumps(pt).encode()
         addresses = context.set_state({data_address:data})
 
-        
-        # addresses = state_store.set([
-        #     StateEntry(
-        #         address=data_address,
-        #         data=",".join([stored_pt_id, stored_pt_str]).encode()
-        #     )
-        # ])
         return addresses
 
-        
-        
 def add_artifact(uuid,parent_pt):
     
     pt_list = parent_pt['artifacts']
@@ -139,7 +146,6 @@ def add_artifact(uuid,parent_pt):
     pt_list.append(pt_dic)
     parent_pt['artifacts'] = pt_list
     return parent_pt  
-
 
 def add_supplier(uuid,parent_pt):
     
@@ -157,11 +163,26 @@ def add_category(uuid,parent_pt):
     parent_pt['categories'] = pt_list
     return parent_pt        
 
-
-def create_part(pt_id,pt_name,checksum,version,alias,licensing,label,description):
-    ptD = {'pt_id': pt_id,'pt_name': pt_name,'checksum': checksum,'version': version,'alias':alias,'licensing':licensing,'label':label,'description':description,'artifacts':[],'suppliers':[],'categories':[]}
-    return ptD 
-
+def create_part(pt_id, pt_name, checksum, version, alias, licensing, label, 
+                description, prev, cur, timestamp, artifact_id=[], 
+                category_id=[], supplier_id=[]):
+    return {
+                "pt_id"         : pt_id,
+                "pt_name"       : pt_name,
+                "pt_checksum"   : checksum, 
+                "pt_version"    : version, 
+                "pt_alias"      : alias, 
+                "pt_licensing"  : licensing, 
+                "pt_label"      : label, 
+                "description"   : description,
+                "prev_block"    : prev,
+                "cur_block"     : cur,
+                "timestamp"     : timestamp,
+                "artifact_id"   : artifact_id,
+                "category_id"   : category_id,
+                "supplier_id"   : supplier_id 
+                
+            }
 
 def validate_transaction( pt_id,action):
     if not pt_id:
@@ -170,14 +191,13 @@ def validate_transaction( pt_id,action):
     if not action:
         raise InvalidTransaction('Action is required')
 
-    if action not in ("AddArtifact", "create","AddCategory","AddSupplier","list-part","retrieve"):
+    if action not in ("AddArtifact", "create", "AddCategory", "AddSupplier", 
+                        "list-part", "retrieve", "update"):
         raise InvalidTransaction('Invalid action: {}'.format(action))
-
 
 def make_part_address(namespace_prefix, part_id):
     return namespace_prefix + \
         hashlib.sha512(part_id.encode('utf-8')).hexdigest()[:64]
-
 
 def _display(msg):
     n = msg.count("\n")
@@ -193,3 +213,6 @@ def _display(msg):
     for line in msg:
         LOGGER.debug("+ " + line.center(length) + " +")
     LOGGER.debug("+" + (length + 2) * "-" + "+")
+################################################################################
+#                                                                              #
+################################################################################
