@@ -166,8 +166,8 @@ def add_retrieve_parser(subparsers, parent_parser):
         default=None,
         help="show history of uuid within the range; FORMAT : yyyymmdd")
 
-def add_update_parser(subparsers, parent_parser):
-    parser = subparsers.add_parser('update', parents=[parent_parser])
+def add_amend_parser(subparsers, parent_parser):
+    parser = subparsers.add_parser('amend', parents=[parent_parser])
 
     parser.add_argument(
         'pt_id',
@@ -333,7 +333,7 @@ def create_parser(prog_name):
    
     add_list_part_parser(subparsers, parent_parser)
     add_retrieve_parser(subparsers, parent_parser)
-    add_update_parser(subparsers, parent_parser)
+    add_amend_parser(subparsers, parent_parser)
     
     add_artifact_parser(subparsers, parent_parser)
     add_supplier_parser(subparsers,parent_parser)
@@ -390,16 +390,16 @@ def do_retrieve(args, config):
         raise PartException("Part not found: {}".format(pt_id))
 
 def do_create(args, config): 
-    pt_id = args.pt_id
-    pt_name = args.pt_name
-    checksum = args.checksum
-    version = args.version
-    alias = args.alias
-    licensing = args.licensing
-    label = args.label
+    pt_id       = args.pt_id
+    pt_name     = args.pt_name
+    checksum    = args.checksum
+    version     = args.version
+    alias       = args.alias
+    licensing   = args.licensing
+    label       = args.label
     description = args.description
     private_key = args.private_key
-    public_key = args.public_key
+    public_key  = args.public_key
 
     payload = "{}"
     key = json.loads(payload)
@@ -432,17 +432,17 @@ def do_create(args, config):
     else:
         print(output)
 
-def do_update(args, config):
-    pt_id = args.pt_id
-    pt_name = args.pt_name
-    checksum = args.checksum
-    version = args.version
-    alias = args.alias
-    licensing = args.licensing
-    label = args.label
+def do_amend(args, config):
+    pt_id       = args.pt_id
+    pt_name     = args.pt_name
+    checksum    = args.checksum
+    version     = args.version
+    alias       = args.alias
+    licensing   = args.licensing
+    label       = args.label
     description = args.description
     private_key = args.private_key
-    public_key = args.public_key
+    public_key  = args.public_key
 
     payload = "{}"
     key = json.loads(payload)
@@ -466,7 +466,7 @@ def do_update(args, config):
         if status == 'success' and message == 'authorized':
             b_url = config.get('DEFAULT', 'url')
             client = PartBatch(base_url=b_url)
-            response = client.update(pt_id, pt_name, checksum, version, alias, 
+            response = client.amend(pt_id, pt_name, checksum, version, alias, 
                             licensing, label, description, private_key, 
                             public_key)
             print_msg(response)
@@ -642,8 +642,8 @@ def main(prog_name=os.path.basename(sys.argv[0]), args=None):
         do_list_part(args, config)
     elif args.command == 'retrieve':
         do_retrieve(args, config)
-    elif args.command == 'update':
-        do_update(args, config)
+    elif args.command == 'amend':
+        do_amend(args, config)
     elif args.command == 'AddArtifact':
         do_add_artifact(args, config)     
     elif args.command == 'AddSupplier':

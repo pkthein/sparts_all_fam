@@ -85,7 +85,7 @@ def add_create_parser(subparsers, parent_parser):
     parser = subparsers.add_parser('create', parents=[parent_parser])
 
     parser.add_argument(
-        'id',
+        "org_id",
         type=str,
         help='an identifier for the organization')
     
@@ -137,7 +137,7 @@ def add_retrieve_parser(subparsers, parent_parser):
     parser = subparsers.add_parser('retrieve', parents=[parent_parser])
 
     parser.add_argument(
-        'id',
+        "org_id",
         type=str,
         help='an identifier for the organization')
         
@@ -154,34 +154,11 @@ def add_retrieve_parser(subparsers, parent_parser):
         default=None,
         help="show history of uuid within the range; FORMAT : yyyymmdd")
     
-def add_part_parser(subparsers, parent_parser):
-    parser = subparsers.add_parser('AddPart', parents=[parent_parser])
+def add_amend_parser(subparsers, parent_parser):
+    parser = subparsers.add_parser('amend', parents=[parent_parser])
     
     parser.add_argument(
-        'id',
-        type=str,
-        help='the identifier for the organization')
-
-    parser.add_argument(
-        'part_id',
-        type=str,
-        help='the identifier for Part')
-    
-    parser.add_argument(
-        'private_key',
-        type=str,
-        help='Provide User Private Key')
-    
-    parser.add_argument(
-        'public_key',
-        type=str,
-        help='Provide User Public Key')
-
-def add_update_parser(subparsers, parent_parser):
-    parser = subparsers.add_parser('update', parents=[parent_parser])
-    
-    parser.add_argument(
-        'id',
+        "org_id",
         type=str,
         help='an identifier for the organization')
     
@@ -226,7 +203,30 @@ def add_update_parser(subparsers, parent_parser):
         action='store_true',
         default=False,
         help='disable client validation')
-        
+
+def add_part_parser(subparsers, parent_parser):
+    parser = subparsers.add_parser('AddPart', parents=[parent_parser])
+    
+    parser.add_argument(
+        "org_id",
+        type=str,
+        help='the identifier for the organization')
+
+    parser.add_argument(
+        'pt_id',
+        type=str,
+        help='the identifier for Part')
+    
+    parser.add_argument(
+        'private_key',
+        type=str,
+        help='Provide User Private Key')
+    
+    parser.add_argument(
+        'public_key',
+        type=str,
+        help='Provide User Public Key')
+      
 def add_test_category_parser(subparsers, parent_parser):
     subparsers.add_parser("test", parents=[parent_parser])
 ################################################################################
@@ -266,7 +266,7 @@ def create_parser(prog_name):
     add_list_organization_parser(subparsers, parent_parser)
     add_retrieve_parser(subparsers, parent_parser)
     add_part_parser(subparsers, parent_parser)
-    add_update_parser(subparsers, parent_parser)
+    add_amend_parser(subparsers, parent_parser)
     
     add_test_category_parser(subparsers, parent_parser)
     
@@ -275,11 +275,10 @@ def create_parser(prog_name):
 #                               FUNCTIONS                                      #
 ################################################################################
 def do_list_organization(args, config):
-    b_url = config.get('DEFAULT', 'url')
     
-    client = OrganizationBatch(base_url=b_url)
-
-    result = client.list_organization()
+    b_url   = config.get('DEFAULT', 'url')
+    client  = OrganizationBatch(base_url=b_url)
+    result  = client.list_organization()
 
     if result is not None:
         result = ("[" + str(result)[3:-2] + "]").replace("b'", "") \
@@ -295,10 +294,10 @@ def do_list_organization(args, config):
         raise OrganizationException("Could not retrieve organization listing.")
 
 def do_retrieve(args, config):
-    all_flag = args.all
-    range_flag = args.range
+    all_flag    = args.all
+    range_flag  = args.range
     
-    org_id = args.id
+    org_id      = args.org_id
     
     if range_flag != None:
         all_flag = True
@@ -321,14 +320,14 @@ def do_retrieve(args, config):
         raise OrganizationException("Organization not found: {}".format(org_id))
 
 def do_create(args, config):
-    org_id = args.id
-    org_alias = args.alias
-    org_name = args.name
-    org_type = args.type
+    org_id      = args.org_id
+    org_alias   = args.alias
+    org_name    = args.name
+    org_type    = args.type
     description = args.description
-    org_url = args.url
+    org_url     = args.url
     private_key = args.private_key
-    public_key = args.public_key
+    public_key  = args.public_key
 
     payload = "{}"
     key = json.loads(payload)
@@ -360,15 +359,15 @@ def do_create(args, config):
     else:
         print(output)
 
-def do_update(args, config):
-    org_id = args.id
-    org_alias = args.alias
-    org_name = args.name
-    org_type = args.type
+def do_amend(args, config):
+    org_id      = args.org_id
+    org_alias   = args.alias
+    org_name    = args.name
+    org_type    = args.type
     description = args.description
-    org_url = args.url
+    org_url     = args.url
     private_key = args.private_key
-    public_key = args.public_key
+    public_key  = args.public_key
 
     payload = "{}"
     key = json.loads(payload)
@@ -392,7 +391,7 @@ def do_update(args, config):
         if status == 'success' and message == 'authorized':
             b_url = config.get('DEFAULT', 'url')
             client = OrganizationBatch(base_url=b_url)
-            response = client.update(org_id, org_alias, org_name, org_type, 
+            response = client.amend(org_id, org_alias, org_name, org_type, 
                             description, org_url, private_key, public_key)
             print_msg(response)
         else:
@@ -401,11 +400,11 @@ def do_update(args, config):
         print(output)
 
 def do_addpart(args, config):
-    org_id = args.id
-    part_id = args.part_id
+    org_id      = args.org_id
+    pt_id       = args.pt_id
     private_key = args.private_key
-    public_key = args.public_key
-   
+    public_key  = args.public_key
+    
     payload = "{}"
     key = json.loads(payload)
     key["publickey"] = public_key
@@ -427,7 +426,7 @@ def do_addpart(args, config):
         if status == 'success' and message == 'authorized':
             b_url = config.get('DEFAULT', 'url')
             client = OrganizationBatch(base_url=b_url)
-            response = client.add_part(org_id, part_id, private_key, public_key)
+            response = client.add_part(org_id, pt_id, private_key, public_key)
             print_msg(response)
         else:
             print(output)
@@ -439,7 +438,7 @@ def do_test(args, config):
   
     client = OrganizationBatch(base_url=b_url)
 
-    org_test = client.test_org()        
+    org_test = client.test_org('80000')        
 ################################################################################
 #                                  PRINT                                       #
 ################################################################################   
@@ -450,10 +449,6 @@ def print_msg(response):
         print(ret_msg("success","OK","EmptyRecord","{}"))
     else:
         print(ret_msg("failed","Exception raised","EmptyRecord","{}"))
-    # if "batch_statuses?id" in response:
-    #     print ("{\"status\":\"success\"}")
-    # else:
-    #     print ("{\"status\":\"exception\"}")
 
 def load_config():
     config = configparser.ConfigParser()
@@ -496,8 +491,8 @@ def main(prog_name=os.path.basename(sys.argv[0]), args=None):
         do_retrieve(args, config)
     elif args.command == 'AddPart':
         do_addpart(args, config)
-    elif args.command == 'update':
-        do_update(args, config)
+    elif args.command == 'amend':
+        do_amend(args, config)
     elif args.command == 'test':
         do_test(args, config)
     else:

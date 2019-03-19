@@ -46,26 +46,31 @@ os.system(
 	'pt create {} name sum ver al lic lab des {} {} &&'.format('8002', pri_key, pub_key) +
 	'pt create {} name sum ver al lic lab des {} {} &&'.format('8003', pri_key, pub_key) +
 	
-	'category update 8001 {} {} {} {} &&'.format('phyo', 'troll', pri_key, pub_key) +
-	# 'category update 8001 {} {} {} {} &&'.format('trol', 'phyo', pri_key, pub_key) +
-	# 'category update 8001 {} {} {} {} &&'.format('start', 'genesis', pri_key, pub_key) +
-	# 'category update 8002 {} {} {} {} &&'.format('start', 'genesis', pri_key, pub_key) +
+	'category amend 8001 {} {} {} {} &&'.format('phyo', 'troll', pri_key, pub_key) +
+	# 'category amend 8001 {} {} {} {} &&'.format('trol', 'phyo', pri_key, pub_key) +
+	# 'category amend 8001 {} {} {} {} &&'.format('start', 'genesis', pri_key, pub_key) +
+	# 'category amend 8002 {} {} {} {} &&'.format('start', 'genesis', pri_key, pub_key) +
 	
-	'organization update {} ali name type des url {} {} &&'.format('8001', pri_key, pub_key) +
-	# 'organization update {} alia name type des url {} {} &&'.format('8001', pri_key, pub_key) +
-	# 'organization update {} alias name type des url {} {} &&'.format('8001', pri_key, pub_key) +
-	# 'organization update {} ali name type des url {} {} &&'.format('8002', pri_key, pub_key) +
+	'organization amend {} ali name type des url {} {} &&'.format('8001', pri_key, pub_key) +
+	# 'organization amend {} alia name type des url {} {} &&'.format('8001', pri_key, pub_key) +
+	# 'organization amend {} alias name type des url {} {} &&'.format('8001', pri_key, pub_key) +
+	# 'organization amend {} ali name type des url {} {} &&'.format('8002', pri_key, pub_key) +
 	
-	'pt update {} name sum ver ali lic lab des {} {} &&'.format('8001', pri_key, pub_key) +
-	'pt update {} name sum ver alia lic lab des {} {} &&'.format('8001', pri_key, pub_key) +
-	'pt update {} name sum ver alias lic lab des {} {} &&'.format('8001', pri_key, pub_key) +
-	'pt update {} name sum ver ali lic lab des {} {} &&'.format('8002', pri_key, pub_key) +
+	'pt amend {} name sum ver ali lic lab des {} {} &&'.format('8001', pri_key, pub_key) +
+	'pt amend {} name sum ver alia lic lab des {} {} &&'.format('8001', pri_key, pub_key) +
+	'pt amend {} name sum ver alias lic lab des {} {} &&'.format('8001', pri_key, pub_key) +
+	'pt amend {} name sum ver ali lic lab des {} {} &&'.format('8002', pri_key, pub_key) +
+	
+	'organization AddPart {} {} {} {} &&'.format('8000', '8000', pri_key, pub_key) +
+	'organization AddPart {} {} {} {} &&'.format('8000', '8001', pri_key, pub_key) +
+	'organization AddPart {} {} {} {} &&'.format('8000', '8002', pri_key, pub_key) +
+	'organization AddPart {} {} {} {} &&'.format('8001', '8003', pri_key, pub_key) +
 	
 	'echo "====================PLEASE RUN THE FOLLOWING CHECKS====================" &&' +
-	'echo category update 9000 {} {} {} {} &&'.format('genesis', 'start', pri_key, pub_key) +
+	'echo category amend 9000 {} {} {} {} &&'.format('genesis', 'start', pri_key, pub_key) +
 	'echo category create 8000 {} {} {} {} &&'.format('start', 'genesis', pri_key, pub_key) +
 	'echo category create 9000 {} {} {} {} &&'.format('genesis', 'start', pri_key, pub_key) +
-	'echo category update 9000 {} {} {} {} &&'.format('start', 'genesis', pri_key, pub_key) +
+	'echo category amend 9000 {} {} {} {} &&'.format('start', 'genesis', pri_key, pub_key) +
 	'echo "====================PLEASE RUN THE FOLLOWING CHECKS====================" &&' +
 	'echo "======================================================================="'
 	)

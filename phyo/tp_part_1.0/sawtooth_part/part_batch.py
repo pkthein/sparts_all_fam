@@ -64,7 +64,7 @@ class PartBatch:
                     public_key, [], [], [], "0", cur, 
                     str(datetime.datetime.utcnow()))
   
-    def update(self, pt_id, pt_name, checksum, version, alias, licensing, label,
+    def amend(self, pt_id, pt_name, checksum, version, alias, licensing, label,
                 description, private_key, public_key):
         response_bytes = self.retrieve_part(pt_id)
         
@@ -84,17 +84,12 @@ class PartBatch:
                 return None
             else:
                 cur = self._get_block_num()
-                # print(jresponse["artifact_id"], '@87 batch', type(jresponse["artifact_id"]))
                 return self.create_part_transaction(pt_id, pt_name, checksum, version, 
-                            alias, licensing, label, description, "update", private_key,
+                            alias, licensing, label, description, "amend", private_key,
                             public_key, jresponse["artifact_id"], 
                             jresponse["category_id"], jresponse["supplier_id"], 
                             jresponse["cur_block"], cur, 
                             str(datetime.datetime.utcnow()))
-                # return self.create_part_transaction(pt_id, pt_name, checksum, version, 
-                #             alias, licensing, label, description, "update", private_key,
-                #             public_key, "", "", "", jresponse["cur_block"], cur, 
-                #             str(datetime.datetime.utcnow()))
         
         return None
   
@@ -258,10 +253,6 @@ class PartBatch:
         self._public_key = public_key
         self._private_key = private_key
        
-        # payload = ",".join([pt_id, str(pt_name), str(checksum), str(version), 
-        #                 str(alias), str(licensing), str(label), str(description), 
-        #                 action, str(artifact_id), str(category_id), 
-        #                 str(supplier_id)]).encode()
         payload = {
             "pt_id"         : str(pt_id),
             "pt_name"       : str(pt_name),
@@ -291,13 +282,10 @@ class PartBatch:
             inputs = [address],
             outputs = [address],
             dependencies = [],
-            # payload_encoding="csv-utf8",
             payload_sha512 = _sha512(payload),
             batcher_public_key = self._public_key,
             nonce = time.time().hex().encode()
         ).SerializeToString()
-
-        # signature = signing.sign(header, self._private_key
         
         signature = CryptoFactory(create_context('secp256k1')) \
             .new_signer(Secp256k1PrivateKey.from_hex(self._private_key)) \
@@ -324,8 +312,6 @@ class PartBatch:
             signer_public_key=self._public_key,
             transaction_ids=transaction_signatures
         ).SerializeToString()
-
-        # signature = signing.sign(header, self._private_key)
 
         signature = CryptoFactory(create_context('secp256k1')) \
             .new_signer(Secp256k1PrivateKey.from_hex(self._private_key)) \

@@ -98,17 +98,14 @@ class CategoryTransactionHandler(TransactionHandler):
         elif action == "create":
             category = create_category_payload(category_id, category_name, 
                                     description, prev, cur, timestamp)
-            stored_category = category
             _display("Created a category.")
         
-        elif action == "update" and stored_category_id is not None:
+        elif action == "amend" and stored_category_id is not None:
             category = create_category_payload(category_id, category_name, 
                                     description, prev , cur, timestamp)
-            stored_category = category
-            _display("Updated a category.")
+            _display("Amended a category.")
         
-        stored_cat_str = json.dumps(stored_category)
-        data = stored_cat_str.encode()
+        data = json.dumps(category).encode()
         addresses = context.set_state({data_address:data})
      
         return addresses
@@ -129,7 +126,7 @@ def validate_transaction( category_id,category_name,description,action):
     if not action:
         raise InvalidTransaction("Action is required")
 
-    if action not in ("create", "list-category", "retrieve", "update"):
+    if action not in ("create", "list-category", "retrieve", "amend"):
         raise InvalidTransaction("Invalid action: {}".format(action))
 
 

@@ -18,10 +18,8 @@
 import hashlib
 import logging
 import json
-# from sawtooth_sdk.processor.state import StateEntry
 from sawtooth_sdk.processor.exceptions import InvalidTransaction
 from sawtooth_sdk.processor.exceptions import InternalError
-# from sawtooth_sdk.protobuf.transaction_pb2 import TransactionHeader
 from sawtooth_sdk.processor.handler import TransactionHandler
 
 LOGGER = logging.getLogger(__name__)
@@ -54,9 +52,6 @@ class PartTransactionHandler:
         
         try:
             # The payload is csv utf-8 encoded string
-            # (pt_id, pt_name, checksum, version, alias, licensing, label, 
-            # description, action, artifact_id, category_id, 
-            # supplier_id) = transaction.payload.decode().split(",")
             payload = json.loads(transaction.payload.decode())
             pt_id       = payload["pt_id"]
             pt_name     = payload["pt_name"]
@@ -86,8 +81,6 @@ class PartTransactionHandler:
         if len(state_entries) != 0:
             try:
                    
-                    # stored_pt_id, stored_pt_str = \
-                    # state_entries[0].data.decode().split(",",1)
                     stored_pt_str = state_entries[0].data.decode()
                     stored_pt = json.loads(stored_pt_str)
                     stored_pt_id = stored_pt["pt_id"]
@@ -110,30 +103,23 @@ class PartTransactionHandler:
         elif action == "create":
             pt = create_part(pt_id, pt_name, checksum, version, alias, 
                     licensing, label, description, prev, cur, timestamp)
-            # stored_pt_id = pt_id
-            # stored_pt = pt
             _display("Created a part.")
-        elif action == "update" and stored_pt_id is not None:
+        elif action == "amend" and stored_pt_id is not None:
             pt = create_part(pt_id, pt_name, checksum, version, alias, 
                     licensing, label, description, prev, cur, timestamp, 
                     artifact_id, category_id, supplier_id)
-            _display("Updated a category.")
+            _display("Amended a category.")
         elif action == "AddArtifact":
             if artifact_id not in stored_pt_str:
                 pt = add_artifact(artifact_id, stored_pt)
-                # stored_pt = pt
         elif action == "AddSupplier":
             if supplier_id not in stored_pt_str:
                 pt = add_supplier(supplier_id, stored_pt)
-                # stored_pt = pt
         elif action == "AddCategory":
             if category_id not in stored_pt_str:
                 pt = add_category(category_id, stored_pt)
-                # stored_pt = pt
          
         # 6. Put data back in state storage
-        # stored_pt_str = json.dumps(stored_pt)
-        # data=",".join([stored_pt_id,stored_pt_str]).encode()
         data = json.dumps(pt).encode()
         addresses = context.set_state({data_address:data})
 
@@ -192,7 +178,7 @@ def validate_transaction( pt_id,action):
         raise InvalidTransaction('Action is required')
 
     if action not in ("AddArtifact", "create", "AddCategory", "AddSupplier", 
-                        "list-part", "retrieve", "update"):
+                        "list-part", "retrieve", "amend"):
         raise InvalidTransaction('Invalid action: {}'.format(action))
 
 def make_part_address(namespace_prefix, part_id):

@@ -134,8 +134,8 @@ def add_retrieve_category_parser(subparsers, parent_parser):
         default=None,
         help="show history of uuid within the range; FORMAT : yyyymmdd")
 
-def add_update_category_parser(subparsers, parent_parser):
-    parser = subparsers.add_parser("update", parents=[parent_parser])
+def add_amend_category_parser(subparsers, parent_parser):
+    parser = subparsers.add_parser("amend", parents=[parent_parser])
 
     parser.add_argument(
         "category_id",
@@ -201,7 +201,7 @@ def create_parser(prog_name):
     add_create_parser(subparsers, parent_parser)
     add_list_category_parser(subparsers, parent_parser)
     add_retrieve_category_parser(subparsers, parent_parser)
-    add_update_category_parser(subparsers, parent_parser)
+    add_amend_category_parser(subparsers, parent_parser)
     
     return parser
 ################################################################################
@@ -293,7 +293,7 @@ def do_create_category(args, config):
     else:
         print(output)
    
-def do_update_category(args, config):
+def do_amend_category(args, config):
     category_id = args.category_id
     category_name = args.category_name
     description = args.description
@@ -322,7 +322,7 @@ def do_update_category(args, config):
             
             b_url = config.get("DEFAULT", "url")
             client = CategoryBatch(base_url=b_url)
-            response = client.update_category(category_id, category_name, 
+            response = client.amend_category(category_id, category_name, 
                             description, private_key, public_key)
             print_msg(response)
             
@@ -334,10 +334,6 @@ def do_update_category(args, config):
 ################################################################################
 #                                   PRINT                                      #
 ################################################################################
-def amend_category_fields(inputstr):
-    output = inputstr.replace("\\","")
-    return output
-
 def load_config():
     
     config = configparser.ConfigParser()
@@ -351,6 +347,17 @@ def print_msg(response):
         print(ret_msg("success","OK","EmptyRecord","{}"))
     else:
         print(ret_msg("failed","Exception raised","EmptyRecord","{}"))
+        
+def ret_msg(status, message, result_type, result):
+    msgJSON = "{}"
+    key = json.loads(msgJSON)
+    key["status"] = status
+    key["message"] = message
+    key["result_type"] = result_type
+    key["result"] = json.loads(result)
+   
+    msgJSON = json.dumps(key)
+    return msgJSON
 ################################################################################
 #                                   MAIN                                       #
 ################################################################################        
@@ -375,21 +382,10 @@ def main(prog_name=os.path.basename(sys.argv[0]), args=None):
         do_list_category(args, config)
     elif args.command == "retrieve":
         do_retrieve_category(args, config)
-    elif args.command == "update":
-        do_update_category(args, config)
+    elif args.command == "amend":
+        do_amend_category(args, config)
     else:
         raise CategoryException("invalid command: {}".format(args.command))
-
-def ret_msg(status, message, result_type, result):
-    msgJSON = "{}"
-    key = json.loads(msgJSON)
-    key["status"] = status
-    key["message"] = message
-    key["result_type"] = result_type
-    key["result"] = json.loads(result)
-   
-    msgJSON = json.dumps(key)
-    return msgJSON
 
 def main_wrapper():
     try:

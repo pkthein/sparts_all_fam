@@ -20,10 +20,8 @@ import hashlib
 import logging
 import json
 from collections import OrderedDict
-# from sawtooth_sdk.processor.state import StateEntry
 from sawtooth_sdk.processor.exceptions import InvalidTransaction
 from sawtooth_sdk.processor.exceptions import InternalError
-# from sawtooth_sdk.protobuf.transaction_pb2 import TransactionHeader
 from sawtooth_sdk.processor.handler import TransactionHandler
 
 LOGGER = logging.getLogger(__name__)
@@ -55,10 +53,6 @@ class OrganizationTransactionHandler:
     def apply(self, transaction, context):
         
         try:
-            # The payload is csv utf-8 encoded string
-            # (org_id, org_alias, org_name, org_type, description, org_url, 
-            #     action, part_id, timestamp) = transaction.payload.decode() \
-            #     .split(",")
             payload = json.loads(transaction.payload.decode())
             org_id      = payload["organization_id"]
             org_alias   = payload["organization_alias"]
@@ -70,7 +64,7 @@ class OrganizationTransactionHandler:
             prev        = payload["prev_block"]
             cur         = payload["cur_block"]
             timestamp   = payload["timestamp"]
-            part_id     = payload["part_id"]
+            pt_id       = payload["pt_id"]
             
         except ValueError:
             raise InvalidTransaction("Invalid payload serialization")
@@ -84,8 +78,7 @@ class OrganizationTransactionHandler:
         if len(state_entries) != 0:
             try:
 
-                stored_organization_str = state_entries[0].data.decode()
-                stored_organization = json.loads(stored_organization_str)
+                stored_organization = json.loads(state_entries[0].data.decode())
                 stored_organization_id = stored_organization['organization_id']
                 
             except ValueError:
@@ -95,56 +88,53 @@ class OrganizationTransactionHandler:
             stored_organization_id = stored_organization = None
             
         if action == "create" and stored_organization_id is not None:
-            raise InvalidTransaction("Invalid Action-organization already exists.")
+            raise InvalidTransaction(
+                        "Invalid Action-organization already exists."
+                    )
     
         elif action == "create":
             organization = create_organization(org_id, org_alias, org_name, 
                                 org_type, description, org_url, prev, cur, 
                                 timestamp)
-            # stored_organization_id = org_id
-            # stored_organization = organization
             _display("Created an organization.")
-        elif action == "update" and stored_organization_id is not None:
+        elif action == "amend" and stored_organization_id is not None:
             organization = create_organization(org_id, org_alias, org_name, 
                                 org_type, description, org_url, prev, cur, 
-                                timestamp)
-            _display("Updated an organization.")
-        elif action == "AddPart":
-            if part_id not in stored_organization_str:
-                organization = add_part(part_id,stored_organization)
-                # stored_organization = organization  
+                                timestamp, pt_id)
+            _display("Amended an organization.")
+        elif action == "AddPart" and stored_organization_id is not None:
+            organization = create_organization(org_id, org_alias, org_name, 
+                                org_type, description, org_url, prev, cur, 
+                                timestamp, pt_id)
             
-        # Put data back in state storage
-        # stored_org_str = json.dumps(stored_organization)
-        # data = stored_org_str.encode()
         data = json.dumps(organization).encode()
         addresses = context.set_state({data_address:data})
         
         return addresses
+  
 
-def add_part(uuid, parent_organization):    
-    organization_list = parent_organization['parts']
-    organization_dic = {'part_id': uuid}
-    organization_list.append(organization_dic)
-    parent_organization['parts'] = organization_list
-    return parent_organization    
-
-def create_organization(org_id, org_alias, org_name, org_type, 
-                            description, org_url, prev, cur, timestamp):
+def create_organization(org_id, org_alias, org_name, org_type, description, 
+                        org_url, prev, cur, timestamp, pt_id=[]):
     
-    return {"organization_id" : org_id, "organization_alias" : org_alias, 
-            "organization_name" : org_name, "organization_type" : org_type, 
-            "description" : description, "organization_url" : org_url, 
-            "parts" : [], "prev_block" : prev, "cur_block" : cur,
-            "timestamp" : timestamp} 
+    return {
+                "organization_id"       : org_id, 
+                "organization_alias"    : org_alias, 
+                "organization_name"     : org_name, 
+                "organization_type"     : org_type, 
+                "description"           : description, 
+                "organization_url"      : org_url,
+                "prev_block"            : prev, 
+                "cur_block"             : cur,
+                "timestamp"             : timestamp,
+                "pt_id"                 : pt_id
+            } 
 
 def validate_transaction(org_id, action):
     if not org_id:
         raise InvalidTransaction('Organization ID is required') 
     if not action:
         raise InvalidTransaction('Action is required')
-
-    if action not in ('create', "update", "AddPart"):
+    if action not in ('create', "amend", "AddPart"):
         raise InvalidTransaction('Invalid action: {}'.format(action))
 
 def make_organization_address(namespace_prefix, org_id):

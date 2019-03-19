@@ -128,7 +128,7 @@ class CategoryBatch:
             except BaseException:
                 return None
         
-    def update_category(self, category_id, category_name, description,
+    def amend_category(self, category_id, category_name, description,
                             private_key, public_key):
         response_bytes = self.retreive_category(category_id)
         
@@ -144,7 +144,7 @@ class CategoryBatch:
             else:
                 cur = self._get_block_num()
                 return self.send_category_transactions(category_id, 
-                            category_name, description, "update", private_key, 
+                            category_name, description, "amend", private_key, 
                             public_key, jresponse["cur_block"], cur, 
                             str(datetime.datetime.utcnow()))
                             
