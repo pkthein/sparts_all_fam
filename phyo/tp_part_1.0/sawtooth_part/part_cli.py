@@ -338,7 +338,6 @@ def create_parser(prog_name):
     add_supplier_parser(subparsers,parent_parser)
     add_category_parser(subparsers,parent_parser)
     
-    
     return parser
 ################################################################################
 #                               FUNCTIONS                                      #

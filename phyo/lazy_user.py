@@ -31,10 +31,10 @@ os.system(
 	# 'category create {} genesis start {} {} &&'.format('8007', pri_key, pub_key) +
 	# 'category create {} genesis start {} {} &&'.format('8008', pri_key, pub_key) +
 	
-	# 'artifact create {} al name type sum lab chain {} {} &&'.format('8000', pri_key, pub_key) +
-	# 'artifact create {} al name type sum lab chain {} {} &&'.format('8001', pri_key, pub_key) +
-	# 'artifact create {} al name type sum lab chain {} {} &&'.format('8002', pri_key, pub_key) +
-	# 'artifact create {} al name type sum lab chain {} {} &&'.format('8003', pri_key, pub_key) +
+	'artifact create {} al name type sum lab chain {} {} &&'.format('8000', pri_key, pub_key) +
+	'artifact create {} al name type sum lab chain {} {} &&'.format('8001', pri_key, pub_key) +
+	'artifact create {} al name type sum lab chain {} {} &&'.format('8002', pri_key, pub_key) +
+	'artifact create {} al name type sum lab chain {} {} &&'.format('8003', pri_key, pub_key) +
 	
 	'organization create {} al name type des url {} {} &&'.format('8000', pri_key, pub_key) +
 	'organization create {} al name type des url {} {} &&'.format('8001', pri_key, pub_key) +

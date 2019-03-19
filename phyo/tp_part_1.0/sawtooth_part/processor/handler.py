@@ -113,7 +113,6 @@ class PartTransactionHandler:
                     licensing, label, description, prev, cur, timestamp, 
                     artifact_id, category_id, supplier_id)
             
-         
         # 6. Put data back in state storage
         data = json.dumps(pt).encode()
         addresses = context.set_state({data_address:data})
