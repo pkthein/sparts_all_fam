@@ -24,21 +24,17 @@ import requests
 import yaml
 import datetime
 import json
-# import sawtooth_signing.secp256k1_signer as signing
 
-#
 from sawtooth_signing import create_context
 from sawtooth_signing import CryptoFactory
 from sawtooth_signing import ParseError
 from sawtooth_signing.secp256k1 import Secp256k1PrivateKey
-#
 
 from sawtooth_sdk.protobuf.transaction_pb2 import TransactionHeader
 from sawtooth_sdk.protobuf.transaction_pb2 import Transaction
 from sawtooth_sdk.protobuf.batch_pb2 import BatchList
 from sawtooth_sdk.protobuf.batch_pb2 import BatchHeader
 from sawtooth_sdk.protobuf.batch_pb2 import Batch
-
 
 from sawtooth_part.exceptions import PartException
 ################################################################################
@@ -84,29 +80,103 @@ class PartBatch:
                 return None
             else:
                 cur = self._get_block_num()
-                return self.create_part_transaction(pt_id, pt_name, checksum, version, 
-                            alias, licensing, label, description, "amend", private_key,
-                            public_key, jresponse["artifact_id"], 
-                            jresponse["category_id"], jresponse["supplier_id"], 
+                return self.create_part_transaction(pt_id, pt_name, checksum, 
+                            version, alias, licensing, label, description, 
+                            "amend", private_key, public_key, 
+                            jresponse["artifact_id"], 
+                            jresponse["category_id"],
+                            jresponse["supplier_id"], 
                             jresponse["cur_block"], cur, 
                             str(datetime.datetime.utcnow()))
         
         return None
-  
-    def add_supplier(self, pt_id, supplier_id, private_key, public_key):
-        return self.create_part_transaction(pt_id, "", "", "", "", "", "", "", 
-                    "AddSupplier", private_key, public_key, "", "", supplier_id,
-                    "prev", "cur", str(datetime.datetime.utcnow()))
     
-    def add_category(self, pt_id, category_id, private_key, public_key):
-        return self.create_part_transaction(pt_id, "", "", "", "", "", "", "", 
-                    "AddCategory", private_key, public_key, "", category_id, "",
-                    "prev", "cur", str(datetime.datetime.utcnow()))
-   
     def add_artifact(self, pt_id, artifact_id, private_key, public_key):
-        return self.create_part_transaction(pt_id, "", "", "", "", "", "", "", 
-                    "AddArtifact", private_key, public_key, artifact_id, "", "",
-                    "prev", "cur", str(datetime.datetime.utcnow()))
+        response_bytes = self.retrieve_part(pt_id)
+        
+        self._validate_artifact_id(artifact_id)
+        
+        if response_bytes != None:
+            response = str(response_bytes)
+            response = response[response.find("{") : response.find("}") + 1]
+            
+            jresponse = json.loads(response)
+            
+            if artifact_id not in jresponse["artifact_id"]:
+                jresponse["artifact_id"].append(artifact_id)
+            else:
+                raise PartException(
+                        "Artifact already exists for this Part."
+                    )
+            
+            cur = self._get_block_num()
+            return self.create_part_transaction(pt_id, jresponse["pt_name"], 
+                        jresponse["pt_checksum"], jresponse["pt_version"], 
+                        jresponse["pt_alias"], jresponse["pt_licensing"], 
+                        jresponse["pt_label"], jresponse["description"], 
+                        "AddArtifact", private_key, public_key, 
+                        jresponse["artifact_id"], jresponse["category_id"], 
+                        jresponse["supplier_id"], jresponse["cur_block"], cur, 
+                        str(datetime.datetime.utcnow()))
+        return None
+        
+    def add_category(self, pt_id, category_id, private_key, public_key):
+        response_bytes = self.retrieve_part(pt_id)
+        
+        self._validate_category_id(category_id)
+        
+        if response_bytes != None:
+            response = str(response_bytes)
+            response = response[response.find("{") : response.find("}") + 1]
+            
+            jresponse = json.loads(response)
+            
+            if category_id not in jresponse["category_id"]:
+                jresponse["category_id"].append(category_id)
+            else:
+                raise PartException(
+                        "Category already exists for this Part."
+                    )
+            
+            cur = self._get_block_num()
+            return self.create_part_transaction(pt_id, jresponse["pt_name"], 
+                        jresponse["pt_checksum"], jresponse["pt_version"], 
+                        jresponse["pt_alias"], jresponse["pt_licensing"], 
+                        jresponse["pt_label"], jresponse["description"], 
+                        "AddCategory", private_key, public_key, 
+                        jresponse["artifact_id"], jresponse["category_id"], 
+                        jresponse["supplier_id"], jresponse["cur_block"], cur, 
+                        str(datetime.datetime.utcnow()))
+        return None
+   
+    def add_supplier(self, pt_id, supplier_id, private_key, public_key):
+        response_bytes = self.retrieve_part(pt_id)
+        
+        self._validate_supplier_id(supplier_id)
+        
+        if response_bytes != None:
+            response = str(response_bytes)
+            response = response[response.find("{") : response.find("}") + 1]
+            
+            jresponse = json.loads(response)
+            
+            if supplier_id not in jresponse["supplier_id"]:
+                jresponse["supplier_id"].append(supplier_id)
+            else:
+                raise PartException(
+                        "Category already exists for this Part."
+                    )
+            
+            cur = self._get_block_num()
+            return self.create_part_transaction(pt_id, jresponse["pt_name"], 
+                        jresponse["pt_checksum"], jresponse["pt_version"], 
+                        jresponse["pt_alias"], jresponse["pt_licensing"], 
+                        jresponse["pt_label"], jresponse["description"], 
+                        "AddSupplier", private_key, public_key, 
+                        jresponse["artifact_id"], jresponse["category_id"], 
+                        jresponse["supplier_id"], jresponse["cur_block"], cur, 
+                        str(datetime.datetime.utcnow()))
+        return None
 
     def list_part(self):
         part_prefix = self._get_prefix()
@@ -215,6 +285,24 @@ class PartBatch:
             return base64.b64decode(payload)
         return None
     
+    def _validate_artifact_id(self, artifact_id):
+        artifact_prefix = _sha512('artifact'.encode('utf-8'))[0:6]
+        address = _sha512(artifact_id.encode('utf-8'))[0:64]
+        address = artifact_prefix + address
+        self._send_request("state/{}".format(address))
+    
+    def _validate_category_id(self, category_id):
+        category_prefix = _sha512("category".encode("utf-8"))[0:6]
+        address = _sha512(category_id.encode("utf-8"))[0:64]
+        address = category_prefix + address
+        self._send_request("state/{}".format(address))
+    
+    def _validate_supplier_id(self, supplier_id):
+        category_prefix = _sha512("supplier".encode("utf-8"))[0:6]
+        address = _sha512(supplier_id.encode("utf-8"))[0:64]
+        address = category_prefix + address
+        self._send_request("state/{}".format(address))
+    
     def _send_request(
             self, suffix, data=None,
             content_type=None, pt_id=None):
@@ -252,7 +340,7 @@ class PartBatch:
         
         self._public_key = public_key
         self._private_key = private_key
-       
+        
         payload = {
             "pt_id"         : str(pt_id),
             "pt_name"       : str(pt_name),
@@ -290,7 +378,6 @@ class PartBatch:
         signature = CryptoFactory(create_context('secp256k1')) \
             .new_signer(Secp256k1PrivateKey.from_hex(self._private_key)) \
             .sign(header)
-
 
         transaction = Transaction(
             header = header,

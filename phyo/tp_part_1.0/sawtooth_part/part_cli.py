@@ -319,7 +319,6 @@ def create_parent_parser(prog_name):
 
     return parent_parser
 
-
 def create_parser(prog_name):
     parent_parser = create_parent_parser(prog_name)
 
@@ -475,27 +474,22 @@ def do_amend(args, config):
     else:
         print(output)
    
-def add_Category(args, config):
-    pt_id = args.pt_id
+def do_add_category(args, config):
+    pt_id       = args.pt_id
     category_id = args.category_id
     private_key = args.private_key
-    public_key = args.public_key
-
-    # #
-    # context = create_context('secp256k1')
-    # private_key = context.new_random_private_key()
-    # public_key = context.get_public_key(private_key)
-    # #
+    public_key  = args.public_key
    
     payload = "{}"
     key = json.loads(payload)
     key["publickey"] = public_key
     key["privatekey"] = private_key
-    key["allowedrole"]=[{"role":"admin"},{"role":"member"}]
+    key["allowedrole"] = [{"role" : "admin"}, {"role" : "member"}]
     payload = json.dumps(key)
        
     headers = {'content-type': 'application/json'}
-    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth",data=json.dumps(key),headers=headers)
+    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth", 
+                    data=json.dumps(key),headers=headers)
     output = response.content.decode("utf-8").strip()
     statusinfo = json.loads(output)
        
@@ -507,7 +501,9 @@ def add_Category(args, config):
         if status == 'success' and message == 'authorized':
             b_url = config.get('DEFAULT', 'url')
             client = PartBatch(base_url=b_url)
-            response = client.add_category(pt_id,category_id,private_key,public_key)
+            response = client.add_category(
+                                pt_id, category_id, private_key, public_key
+                            )
             print_msg(response)
         else:
             print(output)
@@ -515,26 +511,21 @@ def add_Category(args, config):
         print(output)
   
 def do_add_artifact(args, config):
-    pt_id = args.pt_id
+    pt_id       = args.pt_id
     artifact_id = args.artifact_id
     private_key = args.private_key
-    public_key = args.public_key
-
-    # #
-    # context = create_context('secp256k1')
-    # private_key = context.new_random_private_key()
-    # public_key = context.get_public_key(private_key)
-    # #
+    public_key  = args.public_key
     
     payload = "{}"
     key = json.loads(payload)
     key["publickey"] = public_key
     key["privatekey"] = private_key
-    key["allowedrole"]=[{"role":"admin"},{"role":"member"}]
+    key["allowedrole"] = [{"role" : "admin"}, {"role" : "member"}]
     payload = json.dumps(key)
        
-    headers = {'content-type': 'application/json'}
-    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth",data=json.dumps(key),headers=headers)
+    headers = {'content-type' : 'application/json'}
+    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth", 
+                    data=json.dumps(key), headers=headers)
     
     output = response.content.decode("utf-8").strip()
     statusinfo = json.loads(output)
@@ -546,7 +537,9 @@ def do_add_artifact(args, config):
         if status == 'success' and message == 'authorized':
             b_url = config.get('DEFAULT', 'url')
             client = PartBatch(base_url=b_url)
-            response = client.add_artifact(pt_id,artifact_id,private_key,public_key)
+            response = client.add_artifact(
+                                pt_id, artifact_id, private_key, public_key
+                            )
             print_msg(response)
         else:
             print(output)
@@ -554,27 +547,22 @@ def do_add_artifact(args, config):
         print(output)
    
 # add the relationship between parent artifact and supplier
-def add_Supplier(args, config):
-    pt_id = args.pt_id
+def do_add_supplier(args, config):
+    pt_id       = args.pt_id
     supplier_id = args.supplier_id
     private_key = args.private_key
-    public_key = args.public_key
-
-    # #
-    # context = create_context('secp256k1')
-    # private_key = context.new_random_private_key()
-    # public_key = context.get_public_key(private_key)
-    # #
+    public_key  = args.public_key
    
     payload = "{}"
     key = json.loads(payload)
     key["publickey"] = public_key
     key["privatekey"] = private_key
-    key["allowedrole"]=[{"role":"admin"},{"role":"member"}]
+    key["allowedrole"] = [{"role" : "admin"}, {"role" : "member"}]
     payload = json.dumps(key)
        
     headers = {'content-type': 'application/json'}
-    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth",data=json.dumps(key),headers=headers)
+    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth", 
+                    data=json.dumps(key),headers=headers)
     output = response.content.decode("utf-8").strip()
     statusinfo = json.loads(output)
        
@@ -586,7 +574,9 @@ def add_Supplier(args, config):
         if status == 'success' and message == 'authorized':
             b_url = config.get('DEFAULT', 'url')
             client = PartBatch(base_url=b_url)
-            response = client.add_supplier(pt_id,supplier_id,private_key,public_key)
+            response = client.add_supplier(
+                                pt_id, supplier_id, private_key, public_key
+                            )
             print_msg(response)
         else:
             print(output)
@@ -647,9 +637,9 @@ def main(prog_name=os.path.basename(sys.argv[0]), args=None):
     elif args.command == 'AddArtifact':
         do_add_artifact(args, config)     
     elif args.command == 'AddSupplier':
-        add_Supplier(args, config)     
+        do_add_supplier(args, config)     
     elif args.command == 'AddCategory':
-        add_Category(args, config)          
+        do_add_category(args, config)          
     else:
         raise PartException("invalid command: {}".format(args.command))
 
