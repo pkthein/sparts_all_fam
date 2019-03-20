@@ -80,10 +80,9 @@ class PartTransactionHandler:
      
         if len(state_entries) != 0:
             try:
-                   
-                    stored_pt_str = state_entries[0].data.decode()
-                    stored_pt = json.loads(stored_pt_str)
-                    stored_pt_id = stored_pt["pt_id"]
+
+                stored_pt = json.loads(state_entries[0].data.decode())
+                stored_pt_id = stored_pt["pt_id"]
                     
             except ValueError:
                 raise InternalError("Failed to deserialize data.")
@@ -94,12 +93,7 @@ class PartTransactionHandler:
         if action == "create" and stored_pt_id is not None:
             raise InvalidTransaction("Invalid part already exists.")
 
-        elif (action == "AddArtifact" or action == "AddSupplier" 
-                or action == "AddCategory"):
-            if stored_pt_id is None:
-                raise InvalidTransaction(
-                    "Invalid the operation requires an existing part."
-                )
+        
         elif action == "create":
             pt = create_part(pt_id, pt_name, checksum, version, alias, 
                     licensing, label, description, prev, cur, timestamp)
@@ -108,46 +102,22 @@ class PartTransactionHandler:
             pt = create_part(pt_id, pt_name, checksum, version, alias, 
                     licensing, label, description, prev, cur, timestamp, 
                     artifact_id, category_id, supplier_id)
-            _display("Amended a category.")
-        elif action == "AddArtifact":
-            if artifact_id not in stored_pt_str:
-                pt = add_artifact(artifact_id, stored_pt)
-        elif action == "AddSupplier":
-            if supplier_id not in stored_pt_str:
-                pt = add_supplier(supplier_id, stored_pt)
-        elif action == "AddCategory":
-            if category_id not in stored_pt_str:
-                pt = add_category(category_id, stored_pt)
-         
+            _display("Amended a part.")
+        elif (action == "AddArtifact" or action == "AddSupplier" 
+                or action == "AddCategory"):
+            if stored_pt_id is None:
+                raise InvalidTransaction(
+                    "Invalid the operation requires an existing part."
+                )
+            pt = create_part(pt_id, pt_name, checksum, version, alias, 
+                    licensing, label, description, prev, cur, timestamp, 
+                    artifact_id, category_id, supplier_id)
+            
         # 6. Put data back in state storage
         data = json.dumps(pt).encode()
         addresses = context.set_state({data_address:data})
 
         return addresses
-
-def add_artifact(uuid,parent_pt):
-    
-    pt_list = parent_pt['artifacts']
-    pt_dic = {'artifact_id': uuid}
-    pt_list.append(pt_dic)
-    parent_pt['artifacts'] = pt_list
-    return parent_pt  
-
-def add_supplier(uuid,parent_pt):
-    
-    pt_list = parent_pt['suppliers']
-    pt_dic = {'supplier_id': uuid}
-    pt_list.append(pt_dic)
-    parent_pt['suppliers'] = pt_list
-    return parent_pt     
-
-def add_category(uuid,parent_pt):
-    
-    pt_list = parent_pt['categories']
-    pt_dic = {'category_id': uuid}
-    pt_list.append(pt_dic)
-    parent_pt['categories'] = pt_list
-    return parent_pt        
 
 def create_part(pt_id, pt_name, checksum, version, alias, licensing, label, 
                 description, prev, cur, timestamp, artifact_id=[], 

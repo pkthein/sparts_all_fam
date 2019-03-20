@@ -57,14 +57,14 @@ os.system(
 	# 'organization amend {} ali name type des url {} {} &&'.format('8002', pri_key, pub_key) +
 	
 	'pt amend {} name sum ver ali lic lab des {} {} &&'.format('8001', pri_key, pub_key) +
-	'pt amend {} name sum ver alia lic lab des {} {} &&'.format('8001', pri_key, pub_key) +
-	'pt amend {} name sum ver alias lic lab des {} {} &&'.format('8001', pri_key, pub_key) +
-	'pt amend {} name sum ver ali lic lab des {} {} &&'.format('8002', pri_key, pub_key) +
+	# 'pt amend {} name sum ver alia lic lab des {} {} &&'.format('8001', pri_key, pub_key) +
+	# 'pt amend {} name sum ver alias lic lab des {} {} &&'.format('8001', pri_key, pub_key) +
+	# 'pt amend {} name sum ver ali lic lab des {} {} &&'.format('8002', pri_key, pub_key) +
 	
 	'organization AddPart {} {} {} {} &&'.format('8000', '8000', pri_key, pub_key) +
-	'organization AddPart {} {} {} {} &&'.format('8000', '8001', pri_key, pub_key) +
-	'organization AddPart {} {} {} {} &&'.format('8000', '8002', pri_key, pub_key) +
-	'organization AddPart {} {} {} {} &&'.format('8001', '8003', pri_key, pub_key) +
+	# 'organization AddPart {} {} {} {} &&'.format('8000', '8001', pri_key, pub_key) +
+	# 'organization AddPart {} {} {} {} &&'.format('8000', '8002', pri_key, pub_key) +
+	# 'organization AddPart {} {} {} {} &&'.format('8001', '8003', pri_key, pub_key) +
 	
 	'echo "====================PLEASE RUN THE FOLLOWING CHECKS====================" &&' +
 	'echo category amend 9000 {} {} {} {} &&'.format('genesis', 'start', pri_key, pub_key) +
