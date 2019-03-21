@@ -67,10 +67,8 @@ class OrganizationBatch:
         response_bytes = self.retrieve_organization(org_id)
         
         if response_bytes != None:
-            response = str(response_bytes)
-            response = response[response.find("{") : response.find("}") + 1]
             
-            jresponse = json.loads(response)
+            jresponse = json.loads(response_bytes.decode())
             
             if (jresponse["organization_alias"] == org_alias and
                 jresponse["organization_name"] == org_name and
@@ -164,10 +162,8 @@ class OrganizationBatch:
             response_bytes = self.retrieve_organization(org_id)
             
             if response_bytes != None:
-                response = str(response_bytes)
-                response = response[response.find("{") : response.find("}") + 1]
                 
-                jresponse = json.loads(response)
+                jresponse = json.loads(response_bytes.decode())
                 
                 if len(jresponse["pt_list"]) == 0:
                     raise OrganizationException("No {} to remove from this {}."\
@@ -200,10 +196,8 @@ class OrganizationBatch:
             self._validate_pt_id(pt_id)
              
             if response_bytes != None:
-                response = str(response_bytes)
-                response = response[response.find("{") : response.find("}") + 1]
                 
-                jresponse = json.loads(response)
+                jresponse = json.loads(response_bytes.decode())
                 
                 if pt_id not in jresponse["pt_list"]:
                     jresponse["pt_list"].append(pt_id)

@@ -132,10 +132,8 @@ class CategoryBatch:
         response_bytes = self.retreive_category(category_id)
         
         if response_bytes != None:
-            response = str(response_bytes)
-            response = response[response.find("{") : response.find("}") + 1]
             
-            jresponse = json.loads(response)
+            jresponse = json.loads(response_bytes.decode())
             
             if jresponse["category_name"] == category_name and \
                 jresponse["description"] == description:

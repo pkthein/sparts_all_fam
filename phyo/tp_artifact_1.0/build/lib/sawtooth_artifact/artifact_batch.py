@@ -65,10 +65,8 @@ class ArtifactBatch:
         response_bytes = self.retrieve_artifact(artifact_id)
         
         if response_bytes != None:
-            response = str(response_bytes)
-            response = response[response.find("{") : response.find("}") + 1]
             
-            jresponse = json.loads(response)
+            jresponse = json.loads(response_bytes.decode())
             
             if (jresponse["artifact_alias"] == artifact_alias and
                 jresponse["artifact_name"] == artifact_name and
@@ -164,10 +162,8 @@ class ArtifactBatch:
             response_bytes = self.retrieve_artifact(artifact_id)
             
             if response_bytes != None:
-                response = str(response_bytes)
-                response = response[response.find("{") : response.find("}") + 1]
                 
-                jresponse = json.loads(response)
+                jresponse = json.loads(response_bytes.decode())
                 
                 if len(jresponse["artifact_list"]) == 0:
                     raise ArtifactException("No {} to remove from this {}." \
@@ -205,10 +201,8 @@ class ArtifactBatch:
             self._validate_sub_artifact_id(sub_artifact_id)
             
             if response_bytes != None:
-                response = str(response_bytes)
-                response = response[response.find("{") : response.find("}") + 1]
                 
-                jresponse = json.loads(response)
+                jresponse = json.loads(response_bytes.decode())
                 
                 art_dict = {
                     "artifact_id"   : sub_artifact_id,
@@ -255,10 +249,8 @@ class ArtifactBatch:
             response_bytes = self.retrieve_artifact(artifact_id)
             
             if response_bytes != None:
-                response = str(response_bytes)
-                response = response[response.find("{") : response.find("}") + 1]
                 
-                jresponse = json.loads(response)
+                jresponse = json.loads(response_bytes.decode())
                 
                 if len(jresponse["uri_list"]) == 0:
                     raise ArtifactException("No {} to remove from this {}." \
@@ -299,10 +291,8 @@ class ArtifactBatch:
             # self._validate_URI() # how???
             
             if response_bytes != None:
-                response = str(response_bytes)
-                response = response[response.find("{") : response.find("}") + 1]
                 
-                jresponse = json.loads(response)
+                jresponse = json.loads(response_bytes.decode())
                 
                 uri_dict = {
                     "uri_version"       : version,

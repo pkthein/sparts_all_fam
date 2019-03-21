@@ -65,10 +65,8 @@ class PartBatch:
         response_bytes = self.retrieve_part(pt_id)
         
         if response_bytes != None:
-            response = str(response_bytes)
-            response = response[response.find("{") : response.find("}") + 1]
             
-            jresponse = json.loads(response)
+            jresponse = json.loads(response_bytes.decode())
             
             if (jresponse["pt_name"]        == pt_name      and
                 jresponse["pt_checksum"]    == checksum     and
@@ -97,10 +95,8 @@ class PartBatch:
             response_bytes = self.retrieve_part(pt_id)
             
             if response_bytes != None:
-                response = str(response_bytes)
-                response = response[response.find("{") : response.find("}") + 1]
                 
-                jresponse = json.loads(response)
+                jresponse = json.loads(response_bytes.decode())
                 
                 if len(jresponse["artifact_list"]) == 0:
                     raise PartException("No {} to remove from this {}." \
@@ -133,10 +129,8 @@ class PartBatch:
             self._validate_artifact_id(artifact_id)
             
             if response_bytes != None:
-                response = str(response_bytes)
-                response = response[response.find("{") : response.find("}") + 1]
                 
-                jresponse = json.loads(response)
+                jresponse = json.loads(response_bytes.decode())
                 
                 if artifact_id not in jresponse["artifact_list"]:
                     jresponse["artifact_list"].append(artifact_id)
@@ -165,10 +159,8 @@ class PartBatch:
             response_bytes = self.retrieve_part(pt_id)
             
             if response_bytes != None:
-                response = str(response_bytes)
-                response = response[response.find("{") : response.find("}") + 1]
                 
-                jresponse = json.loads(response)
+                jresponse = json.loads(response_bytes.decode())
                 
                 if len(jresponse["category_list"]) == 0:
                     raise PartException("No {} to remove from this {}." \
@@ -201,10 +193,8 @@ class PartBatch:
             self._validate_category_id(category_id)
             
             if response_bytes != None:
-                response = str(response_bytes)
-                response = response[response.find("{") : response.find("}") + 1]
                 
-                jresponse = json.loads(response)
+                jresponse = json.loads(response_bytes.decode())
                 
                 if category_id not in jresponse["category_list"]:
                     jresponse["category_list"].append(category_id)
@@ -235,10 +225,8 @@ class PartBatch:
             self._validate_supplier_id(supplier_id)
             
             if response_bytes != None:
-                response = str(response_bytes)
-                response = response[response.find("{") : response.find("}") + 1]
                 
-                jresponse = json.loads(response)
+                jresponse = json.loads(response_bytes.decode())
                 
                 if len(jresponse["supplier_list"]) == 0:
                     raise PartException("No {} to remove from this {}." \
@@ -271,10 +259,8 @@ class PartBatch:
             self._validate_supplier_id(supplier_id)
             
             if response_bytes != None:
-                response = str(response_bytes)
-                response = response[response.find("{") : response.find("}") + 1]
                 
-                jresponse = json.loads(response)
+                jresponse = json.loads(response_bytes.decode())
                 
                 if supplier_id not in jresponse["supplier_list"]:
                     jresponse["supplier_list"].append(supplier_id)
@@ -416,7 +402,7 @@ class PartBatch:
         self._send_request("state/{}".format(address))
     
     def _validate_supplier_id(self, supplier_id):
-        category_prefix = _sha512("supplier".encode("utf-8"))[0:6]
+        category_prefix = _sha512("organization".encode("utf-8"))[0:6]
         address = _sha512(supplier_id.encode("utf-8"))[0:64]
         address = category_prefix + address
         self._send_request("state/{}".format(address))

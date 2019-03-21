@@ -66,10 +66,35 @@ os.system(
 	'pt amend {} name sum ver {} lic lab des {} {} &&'.format('8001', 'alias', pri_key, pub_key) +
 	'pt amend {} name sum ver {} lic lab des {} {} &&'.format('8002', 'ali', pri_key, pub_key) +
 	
-	# 'organization AddPart {} {} {} {} &&'.format('8000', '8000', pri_key, pub_key) +
-	# 'organization AddPart {} {} {} {} &&'.format('8000', '8001', pri_key, pub_key) +
-	# 'organization AddPart {} {} {} {} &&'.format('8000', '8002', pri_key, pub_key) +
-	# 'organization AddPart {} {} {} {} &&'.format('8001', '8003', pri_key, pub_key) +
+	'organization AddPart {} {} {} {} &&'.format('8000', '8000', pri_key, pub_key) +
+	'organization AddPart {} {} {} {} &&'.format('8000', '8001', pri_key, pub_key) +
+	'organization AddPart {} {} {} {} &&'.format('8000', '8002', pri_key, pub_key) +
+	'organization AddPart {} {} {} {} &&'.format('8001', '8003', pri_key, pub_key) +
+	
+	'pt AddSupplier {} {} {} {} &&'.format('8000', '8000', pri_key, pub_key) +
+	'pt AddSupplier {} {} {} {} &&'.format('8001', '8000', pri_key, pub_key) +
+	'pt AddSupplier {} {} {} {} &&'.format('8002', '8000', pri_key, pub_key) +
+	'pt AddSupplier {} {} {} {} &&'.format('8003', '8001', pri_key, pub_key) +
+	
+	'pt AddArtifact {} {} {} {} &&'.format('8000', '8000', pri_key, pub_key) +
+	'pt AddArtifact {} {} {} {} &&'.format('8001', '8000', pri_key, pub_key) +
+	'pt AddArtifact {} {} {} {} &&'.format('8002', '8000', pri_key, pub_key) +
+	'pt AddArtifact {} {} {} {} &&'.format('8003', '8001', pri_key, pub_key) +
+	
+	'pt AddCategory {} {} {} {} &&'.format('8000', '8000', pri_key, pub_key) +
+	'pt AddCategory {} {} {} {} &&'.format('8001', '8000', pri_key, pub_key) +
+	'pt AddCategory {} {} {} {} &&'.format('8002', '8000', pri_key, pub_key) +
+	'pt AddCategory {} {} {} {} &&'.format('8003', '8001', pri_key, pub_key) +
+	
+	'artifact AddArtifact {} {} {} {} {} &&'.format('8000', '8000', 'path', pri_key, pub_key) +
+	'artifact AddArtifact {} {} {} {} {} &&'.format('8001', '8000', 'path', pri_key, pub_key) +
+	'artifact AddArtifact {} {} {} {} {} &&'.format('8002', '8000', 'path', pri_key, pub_key) +
+	'artifact AddArtifact {} {} {} {} {} &&'.format('8003', '8001', 'path', pri_key, pub_key) +
+	
+	'artifact AddURI {} {} {} {} {} {} {} {} {} &&'.format('8000', '000', 'cs', 'ct', 'size', 'ut', 'loc', pri_key, pub_key) +
+	'artifact AddURI {} {} {} {} {} {} {} {} {} &&'.format('8001', '000', 'cs', 'ct', 'size', 'ut', 'loc', pri_key, pub_key) +
+	'artifact AddURI {} {} {} {} {} {} {} {} {} &&'.format('8002', '000', 'cs', 'ct', 'size', 'ut', 'loc', pri_key, pub_key) +
+	'artifact AddURI {} {} {} {} {} {} {} {} {} &&'.format('8003', '000', 'cs', 'ct', 'size', 'ut', 'loc', pri_key, pub_key) +
 	
 	'echo "====================PLEASE RUN THE FOLLOWING CHECKS====================" &&' +
 	'echo category amend 9000 {} {} {} {} &&'.format('genesis', 'start', pri_key, pub_key) +
