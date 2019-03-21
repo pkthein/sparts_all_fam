@@ -83,100 +83,219 @@ class PartBatch:
                 return self.create_part_transaction(pt_id, pt_name, checksum, 
                             version, alias, licensing, label, description, 
                             "amend", private_key, public_key, 
-                            jresponse["artifact_id"], 
-                            jresponse["category_id"],
-                            jresponse["supplier_id"], 
+                            jresponse["artifact_list"], 
+                            jresponse["category_list"],
+                            jresponse["supplier_list"], 
                             jresponse["cur_block"], cur, 
                             str(datetime.datetime.utcnow()))
         
         return None
     
-    def add_artifact(self, pt_id, artifact_id, private_key, public_key):
-        response_bytes = self.retrieve_part(pt_id)
+    def add_artifact(self, pt_id, artifact_id, private_key, public_key, 
+                        deleteArt=False):
+        if deleteArt:
+            response_bytes = self.retrieve_part(pt_id)
+            
+            if response_bytes != None:
+                response = str(response_bytes)
+                response = response[response.find("{") : response.find("}") + 1]
+                
+                jresponse = json.loads(response)
+                
+                if len(jresponse["artifact_list"]) == 0:
+                    raise PartException("No {} to remove from this {}." \
+                                .format("Artifact", "Part")
+                        )
+                        
+                if artifact_id not in jresponse["artifact_list"]:
+                    raise PartException("No such {} in this {}." \
+                                .format("Artifact", "Part")
+                        )
+                        
+                jresponse["artifact_list"].remove(artifact_id)
+                
+                cur = self._get_block_num()
+                return self.create_part_transaction(pt_id, jresponse["pt_name"], 
+                            jresponse["pt_checksum"], jresponse["pt_version"], 
+                            jresponse["pt_alias"], jresponse["pt_licensing"], 
+                            jresponse["pt_label"], jresponse["description"], 
+                            "AddArtifact", private_key, public_key, 
+                            jresponse["artifact_list"],
+                            jresponse["category_list"], 
+                            jresponse["supplier_list"],
+                            jresponse["cur_block"], cur, 
+                            str(datetime.datetime.utcnow()))
+            
+            return None
+        else:
+            response_bytes = self.retrieve_part(pt_id)
+            
+            self._validate_artifact_id(artifact_id)
+            
+            if response_bytes != None:
+                response = str(response_bytes)
+                response = response[response.find("{") : response.find("}") + 1]
+                
+                jresponse = json.loads(response)
+                
+                if artifact_id not in jresponse["artifact_list"]:
+                    jresponse["artifact_list"].append(artifact_id)
+                else:
+                    raise PartException(
+                            "Artifact already exists for this Part."
+                        )
+                
+                cur = self._get_block_num()
+                return self.create_part_transaction(pt_id, jresponse["pt_name"], 
+                            jresponse["pt_checksum"], jresponse["pt_version"], 
+                            jresponse["pt_alias"], jresponse["pt_licensing"], 
+                            jresponse["pt_label"], jresponse["description"], 
+                            "AddArtifact", private_key, public_key, 
+                            jresponse["artifact_list"],
+                            jresponse["category_list"], 
+                            jresponse["supplier_list"],
+                            jresponse["cur_block"], cur, 
+                            str(datetime.datetime.utcnow()))
+            
+            return None
         
-        self._validate_artifact_id(artifact_id)
-        
-        if response_bytes != None:
-            response = str(response_bytes)
-            response = response[response.find("{") : response.find("}") + 1]
+    def add_category(self, pt_id, category_id, private_key, public_key,
+                        deleteCat=False):
+        if deleteCat:
+            response_bytes = self.retrieve_part(pt_id)
             
-            jresponse = json.loads(response)
+            if response_bytes != None:
+                response = str(response_bytes)
+                response = response[response.find("{") : response.find("}") + 1]
+                
+                jresponse = json.loads(response)
+                
+                if len(jresponse["category_list"]) == 0:
+                    raise PartException("No {} to remove from this {}." \
+                                .format("Category", "Part")
+                        )
+                
+                if category_id not in jresponse["category_list"]:
+                    raise PartException("No such {} in this {}." \
+                                .format("Category", "Part")
+                        )
+                        
+                jresponse["category_list"].remove(category_id)
+                
+                cur = self._get_block_num()
+                return self.create_part_transaction(pt_id, jresponse["pt_name"], 
+                            jresponse["pt_checksum"], jresponse["pt_version"], 
+                            jresponse["pt_alias"], jresponse["pt_licensing"], 
+                            jresponse["pt_label"], jresponse["description"], 
+                            "AddCategory", private_key, public_key, 
+                            jresponse["artifact_list"],
+                            jresponse["category_list"], 
+                            jresponse["supplier_list"],
+                            jresponse["cur_block"], cur, 
+                            str(datetime.datetime.utcnow()))
             
-            if artifact_id not in jresponse["artifact_id"]:
-                jresponse["artifact_id"].append(artifact_id)
-            else:
-                raise PartException(
-                        "Artifact already exists for this Part."
-                    )
+            return None
+        else:
+            response_bytes = self.retrieve_part(pt_id)
             
-            cur = self._get_block_num()
-            return self.create_part_transaction(pt_id, jresponse["pt_name"], 
-                        jresponse["pt_checksum"], jresponse["pt_version"], 
-                        jresponse["pt_alias"], jresponse["pt_licensing"], 
-                        jresponse["pt_label"], jresponse["description"], 
-                        "AddArtifact", private_key, public_key, 
-                        jresponse["artifact_id"], jresponse["category_id"], 
-                        jresponse["supplier_id"], jresponse["cur_block"], cur, 
-                        str(datetime.datetime.utcnow()))
-        return None
-        
-    def add_category(self, pt_id, category_id, private_key, public_key):
-        response_bytes = self.retrieve_part(pt_id)
-        
-        self._validate_category_id(category_id)
-        
-        if response_bytes != None:
-            response = str(response_bytes)
-            response = response[response.find("{") : response.find("}") + 1]
+            self._validate_category_id(category_id)
             
-            jresponse = json.loads(response)
+            if response_bytes != None:
+                response = str(response_bytes)
+                response = response[response.find("{") : response.find("}") + 1]
+                
+                jresponse = json.loads(response)
+                
+                if category_id not in jresponse["category_list"]:
+                    jresponse["category_list"].append(category_id)
+                else:
+                    raise PartException(
+                            "Category already exists for this Part."
+                        )
+                
+                cur = self._get_block_num()
+                return self.create_part_transaction(pt_id, jresponse["pt_name"], 
+                            jresponse["pt_checksum"], jresponse["pt_version"], 
+                            jresponse["pt_alias"], jresponse["pt_licensing"], 
+                            jresponse["pt_label"], jresponse["description"], 
+                            "AddCategory", private_key, public_key, 
+                            jresponse["artifact_list"],
+                            jresponse["category_list"], 
+                            jresponse["supplier_list"],
+                            jresponse["cur_block"], cur, 
+                            str(datetime.datetime.utcnow()))
             
-            if category_id not in jresponse["category_id"]:
-                jresponse["category_id"].append(category_id)
-            else:
-                raise PartException(
-                        "Category already exists for this Part."
-                    )
-            
-            cur = self._get_block_num()
-            return self.create_part_transaction(pt_id, jresponse["pt_name"], 
-                        jresponse["pt_checksum"], jresponse["pt_version"], 
-                        jresponse["pt_alias"], jresponse["pt_licensing"], 
-                        jresponse["pt_label"], jresponse["description"], 
-                        "AddCategory", private_key, public_key, 
-                        jresponse["artifact_id"], jresponse["category_id"], 
-                        jresponse["supplier_id"], jresponse["cur_block"], cur, 
-                        str(datetime.datetime.utcnow()))
-        return None
+            return None
    
-    def add_supplier(self, pt_id, supplier_id, private_key, public_key):
-        response_bytes = self.retrieve_part(pt_id)
-        
-        self._validate_supplier_id(supplier_id)
-        
-        if response_bytes != None:
-            response = str(response_bytes)
-            response = response[response.find("{") : response.find("}") + 1]
+    def add_supplier(self, pt_id, supplier_id, private_key, public_key,
+                        deleteSup=False):
+        if deleteSup:
+            response_bytes = self.retrieve_part(pt_id)
             
-            jresponse = json.loads(response)
+            self._validate_supplier_id(supplier_id)
             
-            if supplier_id not in jresponse["supplier_id"]:
-                jresponse["supplier_id"].append(supplier_id)
-            else:
-                raise PartException(
-                        "Category already exists for this Part."
-                    )
+            if response_bytes != None:
+                response = str(response_bytes)
+                response = response[response.find("{") : response.find("}") + 1]
+                
+                jresponse = json.loads(response)
+                
+                if len(jresponse["supplier_list"]) == 0:
+                    raise PartException("No {} to remove from this {}." \
+                                .format("Supplier", "Part")
+                        )
+                
+                if supplier_id not in jresponse["supplier_list"]:
+                    raise PartException("No such {} in this {}." \
+                                .format("Supplier", "Part")
+                        )   
+                
+                jresponse["supplier_list"].remove(supplier_id)
+                
+                cur = self._get_block_num()
+                return self.create_part_transaction(pt_id, jresponse["pt_name"], 
+                            jresponse["pt_checksum"], jresponse["pt_version"], 
+                            jresponse["pt_alias"], jresponse["pt_licensing"], 
+                            jresponse["pt_label"], jresponse["description"], 
+                            "AddSupplier", private_key, public_key, 
+                            jresponse["artifact_list"],
+                            jresponse["category_list"], 
+                            jresponse["supplier_list"],
+                            jresponse["cur_block"], cur, 
+                            str(datetime.datetime.utcnow()))
             
-            cur = self._get_block_num()
-            return self.create_part_transaction(pt_id, jresponse["pt_name"], 
-                        jresponse["pt_checksum"], jresponse["pt_version"], 
-                        jresponse["pt_alias"], jresponse["pt_licensing"], 
-                        jresponse["pt_label"], jresponse["description"], 
-                        "AddSupplier", private_key, public_key, 
-                        jresponse["artifact_id"], jresponse["category_id"], 
-                        jresponse["supplier_id"], jresponse["cur_block"], cur, 
-                        str(datetime.datetime.utcnow()))
-        return None
+            return None
+        else:
+            response_bytes = self.retrieve_part(pt_id)
+            
+            self._validate_supplier_id(supplier_id)
+            
+            if response_bytes != None:
+                response = str(response_bytes)
+                response = response[response.find("{") : response.find("}") + 1]
+                
+                jresponse = json.loads(response)
+                
+                if supplier_id not in jresponse["supplier_list"]:
+                    jresponse["supplier_list"].append(supplier_id)
+                else:
+                    raise PartException(
+                            "Category already exists for this Part."
+                        )
+                
+                cur = self._get_block_num()
+                return self.create_part_transaction(pt_id, jresponse["pt_name"], 
+                            jresponse["pt_checksum"], jresponse["pt_version"], 
+                            jresponse["pt_alias"], jresponse["pt_licensing"], 
+                            jresponse["pt_label"], jresponse["description"], 
+                            "AddSupplier", private_key, public_key, 
+                            jresponse["artifact_list"],
+                            jresponse["category_list"], 
+                            jresponse["supplier_list"],
+                            jresponse["cur_block"], cur, 
+                            str(datetime.datetime.utcnow()))
+            
+            return None
 
     def list_part(self):
         part_prefix = self._get_prefix()
@@ -353,9 +472,9 @@ class PartBatch:
             "prev_block"    : str(prev),
             "cur_block"     : str(cur),
             "timestamp"     : str(timestamp),
-            "artifact_id"   : artifact_id,
-            "category_id"   : category_id,
-            "supplier_id"   : supplier_id
+            "artifact_list" : artifact_id,
+            "category_list" : category_id,
+            "supplier_list" : supplier_id
         }
         payload = json.dumps(payload).encode()
         

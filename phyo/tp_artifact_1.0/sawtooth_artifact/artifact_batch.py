@@ -159,7 +159,7 @@ class ArtifactBatch:
                 return None
     
     def add_artifact(self, private_key, public_key, artifact_id, 
-                sub_artifact_id, path. deleteSub=False):
+                sub_artifact_id, path, deleteSub=False):
         if deleteSub:
             response_bytes = self.retrieve_artifact(artifact_id)
             

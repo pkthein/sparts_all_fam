@@ -88,7 +88,6 @@ class ArtifactBatch:
                             
         return None
         
-    
     def list_artifact(self):
         artifact_prefix = self._get_prefix()
 
@@ -160,98 +159,181 @@ class ArtifactBatch:
                 return None
     
     def add_artifact(self, private_key, public_key, artifact_id, 
-                sub_artifact_id, path):
-        response_bytes = self.retrieve_artifact(artifact_id)
-        
-        self._validate_sub_artifact_id(sub_artifact_id)
-        
-        if response_bytes != None:
-            response = str(response_bytes)
-            response = response[response.find("{") : response.find("}") + 1]
+                sub_artifact_id, path, deleteSub=False):
+        if deleteSub:
+            response_bytes = self.retrieve_artifact(artifact_id)
             
-            jresponse = json.loads(response)
-            
-            art_dict = {
-                "artifact_id"   : sub_artifact_id,
-                "artifact_path" : path
-            }
-            
-            if len(jresponse["artifact_list"]) != 0:
+            if response_bytes != None:
+                response = str(response_bytes)
+                response = response[response.find("{") : response.find("}") + 1]
                 
-                # no dup art_id allowed in art_list
-                # for eachDictionary in jresponse["artifact_list"]:
-                #     if eachDictionary["artifact_id"] == sub_artifact_id:
-                #         raise ArtifactException(
-                #                 "Sub artifact already exists for this Artifact."
-                #             )
+                jresponse = json.loads(response)
                 
-                # no dup art_dict allowed in art_list
-                for eachDictionary in jresponse["artifact_list"]:
-                    if eachDictionary == art_dict:
+                if len(jresponse["artifact_list"]) == 0:
+                    raise ArtifactException("No {} to remove from this {}." \
+                                .format("Sub-Artifact", "Artifact")
+                        )
+                        
+                art_dict = {
+                    "artifact_id"   : sub_artifact_id,
+                    "artifact_path" : path
+                }
+                
+                if art_dict not in jresponse["artifact_list"]:
+                    raise ArtifactException("No such {} in this {}." \
+                                .format("Sub-Artifact", "Artifact")
+                        )
+                        
+                jresponse["artifact_list"].remove(art_dict)
+                
+                cur = self._get_block_num()
+                return self.artifact_transaction(private_key, public_key,
+                            artifact_id, jresponse["artifact_alias"],
+                            jresponse["artifact_name"],
+                            jresponse["artifact_type"],
+                            jresponse["artifact_checksum"],
+                            jresponse["artifact_label"],
+                            jresponse["artifact_openchain"],
+                            jresponse["cur_block"], cur,
+                            str(datetime.datetime.utcnow()), "AddArtifact", 
+                            jresponse["artifact_list"], jresponse["uri_list"])
+                
+            return None
+        else:
+            response_bytes = self.retrieve_artifact(artifact_id)
+            
+            self._validate_sub_artifact_id(sub_artifact_id)
+            
+            if response_bytes != None:
+                response = str(response_bytes)
+                response = response[response.find("{") : response.find("}") + 1]
+                
+                jresponse = json.loads(response)
+                
+                art_dict = {
+                    "artifact_id"   : sub_artifact_id,
+                    "artifact_path" : path
+                }
+                
+                if len(jresponse["artifact_list"]) != 0:
+                    
+                    # no dup art_id allowed in art_list
+                    # for eachDictionary in jresponse["artifact_list"]:
+                    #     if eachDictionary["artifact_id"] == sub_artifact_id:
+                    #         raise ArtifactException(
+                    #                 "{} already exists for this {}.".format(
+                    #                         "Sub-Artifact", "Artifact"
+                    #                     )
+                    #             )
+                    
+                    # no dup art_dict allowed in art_list
+                    if art_dict in jresponse["artifact_list"]:
                         raise ArtifactException(
                                 "{} already exists for this {}.".format(
                                         "Artifact-Dictionary", "Artifact"
                                     )
                             )        
-            jresponse["artifact_list"].append(art_dict)
+                jresponse["artifact_list"].append(art_dict)
+                    
+                cur = self._get_block_num()
+                return self.artifact_transaction(private_key, public_key,
+                            artifact_id, jresponse["artifact_alias"],
+                            jresponse["artifact_name"],
+                            jresponse["artifact_type"],
+                            jresponse["artifact_checksum"],
+                            jresponse["artifact_label"],
+                            jresponse["artifact_openchain"],
+                            jresponse["cur_block"], cur,
+                            str(datetime.datetime.utcnow()), "AddArtifact", 
+                            jresponse["artifact_list"], jresponse["uri_list"])
                 
-            cur = self._get_block_num()
-            return self.artifact_transaction(private_key, public_key,
-                        artifact_id, jresponse["artifact_alias"],
-                        jresponse["artifact_name"],
-                        jresponse["artifact_type"],
-                        jresponse["artifact_checksum"],
-                        jresponse["artifact_label"],
-                        jresponse["artifact_openchain"],
-                        jresponse["cur_block"], cur,
-                        str(datetime.datetime.utcnow()), "AddArtifact", 
-                        jresponse["artifact_list"], jresponse["uri_list"])
-            
-        return None
+            return None
     
     def add_uri(self, private_key, public_key, artifact_id, version, checksum, 
-                content_type, size, uri_type, location):    
-        response_bytes = self.retrieve_artifact(artifact_id)
-        
-        # self._validate_URI() # how???
-        
-        if response_bytes != None:
-            response = str(response_bytes)
-            response = response[response.find("{") : response.find("}") + 1]
+                content_type, size, uri_type, location, deleteURI=False):
+        if deleteURI:
+            response_bytes = self.retrieve_artifact(artifact_id)
             
-            jresponse = json.loads(response)
+            if response_bytes != None:
+                response = str(response_bytes)
+                response = response[response.find("{") : response.find("}") + 1]
+                
+                jresponse = json.loads(response)
+                
+                if len(jresponse["uri_list"]) == 0:
+                    raise ArtifactException("No {} to remove from this {}." \
+                                .format("URI", "Artifact")
+                        )
+                
+                uri_dict = {
+                    "uri_version"       : version,
+                    "uri_content_type"  : content_type,
+                    "uri_size"          : size,
+                    "uri_type"          : uri_type,
+                    "uri_location"      : location
+                }
+                
+                if uri_dict not in jresponse["uri_list"]:
+                    raise ArtifactException("No such {} in this {}." \
+                                .format("URI", "Artifact")
+                        )
+                        
+                jresponse["uri_list"].remove(uri_dict)
+                
+                cur = self._get_block_num()
+                return self.artifact_transaction(private_key, public_key,
+                            artifact_id, jresponse["artifact_alias"],
+                            jresponse["artifact_name"],
+                            jresponse["artifact_type"],
+                            jresponse["artifact_checksum"],
+                            jresponse["artifact_label"],
+                            jresponse["artifact_openchain"],
+                            jresponse["cur_block"], cur,
+                            str(datetime.datetime.utcnow()), "AddArtifact", 
+                            jresponse["artifact_list"], jresponse["uri_list"])
+                
+            return None
+        else:
+            response_bytes = self.retrieve_artifact(artifact_id)
             
-            uri_dict = {
-                "uri_version"       : version,
-                "uri_content_type"  : content_type,
-                "uri_size"          : size,
-                "uri_type"          : uri_type,
-                "uri_location"      : location
-            }
+            # self._validate_URI() # how???
             
-            if len(jresponse["uri_list"]) != 0:
-                for eachDictionary in jresponse["uri_list"]:
-                    if eachDictionary == uri_dict:
+            if response_bytes != None:
+                response = str(response_bytes)
+                response = response[response.find("{") : response.find("}") + 1]
+                
+                jresponse = json.loads(response)
+                
+                uri_dict = {
+                    "uri_version"       : version,
+                    "uri_content_type"  : content_type,
+                    "uri_size"          : size,
+                    "uri_type"          : uri_type,
+                    "uri_location"      : location
+                }
+                
+                if len(jresponse["uri_list"]) != 0:
+                    if uri_dict in jresponse["uri_list"]:
                         raise ArtifactException(
                                 "{} already exists for this {}.".format(
                                         "URI-Dictionary", "Artifact"
                                     )
                             )
-            jresponse["uri_list"].append(uri_dict)
+                jresponse["uri_list"].append(uri_dict)
+                
+                cur = self._get_block_num()
+                return self.artifact_transaction(private_key, public_key,
+                            artifact_id, jresponse["artifact_alias"],
+                            jresponse["artifact_name"],
+                            jresponse["artifact_type"],
+                            jresponse["artifact_checksum"],
+                            jresponse["artifact_label"],
+                            jresponse["artifact_openchain"],
+                            jresponse["cur_block"], cur,
+                            str(datetime.datetime.utcnow()), "AddURI", 
+                            jresponse["artifact_list"], jresponse["uri_list"])
             
-            cur = self._get_block_num()
-            return self.artifact_transaction(private_key, public_key,
-                        artifact_id, jresponse["artifact_alias"],
-                        jresponse["artifact_name"],
-                        jresponse["artifact_type"],
-                        jresponse["artifact_checksum"],
-                        jresponse["artifact_label"],
-                        jresponse["artifact_openchain"],
-                        jresponse["cur_block"], cur,
-                        str(datetime.datetime.utcnow()), "AddURI", 
-                        jresponse["artifact_list"], jresponse["uri_list"])
-        
-        return None
+            return None
 ################################################################################
 #                            PRIVATE FUNCTIONS                                 #
 ################################################################################   

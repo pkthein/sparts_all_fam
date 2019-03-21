@@ -61,34 +61,31 @@ class OrganizationBatch:
         return self.create_organization_transaction(org_id, org_alias, org_name, 
                     org_type, description, org_url, "create", private_key, 
                     public_key, "0", cur, str(datetime.datetime.utcnow()), "")
-
-    def add_part(self, org_id, pt_id, private_key, public_key):
+    
+    def amend(self, org_id, org_alias, org_name, org_type, description, 
+                    org_url, private_key, public_key):
         response_bytes = self.retrieve_organization(org_id)
         
-        self._validate_pt_id(pt_id)
-         
         if response_bytes != None:
             response = str(response_bytes)
             response = response[response.find("{") : response.find("}") + 1]
             
             jresponse = json.loads(response)
             
-            if pt_id not in jresponse["pt_id"]:
-                jresponse["pt_id"].append(pt_id)
+            if (jresponse["organization_alias"] == org_alias and
+                jresponse["organization_name"] == org_name and
+                jresponse["organization_type"] == org_type and
+                jresponse["description"] == description and
+                jresponse["organization_url"] == org_url):
+                return None
             else:
-                raise OrganizationException(
-                        "Part already exists for this Organization."
-                    )
-            
-            cur = self._get_block_num()
-            return self.create_organization_transaction(org_id, 
-                        jresponse["organization_alias"], 
-                        jresponse["organization_name"], 
-                        jresponse["organization_type"], 
-                        jresponse["description"], jresponse["organization_url"], 
-                        "AddPart", private_key, public_key, 
-                        jresponse["cur_block"], cur,
-                        str(datetime.datetime.utcnow()), jresponse["pt_id"])
+                cur = self._get_block_num()
+                return self.create_organization_transaction(org_id, org_alias, 
+                            org_name, org_type, description, org_url, "amend", 
+                            private_key, public_key, jresponse["cur_block"], 
+                            cur, str(datetime.datetime.utcnow()), 
+                            jresponse["pt_list"])
+                            
         return None
 
     def list_organization(self):
@@ -161,34 +158,73 @@ class OrganizationBatch:
             except BaseException:
                 return None
     
-    def amend(self, org_id, org_alias, org_name, org_type, description, 
-                    org_url, private_key, public_key):
-        response_bytes = self.retrieve_organization(org_id)
-        
-        if response_bytes != None:
-            response = str(response_bytes)
-            response = response[response.find("{") : response.find("}") + 1]
+    def add_part(self, org_id, pt_id, private_key, 
+                    public_key, deletePart=False):
+        if deletePart:
+            response_bytes = self.retrieve_organization(org_id)
             
-            jresponse = json.loads(response)
-            
-            if (jresponse["organization_alias"] == org_alias and
-                jresponse["organization_name"] == org_name and
-                jresponse["organization_type"] == org_type and
-                jresponse["description"] == description and
-                jresponse["organization_url"] == org_url):
-                return None
-            else:
+            if response_bytes != None:
+                response = str(response_bytes)
+                response = response[response.find("{") : response.find("}") + 1]
+                
+                jresponse = json.loads(response)
+                
+                if len(jresponse["pt_list"]) == 0:
+                    raise OrganizationException("No {} to remove from this {}."\
+                            .format("pt", "Organization")
+                        )
+                        
+                if pt_id not in jresponse["pt_list"]:
+                    raise OrganizationException("No such {} in this {}." \
+                            .format("pt", "Organization")
+                        )
+                
+                jresponse["pt_list"].remove(pt_id)
+                
                 cur = self._get_block_num()
-                return self.create_organization_transaction(org_id, org_alias, 
-                            org_name, org_type, description, org_url, "amend", 
-                            private_key, public_key, jresponse["cur_block"], 
-                            cur, str(datetime.datetime.utcnow()), 
-                            jresponse["pt_id"])
+                return self.create_organization_transaction(org_id, 
+                            jresponse["organization_alias"], 
+                            jresponse["organization_name"], 
+                            jresponse["organization_type"], 
+                            jresponse["description"],
+                            jresponse["organization_url"], 
+                            "AddPart", private_key, public_key, 
+                            jresponse["cur_block"], cur,
+                            str(datetime.datetime.utcnow()),
+                            jresponse["pt_list"])
                             
-        return None
-        
-    def test_org(self, pt_id):
-        print('@192 bat')
+            return None
+        else:
+            response_bytes = self.retrieve_organization(org_id)
+            
+            self._validate_pt_id(pt_id)
+             
+            if response_bytes != None:
+                response = str(response_bytes)
+                response = response[response.find("{") : response.find("}") + 1]
+                
+                jresponse = json.loads(response)
+                
+                if pt_id not in jresponse["pt_list"]:
+                    jresponse["pt_list"].append(pt_id)
+                else:
+                    raise OrganizationException(
+                            "Part already exists for this Organization."
+                        )
+                
+                cur = self._get_block_num()
+                return self.create_organization_transaction(org_id, 
+                            jresponse["organization_alias"], 
+                            jresponse["organization_name"], 
+                            jresponse["organization_type"], 
+                            jresponse["description"],
+                            jresponse["organization_url"], 
+                            "AddPart", private_key, public_key, 
+                            jresponse["cur_block"], cur,
+                            str(datetime.datetime.utcnow()),
+                            jresponse["pt_list"])
+                            
+            return None
 ################################################################################
 #                            PRIVATE FUNCTIONS                                 #
 ################################################################################
@@ -280,7 +316,7 @@ class OrganizationBatch:
             "prev_block"            : str(prev),
             "cur_block"             : str(cur),
             "timestamp"             : str(timestamp),
-            "pt_id"                 : pt_id
+            "pt_list"               : pt_id
         }
         payload = json.dumps(payload).encode()
 

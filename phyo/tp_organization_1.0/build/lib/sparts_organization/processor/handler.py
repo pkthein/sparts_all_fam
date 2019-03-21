@@ -64,7 +64,7 @@ class OrganizationTransactionHandler:
             prev        = payload["prev_block"]
             cur         = payload["cur_block"]
             timestamp   = payload["timestamp"]
-            pt_id       = payload["pt_id"]
+            pt_id       = payload["pt_list"]
             
         except ValueError:
             raise InvalidTransaction("Invalid payload serialization")
@@ -126,7 +126,7 @@ def create_organization(org_id, org_alias, org_name, org_type, description,
                 "prev_block"            : prev, 
                 "cur_block"             : cur,
                 "timestamp"             : timestamp,
-                "pt_id"                 : pt_id
+                "pt_list"               : pt_id
             } 
 
 def validate_transaction(org_id, action):

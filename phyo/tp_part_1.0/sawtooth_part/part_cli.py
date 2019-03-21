@@ -248,6 +248,12 @@ def add_artifact_parser(subparsers, parent_parser):
         'public_key',
         type=str,
         help='Provide User Public Key')
+        
+    parser.add_argument(
+        "-D", "--delete",
+        action="store_true",
+        default=False,
+        help="removes the artifact")
 
 def add_category_parser(subparsers, parent_parser):
     parser = subparsers.add_parser('AddCategory', parents=[parent_parser])
@@ -271,6 +277,12 @@ def add_category_parser(subparsers, parent_parser):
         'public_key',
         type=str,
         help='Provide User Public Key')
+        
+    parser.add_argument(
+        "-D", "--delete",
+        action="store_true",
+        default=False,
+        help="removes the category")
 
 # Provide the UUID of the parent artifact and the UUID of the supplier
 def add_supplier_parser(subparsers, parent_parser):
@@ -295,6 +307,12 @@ def add_supplier_parser(subparsers, parent_parser):
         'public_key',
         type=str,
         help='Provide User Public Key')
+        
+    parser.add_argument(
+        "-D", "--delete",
+        action="store_true",
+        default=False,
+        help="removes the supplier")
 ################################################################################
 #                                   CREATE                                     #
 ################################################################################
@@ -473,43 +491,9 @@ def do_amend(args, config):
     else:
         print(output)
    
-def do_add_category(args, config):
-    pt_id       = args.pt_id
-    category_id = args.category_id
-    private_key = args.private_key
-    public_key  = args.public_key
-   
-    payload = "{}"
-    key = json.loads(payload)
-    key["publickey"] = public_key
-    key["privatekey"] = private_key
-    key["allowedrole"] = [{"role" : "admin"}, {"role" : "member"}]
-    payload = json.dumps(key)
-       
-    headers = {'content-type': 'application/json'}
-    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth", 
-                    data=json.dumps(key),headers=headers)
-    output = response.content.decode("utf-8").strip()
-    statusinfo = json.loads(output)
-       
-    if statusinfo.get('status')and statusinfo.get('message'):
-            
-        status = statusinfo['status']
-        message = statusinfo['message']
-            
-        if status == 'success' and message == 'authorized':
-            b_url = config.get('DEFAULT', 'url')
-            client = PartBatch(base_url=b_url)
-            response = client.add_category(
-                                pt_id, category_id, private_key, public_key
-                            )
-            print_msg(response)
-        else:
-            print(output)
-    else:
-        print(output)
-  
 def do_add_artifact(args, config):
+    deleteArt   = args.delete
+    
     pt_id       = args.pt_id
     artifact_id = args.artifact_id
     private_key = args.private_key
@@ -537,16 +521,58 @@ def do_add_artifact(args, config):
             b_url = config.get('DEFAULT', 'url')
             client = PartBatch(base_url=b_url)
             response = client.add_artifact(
-                                pt_id, artifact_id, private_key, public_key
+                                pt_id, artifact_id, private_key, public_key,
+                                deleteArt
                             )
             print_msg(response)
         else:
             print(output)
     else:
         print(output)
+        
+def do_add_category(args, config):
+    deleteCat   = args.delete
+    
+    pt_id       = args.pt_id
+    category_id = args.category_id
+    private_key = args.private_key
+    public_key  = args.public_key
    
+    payload = "{}"
+    key = json.loads(payload)
+    key["publickey"] = public_key
+    key["privatekey"] = private_key
+    key["allowedrole"] = [{"role" : "admin"}, {"role" : "member"}]
+    payload = json.dumps(key)
+       
+    headers = {'content-type': 'application/json'}
+    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth", 
+                    data=json.dumps(key),headers=headers)
+    output = response.content.decode("utf-8").strip()
+    statusinfo = json.loads(output)
+       
+    if statusinfo.get('status')and statusinfo.get('message'):
+            
+        status = statusinfo['status']
+        message = statusinfo['message']
+            
+        if status == 'success' and message == 'authorized':
+            b_url = config.get('DEFAULT', 'url')
+            client = PartBatch(base_url=b_url)
+            response = client.add_category(
+                                pt_id, category_id, private_key, public_key,
+                                deleteCat
+                            )
+            print_msg(response)
+        else:
+            print(output)
+    else:
+        print(output)      
+
 # add the relationship between parent artifact and supplier
 def do_add_supplier(args, config):
+    deleteSup   = args.delete
+    
     pt_id       = args.pt_id
     supplier_id = args.supplier_id
     private_key = args.private_key
@@ -574,7 +600,8 @@ def do_add_supplier(args, config):
             b_url = config.get('DEFAULT', 'url')
             client = PartBatch(base_url=b_url)
             response = client.add_supplier(
-                                pt_id, supplier_id, private_key, public_key
+                                pt_id, supplier_id, private_key, public_key,
+                                deleteSup
                             )
             print_msg(response)
         else:

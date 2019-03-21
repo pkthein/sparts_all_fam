@@ -65,9 +65,9 @@ class PartTransactionHandler:
             prev        = payload["prev_block"]
             cur         = payload["cur_block"]
             timestamp   = payload["timestamp"]
-            artifact_id = payload["artifact_id"]
-            category_id = payload["category_id"] 
-            supplier_id = payload["supplier_id"]
+            artifact_id = payload["artifact_list"]
+            category_id = payload["category_list"] 
+            supplier_id = payload["supplier_list"]
             
         except ValueError:
             raise InvalidTransaction("Invalid payload serialization")
@@ -134,10 +134,9 @@ def create_part(pt_id, pt_name, checksum, version, alias, licensing, label,
                 "prev_block"    : prev,
                 "cur_block"     : cur,
                 "timestamp"     : timestamp,
-                "artifact_id"   : artifact_id,
-                "category_id"   : category_id,
-                "supplier_id"   : supplier_id 
-                
+                "artifact_list" : artifact_id,
+                "category_list" : category_id,
+                "supplier_list" : supplier_id 
             }
 
 def validate_transaction( pt_id,action):

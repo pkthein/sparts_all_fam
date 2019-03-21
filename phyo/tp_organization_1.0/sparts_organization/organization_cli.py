@@ -226,9 +226,12 @@ def add_part_parser(subparsers, parent_parser):
         'public_key',
         type=str,
         help='Provide User Public Key')
-      
-def add_test_category_parser(subparsers, parent_parser):
-    subparsers.add_parser("test", parents=[parent_parser])
+        
+    parser.add_argument(
+        "-D", "--delete",
+        action="store_true",
+        default=False,
+        help="removes the pt")
 ################################################################################
 #                                   CREATE                                     #
 ################################################################################
@@ -267,8 +270,6 @@ def create_parser(prog_name):
     add_retrieve_parser(subparsers, parent_parser)
     add_part_parser(subparsers, parent_parser)
     add_amend_parser(subparsers, parent_parser)
-    
-    add_test_category_parser(subparsers, parent_parser)
     
     return parser
 ################################################################################
@@ -400,6 +401,8 @@ def do_amend(args, config):
         print(output)
 
 def do_addpart(args, config):
+    deletePart  = args.delete
+    
     org_id      = args.org_id
     pt_id       = args.pt_id
     private_key = args.private_key
@@ -426,19 +429,13 @@ def do_addpart(args, config):
         if status == 'success' and message == 'authorized':
             b_url = config.get('DEFAULT', 'url')
             client = OrganizationBatch(base_url=b_url)
-            response = client.add_part(org_id, pt_id, private_key, public_key)
+            response = client.add_part(org_id, pt_id, private_key, 
+                                public_key, deletePart)
             print_msg(response)
         else:
             print(output)
     else:
         print(output)
-        
-def do_test(args, config):
-    b_url = config.get("DEFAULT", "url")
-  
-    client = OrganizationBatch(base_url=b_url)
-
-    org_test = client.test_org('80000')        
 ################################################################################
 #                                  PRINT                                       #
 ################################################################################   
@@ -493,8 +490,6 @@ def main(prog_name=os.path.basename(sys.argv[0]), args=None):
         do_addpart(args, config)
     elif args.command == 'amend':
         do_amend(args, config)
-    elif args.command == 'test':
-        do_test(args, config)
     else:
         raise OrganizationException("invalid command: {}".format(args.command))
 

@@ -235,6 +235,12 @@ def add_artifact_parser(subparsers, parent_parser):
         'public_key',
         type=str,
         help='Provide User Public Key')
+        
+    parser.add_argument(
+        "-D", "--delete",
+        action="store_true",
+        default=False,
+        help="removes the sub artifact")
     
 def add_uri_to_artifact_parser(subparsers, parent_parser):
     parser = subparsers.add_parser('AddURI', parents=[parent_parser])
@@ -283,6 +289,12 @@ def add_uri_to_artifact_parser(subparsers, parent_parser):
         'public_key',
         type=str,
         help='Provide User Public Key')
+        
+    parser.add_argument(
+        "-D", "--delete",
+        action="store_true",
+        default=False,
+        help="removes the URI")
 ################################################################################
 #                                   CREATE                                     #
 ################################################################################    
@@ -456,6 +468,8 @@ def do_amend(args, config):
         print(output)
 
 def do_add_sub_artifact(args, config):
+    deleteSub       = args.delete
+    
     artifact_id     = args.artifact_id
     sub_artifact_id = args.sub_artifact_id
     path            = args.path
@@ -484,7 +498,7 @@ def do_add_sub_artifact(args, config):
             b_url = config.get('DEFAULT', 'url')
             client = ArtifactBatch(base_url=b_url)
             response = client.add_artifact(private_key, public_key, artifact_id,
-                            sub_artifact_id, path)
+                            sub_artifact_id, path, deleteSub)
             print_msg(response)
         else:
             print(output)
@@ -492,6 +506,8 @@ def do_add_sub_artifact(args, config):
         print(output)
     
 def do_add_uri_to_artifact(args, config):
+    deleteURI       = args.delete
+    
     artifact_id     = args.artifact_id
     version         = args.version
     checksum        = args.checksum
@@ -525,7 +541,7 @@ def do_add_uri_to_artifact(args, config):
             client = ArtifactBatch(base_url=b_url)
             response = client.add_uri(private_key, public_key, artifact_id, 
                                 version, checksum, content_type, size, uri_type,
-                                location)
+                                location, deleteURI)
             print_msg(response)
         else:
             print(output)
