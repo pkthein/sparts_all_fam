@@ -357,7 +357,7 @@ def do_retrieve_artifact(args, config):
     
     b_url = config.get('DEFAULT', 'url')
     client = ArtifactBatch(base_url=b_url)
-    data = client.retrieve_artifact(artifact_id)
+    data = client.retrieve_artifact(artifact_id, all_flag, range_flag)
 
     if data is not None:
         
@@ -386,11 +386,12 @@ def do_create(args, config):
     key = json.loads(payload)
     key["publickey"] = public_key
     key["privatekey"] = private_key
-    key["allowedrole"]=[{"role"  :"admin"} , {"role" : "member"}]
+    key["allowedrole"] = [{"role" : "admin"}, {"role" : "member"}]
     payload = json.dumps(key)
    
     headers = {'content-type': 'application/json'}
-    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth",data=json.dumps(key),headers=headers)
+    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth", 
+                    data=json.dumps(key), headers=headers)
     output = response.content.decode("utf-8").strip()
     statusinfo = json.loads(output)
        
@@ -427,11 +428,12 @@ def do_amend(args, config):
     key = json.loads(payload)
     key["publickey"] = public_key
     key["privatekey"] = private_key
-    key["allowedrole"]=[{"role"  :"admin"} , {"role" : "member"}]
+    key["allowedrole"] = [{"role" : "admin"}, {"role" : "member"}]
     payload = json.dumps(key)
    
     headers = {'content-type': 'application/json'}
-    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth",data=json.dumps(key),headers=headers)
+    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth", 
+                    data=json.dumps(key), headers=headers)
     output = response.content.decode("utf-8").strip()
     statusinfo = json.loads(output)
        
@@ -452,33 +454,24 @@ def do_amend(args, config):
             print(output)
     else:
         print(output)
-     
-def do_add_uri_to_artifact(args, config):
-    artifact_id = args.artifact_id
-    version = args.version
-    checksum = args.checksum
-    content_type = args.content_type
-    size = args.size
-    uri_type = args.uri_type
-    location = args.location 
-    private_key = args.private_key
-    public_key = args.public_key 
 
-    # #
-    # context = create_context('secp256k1')
-    # private_key = context.new_random_private_key()
-    # public_key = context.get_public_key(private_key)
-    # #
+def do_add_sub_artifact(args, config):
+    artifact_id     = args.artifact_id
+    sub_artifact_id = args.sub_artifact_id
+    path            = args.path
+    private_key     = args.private_key
+    public_key      = args.public_key 
    
     payload = "{}"
     key = json.loads(payload)
     key["publickey"] = public_key
     key["privatekey"] = private_key
-    key["allowedrole"]=[{"role":"admin"},{"role":"member"}]
+    key["allowedrole"] = [{"role" : "admin"}, {"role" : "member"}]
     payload = json.dumps(key)
        
     headers = {'content-type': 'application/json'}
-    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth",data=json.dumps(key),headers=headers)
+    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth", 
+                    data=json.dumps(key), headers=headers)
     output = response.content.decode("utf-8").strip()
     statusinfo = json.loads(output)
        
@@ -490,20 +483,25 @@ def do_add_uri_to_artifact(args, config):
         if status == 'success' and message == 'authorized':
             b_url = config.get('DEFAULT', 'url')
             client = ArtifactBatch(base_url=b_url)
-            response = client.add_uri(private_key,public_key,artifact_id,version,checksum,content_type,size,uri_type,location)
+            response = client.add_artifact(private_key, public_key, artifact_id,
+                            sub_artifact_id, path)
             print_msg(response)
         else:
             print(output)
     else:
-        print(output)   
+        print(output)
+    
+def do_add_uri_to_artifact(args, config):
+    artifact_id     = args.artifact_id
+    version         = args.version
+    checksum        = args.checksum
+    content_type    = args.content_type
+    size            = args.size
+    uri_type        = args.uri_type
+    location        = args.location 
+    private_key     = args.private_key
+    public_key      = args.public_key 
 
-def do_add_sub_artifact(args, config):
-    artifact_id = args.artifact_id
-    sub_artifact_id = args.sub_artifact_id
-    path = args.path
-    private_key = args.private_key
-    public_key = args.public_key 
-   
     payload = "{}"
     key = json.loads(payload)
     key["publickey"] = public_key
@@ -525,13 +523,14 @@ def do_add_sub_artifact(args, config):
         if status == 'success' and message == 'authorized':
             b_url = config.get('DEFAULT', 'url')
             client = ArtifactBatch(base_url=b_url)
-            response = client.add_artifact(private_key, public_key, artifact_id,
-                            sub_artifact_id, path)
+            response = client.add_uri(private_key, public_key, artifact_id, 
+                                version, checksum, content_type, size, uri_type,
+                                location)
             print_msg(response)
         else:
             print(output)
     else:
-        print(output)
+        print(output)   
 ################################################################################
 #                                  PRINT                                       #
 ################################################################################

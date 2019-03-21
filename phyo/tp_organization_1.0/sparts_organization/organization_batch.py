@@ -114,8 +114,6 @@ class OrganizationBatch:
             retVal = []
             
             response = self.retrieve_organization(org_id).decode()
-            
-            response = response[response.find("{"):]
             response = json.loads(response)
             
             if range_flag != None:

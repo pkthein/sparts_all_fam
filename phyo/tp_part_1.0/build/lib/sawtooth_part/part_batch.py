@@ -199,9 +199,8 @@ class PartBatch:
         if all_flag:
             
             retVal = []
-            response = self.retrieve_part(pt_id).decode()
             
-            response = response[response.find("{"):]
+            response = self.retrieve_part(pt_id).decode()
             response = json.loads(response)
             
             if range_flag != None:

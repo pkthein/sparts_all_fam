@@ -18,7 +18,6 @@
 import hashlib
 import logging
 import json
-from datetime import datetime
 from collections import OrderedDict
 from sawtooth_sdk.processor.exceptions import InvalidTransaction
 from sawtooth_sdk.processor.exceptions import InternalError
@@ -66,35 +65,23 @@ class ArtifactTransactionHandler:
             prev                    = payload["prev_block"]
             cur                     = payload["cur_block"]
             timestamp               = payload["timestamp"]
-            
-            # artifact_list
-            # sub_artifact_id         = payload["sub_artifact_id"]
-            # path                    = payload["path"]
             artifact_list           = payload["artifact_list"]
-            
-            # uri_list
-            # artifact_version        = payload["artifact_version"]
-            # artifact_checksum_uri   = payload["artifact_checksum_uri"]
-            # content_type            = payload["content_type"]
-            # size                    = payload["size"]
-            # uri_type                = payload["uri_type"]
-            # location                = payload["location"]
             uri_list                = payload["uri_list"]
-            
             
         except ValueError:
             raise InvalidTransaction("Invalid payload serialization")
 
         validate_transaction(artifact_id, action)
                
-        data_address = make_artifact_address(self._namespace_prefix, artifact_id)
+        data_address = make_artifact_address(self._namespace_prefix, 
+                                                    artifact_id)
           
         state_entries = context.get_state([data_address])
        
         if len(state_entries) != 0:
             try:
                 
-                stored_artifact = state_entries[0].data.decode()
+                stored_artifact = json.loads(state_entries[0].data.decode())
                 stored_artifact_id = stored_artifact["artifact_id"]
                              
             except ValueError:
@@ -115,9 +102,8 @@ class ArtifactTransactionHandler:
         elif action == "amend" and stored_artifact_id is not None:
             artifact = create_artifact(artifact_id, artifact_alias, 
                             artifact_name, artifact_type, artifact_checksum, 
-                            artifact_label, artifact_openchain, 
-                            prev, cur, timestamp, 
-                            artifact_list, uri_list)
+                            artifact_label, artifact_openchain,
+                            prev, cur, timestamp, artifact_list, uri_list)
         elif action == "AddArtifact" or action == "AddURI":
             if stored_artifact_id is None:
                 raise InvalidTransaction(
@@ -133,22 +119,6 @@ class ArtifactTransactionHandler:
         addresses = context.set_state({data_address:data})
        
         return addresses
-        
-# def add_artifact(uuid,parent_artifact,path):
-    
-#     artifact_list = parent_artifact['artifact_list']
-#     artifact_dic = {'artifact_id': uuid,'path':path}
-#     artifact_list.append(artifact_dic)
-#     parent_artifact['artifact_list'] = artifact_list  
-#     return parent_artifact     
-
-# def add_URI(artifact,version,artifact_checksum,content_type,size,uri_type,location):
-   
-#     URI_list = artifact['uri_list']
-#     URI_dic = {'version': version,'checksum': artifact_checksum,'content_type': content_type,'size':size,'uri_type':uri_type,'location':location}      
-#     URI_list.append(URI_dic)
-#     artifact['uri_list'] = URI_list
-#     return artifact
 
 def create_artifact(artifact_id, artifact_alias, artifact_name, artifact_type, 
                     artifact_checksum, artifact_label, artifact_openchain, 
@@ -167,7 +137,6 @@ def create_artifact(artifact_id, artifact_alias, artifact_name, artifact_type,
                 "artifact_list"         : artifact_list,
                 "uri_list"              : uri_list
             }
-
 
 def validate_transaction( artifact_id, action):
     if not artifact_id:

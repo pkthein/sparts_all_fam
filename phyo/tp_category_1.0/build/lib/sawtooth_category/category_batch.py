@@ -79,9 +79,8 @@ class CategoryBatch:
         if all_flag:
             
             retVal = []
-            response = self.retreive_category(category_id).decode()
             
-            response = response[response.find("{"):]
+            response = self.retreive_category(category_id).decode()
             response = json.loads(response)
             
             if range_flag != None:
