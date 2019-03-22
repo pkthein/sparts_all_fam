@@ -6,6 +6,7 @@ services:
         #     context: .
         #     dockerfile: sParts.Dockerfile
         image: phyohtut/sparts-test:part
+        # image: sameerfarooq/sparts-test:latest
         environment:
             - NAME_=phyo
             - EMAIL_=phyo.htut@windriver.com
@@ -14,6 +15,8 @@ services:
         tty: true
         volumes:
             - ./phyo:/project/src
+        
+        # RUNNING FROM phyohtut/sparts-test:part
         entrypoint: "bash -c \"\
             cd /project/src/tp_artifact_1.0 && \
             python3 setup.py install && \
@@ -34,3 +37,28 @@ services:
             echo '====================READY TO EXECUTE THE BASH====================' && \
             tail -f /dev/null \
             \""
+        
+        # RUNNING FROM sameerfarooq/sparts-test:latest
+        # entrypoint: "bash -c \"\
+        #     apt-get update && \
+        #     apt-get install -y curl && \
+        #     rm -rf /var/lib/apt/lists/* && \
+        #     cd /project/src/tp_artifact_1.0 && \
+        #     python3 setup.py install && \
+        #     cd /project/src/tp_part_1.0 && \
+        #     python3 setup.py install && \
+        #     cd /project/src/tp_category_1.0 && \
+        #     python3 setup.py install && \
+        #     cd /project/src/tp_organization_1.0 && \
+        #     python3 setup.py install && \
+        #     cd /project/ledger-startup-scripts && \
+        #     ./sparts_ledger.sh && \
+        #     cd /project/src && \
+        #     curl http://localhost:818/ledger/api/v1/keys > keys.txt && echo '' >> keys.txt && \
+        #     echo '====================READY TO EXECUTE THE BASH====================' && \
+        #     echo 'docker exec -it phyo bash' && \
+        #     python3 lazy_user.py && \
+        #     rm -rf keys.txt && \
+        #     echo '====================READY TO EXECUTE THE BASH====================' && \
+        #     tail -f /dev/null \
+        #     \""

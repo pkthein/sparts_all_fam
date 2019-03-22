@@ -1,5 +1,4 @@
 # FROM sameerfarooq/sparts-test:latest
-FROM phyohtut/sparts-test:part
 
 # ARG DEBIAN_FRONTEND=noninteractive
 # FILES YOU WOULD LIKE TO COPY INTO THE IMAGE GOES HERE
