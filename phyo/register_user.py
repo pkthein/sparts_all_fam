@@ -3,16 +3,12 @@
 import os
 
 file = open('keys.txt', 'r')
-displace = ['{', '}', ':', '"']
 
 for line in file:
 	os.system('echo ' + line)
-	for char in displace:
-		line = line.replace(char, '')
 	line = line.split()
-
-pri_key = line[1][:-1]
-pub_key = line[-1]	
+	pri_key = line[line.index('{"private_key":') + 1][1:-2]
+	pub_key = line[line.index('"public_key":') + 1][1:-3]	
 
 user = os.environ['NAME_']
 email = os.environ['EMAIL_']

@@ -14,10 +14,10 @@ services:
         container_name: phyo
         expose:
             - '818'
-            - '80'
+            # - '80'
         ports:
             - '818:818'
-            - '80:80'
+            # - '80:80'
         tty: true
         volumes:
             - ./phyo:/project/src

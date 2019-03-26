@@ -14,6 +14,7 @@
 # ------------------------------------------------------------------------------
 
 #!flask/bin/python
+import os
 import subprocess, shlex, re
 from flask import Flask, jsonify, make_response, request, json
 # import sawtooth_signing.secp256k1_signer as signing
@@ -205,9 +206,9 @@ def create_category():
             return 'Invalid JSON'
         uuid = request.json['category']['uuid']
         name = request.json['category']['name']
-        name = format_str(name) 
+        # name = format_str(name)
         description = request.json['category']['description']
-        description = format_str(description)
+        # description = format_str(description)
         public_key = request.json['public_key']
         private_key = request.json['private_key']
         cmd = "category create " + uuid + " " + str(name) + " " + str(description) + " " + private_key + " "+ public_key
@@ -225,19 +226,16 @@ def create_category():
 
 @app.route('/ledger/api/v1/categories/amend', methods=['POST'])
 def amend_category():
-    print(request.json)
     try:
-        if not request.json  or not 'private_key' in request.json or not 'public_key' in request.json or:
+        if not request.json  or not 'private_key' in request.json or not 'public_key' in request.json:
             return 'Invalid JSON'
         uuid = request.json['category']['uuid']
-        uuid = format_str(uuid)
         
-        name = "null" if "name" not in request.json else request.json['category']['name']
+        name = "null" if "name" not in request.json['category'] else request.json['category']['name']
         name = format_str(name) 
         
-        description = "null" if "description" not in request.json else request.json['category']['description']
+        description = "null" if "description" not in request.json['category'] else request.json['category']['description']
         description = format_str(description)
-        
         public_key = request.json['public_key']
         private_key = request.json['private_key']
         cmd = "category amend " + uuid + " " + str(name) + " " + str(description) + " " + private_key + " "+ public_key
