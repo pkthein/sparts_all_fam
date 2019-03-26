@@ -68,6 +68,19 @@ class ArtifactBatch:
             
             jresponse = json.loads(response_bytes.decode())
             
+            if artifact_alias == "null":
+                artifact_alias = jresponse["artifact_alias"]
+            if artifact_name == "null":
+                artifact_name = jresponse["artifact_name"]
+            if artifact_type == "null":
+                artifact_type = jresponse["artifact_type"]
+            if artifact_checksum == "null":
+                artifact_checksum = jresponse["artifact_checksum"]
+            if artifact_label == "null":
+                artifact_label = jresponse["artifact_label"]
+            if artifact_openchain == "null":
+                artifact_openchain = jresponse["artifact_openchain"]
+            
             if (jresponse["artifact_alias"] == artifact_alias and
                 jresponse["artifact_name"] == artifact_name and
                 jresponse["artifact_type"] == artifact_type and

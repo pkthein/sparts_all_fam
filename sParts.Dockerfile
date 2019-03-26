@@ -21,6 +21,8 @@
 # COPY ./phyo/tp_part_1.0/sawtooth_part/part_batch.py /project/src/tp_part_1.0/sawtooth_part/part_batch.py
 # COPY ./phyo/tp_part_1.0/sawtooth_part/processor/handler.py /project/src/tp_part_1.0/sawtooth_part/processor/handler.py
 
+# COPY ./api/sparts-api.py /project/sparts-api.py
+
 # RUN apt-get update && \
 #     apt-get install -y curl && \
 #     rm -rf /var/lib/apt/lists/* && \

@@ -135,6 +135,11 @@ class CategoryBatch:
             
             jresponse = json.loads(response_bytes.decode())
             
+            if category_name == "null":
+                category_name = jresponse["category_name"]
+            if description == "null":
+                description = jresponse["description"]
+            
             if jresponse["category_name"] == category_name and \
                 jresponse["description"] == description:
                 return None

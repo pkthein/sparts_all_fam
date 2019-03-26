@@ -12,10 +12,16 @@ services:
             - EMAIL_=phyo.htut@windriver.com
             - ROLE_=admin
         container_name: phyo
+        expose:
+            - '818'
+            - '80'
+        ports:
+            - '818:818'
+            - '80:80'
         tty: true
         volumes:
             - ./phyo:/project/src
-        
+            - ./api/sparts-api.py:/project/sparts-api.py
         # RUNNING FROM phyohtut/sparts-test:part
         entrypoint: "bash -c \"\
             cd /project/src/tp_artifact_1.0 && \
@@ -29,7 +35,7 @@ services:
             cd /project/ledger-startup-scripts && \
             ./sparts_ledger.sh && \
             cd /project/src && \
-            curl http://localhost:818/ledger/api/v1/keys > keys.txt && echo '' >> keys.txt && \
+            curl http://127.0.0.1:818/ledger/api/v1/keys > keys.txt && echo '' >> keys.txt && \
             echo '====================READY TO EXECUTE THE BASH====================' && \
             echo 'docker exec -it phyo bash' && \
             python3 lazy_user.py && \

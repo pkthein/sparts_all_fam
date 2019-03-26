@@ -70,6 +70,17 @@ class OrganizationBatch:
             
             jresponse = json.loads(response_bytes.decode())
             
+            if org_alias == "null":
+                org_alias = jresponse["organization_alias"]
+            if org_name == "null":
+                org_name = jresponse["organization_name"]
+            if  org_type == "null":
+                org_type = jresponse["organization_type"]
+            if description == "null":
+                description = jresponse["description"]
+            if org_url == "null":
+                org_url = jresponse["organization_url"]
+            
             if (jresponse["organization_alias"] == org_alias and
                 jresponse["organization_name"] == org_name and
                 jresponse["organization_type"] == org_type and

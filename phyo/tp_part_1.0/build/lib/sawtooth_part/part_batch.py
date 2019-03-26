@@ -68,6 +68,21 @@ class PartBatch:
             
             jresponse = json.loads(response_bytes.decode())
             
+            if pt_name == "null":
+                pt_name = jresponse["pt_name"]
+            if checksum == "null":
+                checksum = jresponse["pt_checksum"]
+            if version == "null":
+                version = jresponse["pt_version"]
+            if alias == "null":
+                alias = jresponse["pt_alias"]
+            if licensing == "null":
+                licensing = jresponse["pt_licensing"]
+            if label == "null":
+                label = jresponse["pt_label"]
+            if description == "null":
+                description = jresponse["description"]
+
             if (jresponse["pt_name"]        == pt_name      and
                 jresponse["pt_checksum"]    == checksum     and
                 jresponse["pt_version"]     == version      and

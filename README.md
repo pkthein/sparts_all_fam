@@ -17,6 +17,8 @@
         </ul>    
     </ul>
 
+#
+
 <h1 id='head'>Changes to SParts Family</h1>
 
 **_Note: all the changes that are made here are on the 'kernal' side of the sParts and no changes has been made on the 'application' side._**
@@ -44,6 +46,8 @@ to
 ```
 
 **_in the terminal. As of now, the image will be named 'phyohtut/sparts-test:part' since that is what is stored in line 8 of 'docker-compose.yaml' file._**
+
+##
 
 <h2 id='general_change'>General Changes</h2>
 
@@ -112,6 +116,8 @@ Note:
 
 * The object that the user is trying to call this cmd on must exists or the cmd will throw an error.
 * If the user does not follow the range format as show above, the cmd will not work properly.
+
+## 
 
 <h2 id='specific_change'>Specific Changes</h2>
 
