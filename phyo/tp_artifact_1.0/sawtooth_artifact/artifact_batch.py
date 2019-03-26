@@ -69,24 +69,24 @@ class ArtifactBatch:
             jresponse = json.loads(response_bytes.decode())
             
             if artifact_alias == "null":
-                artifact_alias = jresponse["artifact_alias"]
+                artifact_alias = jresponse["alias"]
             if artifact_name == "null":
-                artifact_name = jresponse["artifact_name"]
+                artifact_name = jresponse["name"]
             if artifact_type == "null":
-                artifact_type = jresponse["artifact_type"]
+                artifact_type = jresponse["type"]
             if artifact_checksum == "null":
-                artifact_checksum = jresponse["artifact_checksum"]
+                artifact_checksum = jresponse["checksum"]
             if artifact_label == "null":
-                artifact_label = jresponse["artifact_label"]
+                artifact_label = jresponse["label"]
             if artifact_openchain == "null":
-                artifact_openchain = jresponse["artifact_openchain"]
+                artifact_openchain = jresponse["openchain"]
             
-            if (jresponse["artifact_alias"] == artifact_alias and
-                jresponse["artifact_name"] == artifact_name and
-                jresponse["artifact_type"] == artifact_type and
-                jresponse["artifact_checksum"] == artifact_checksum and
-                jresponse["artifact_label"] == artifact_label and
-                jresponse["artifact_openchain"] == artifact_openchain) :
+            if (jresponse["alias"] == artifact_alias and
+                jresponse["name"] == artifact_name and
+                jresponse["type"] == artifact_type and
+                jresponse["checksum"] == artifact_checksum and
+                jresponse["label"] == artifact_label and
+                jresponse["openchain"] == artifact_openchain) :
                 return None
             else:
                 cur = self._get_block_num()
@@ -184,8 +184,8 @@ class ArtifactBatch:
                         )
                         
                 art_dict = {
-                    "artifact_id"   : sub_artifact_id,
-                    "artifact_path" : path
+                    "uuid"   : sub_artifact_id,
+                    "path" : path
                 }
                 
                 if art_dict not in jresponse["artifact_list"]:
@@ -197,12 +197,12 @@ class ArtifactBatch:
                 
                 cur = self._get_block_num()
                 return self.artifact_transaction(private_key, public_key,
-                            artifact_id, jresponse["artifact_alias"],
-                            jresponse["artifact_name"],
-                            jresponse["artifact_type"],
-                            jresponse["artifact_checksum"],
-                            jresponse["artifact_label"],
-                            jresponse["artifact_openchain"],
+                            artifact_id, jresponse["alias"],
+                            jresponse["name"],
+                            jresponse["type"],
+                            jresponse["checksum"],
+                            jresponse["label"],
+                            jresponse["openchain"],
                             jresponse["cur_block"], cur,
                             str(datetime.datetime.utcnow()), "AddArtifact", 
                             jresponse["artifact_list"], jresponse["uri_list"])
@@ -218,15 +218,15 @@ class ArtifactBatch:
                 jresponse = json.loads(response_bytes.decode())
                 
                 art_dict = {
-                    "artifact_id"   : sub_artifact_id,
-                    "artifact_path" : path
+                    "uuid"   : sub_artifact_id,
+                    "path" : path
                 }
                 
                 if len(jresponse["artifact_list"]) != 0:
                     
                     # no dup art_id allowed in art_list
                     # for eachDictionary in jresponse["artifact_list"]:
-                    #     if eachDictionary["artifact_id"] == sub_artifact_id:
+                    #     if eachDictionary["uuid"] == sub_artifact_id:
                     #         raise ArtifactException(
                     #                 "{} already exists for this {}.".format(
                     #                         "Sub-Artifact", "Artifact"
@@ -244,12 +244,12 @@ class ArtifactBatch:
                     
                 cur = self._get_block_num()
                 return self.artifact_transaction(private_key, public_key,
-                            artifact_id, jresponse["artifact_alias"],
-                            jresponse["artifact_name"],
-                            jresponse["artifact_type"],
-                            jresponse["artifact_checksum"],
-                            jresponse["artifact_label"],
-                            jresponse["artifact_openchain"],
+                            artifact_id, jresponse["alias"],
+                            jresponse["name"],
+                            jresponse["type"],
+                            jresponse["checksum"],
+                            jresponse["label"],
+                            jresponse["openchain"],
                             jresponse["cur_block"], cur,
                             str(datetime.datetime.utcnow()), "AddArtifact", 
                             jresponse["artifact_list"], jresponse["uri_list"])
@@ -271,11 +271,11 @@ class ArtifactBatch:
                         )
                 
                 uri_dict = {
-                    "uri_version"       : version,
-                    "uri_content_type"  : content_type,
-                    "uri_size"          : size,
-                    "uri_type"          : uri_type,
-                    "uri_location"      : location
+                    "version"       : version,
+                    "content_type"  : content_type,
+                    "size"          : size,
+                    "uri_type"      : uri_type,
+                    "location"      : location
                 }
                 
                 if uri_dict not in jresponse["uri_list"]:
@@ -287,12 +287,12 @@ class ArtifactBatch:
                 
                 cur = self._get_block_num()
                 return self.artifact_transaction(private_key, public_key,
-                            artifact_id, jresponse["artifact_alias"],
-                            jresponse["artifact_name"],
-                            jresponse["artifact_type"],
-                            jresponse["artifact_checksum"],
-                            jresponse["artifact_label"],
-                            jresponse["artifact_openchain"],
+                            artifact_id, jresponse["alias"],
+                            jresponse["name"],
+                            jresponse["type"],
+                            jresponse["checksum"],
+                            jresponse["label"],
+                            jresponse["openchain"],
                             jresponse["cur_block"], cur,
                             str(datetime.datetime.utcnow()), "AddArtifact", 
                             jresponse["artifact_list"], jresponse["uri_list"])
@@ -308,11 +308,11 @@ class ArtifactBatch:
                 jresponse = json.loads(response_bytes.decode())
                 
                 uri_dict = {
-                    "uri_version"       : version,
-                    "uri_content_type"  : content_type,
-                    "uri_size"          : size,
-                    "uri_type"          : uri_type,
-                    "uri_location"      : location
+                    "version"       : version,
+                    "content_type"  : content_type,
+                    "size"          : size,
+                    "uri_type"      : uri_type,
+                    "location"      : location
                 }
                 
                 if len(jresponse["uri_list"]) != 0:
@@ -326,12 +326,12 @@ class ArtifactBatch:
                 
                 cur = self._get_block_num()
                 return self.artifact_transaction(private_key, public_key,
-                            artifact_id, jresponse["artifact_alias"],
-                            jresponse["artifact_name"],
-                            jresponse["artifact_type"],
-                            jresponse["artifact_checksum"],
-                            jresponse["artifact_label"],
-                            jresponse["artifact_openchain"],
+                            artifact_id, jresponse["alias"],
+                            jresponse["name"],
+                            jresponse["type"],
+                            jresponse["checksum"],
+                            jresponse["label"],
+                            jresponse["openchain"],
                             jresponse["cur_block"], cur,
                             str(datetime.datetime.utcnow()), "AddURI", 
                             jresponse["artifact_list"], jresponse["uri_list"])
@@ -423,19 +423,19 @@ class ArtifactBatch:
         self._private_key = private_key
         
         payload = {
-            "artifact_id"           : str(artifact_id),
-            "artifact_alias"        : str(artifact_alias),
-            "artifact_name"         : str(artifact_name),
-            "artifact_type"         : str(artifact_type),
-            "artifact_checksum"     : str(artifact_checksum),
-            "artifact_label"        : str(artifact_label),
-            "artifact_openchain"    : str(artifact_openchain),
-            "action"                : str(action),
-            "prev_block"            : str(prev),
-            "cur_block"             : str(cur),
-            "timestamp"             : str(timestamp),
-            "artifact_list"         : artifact_list,
-            "uri_list"              : uri_list
+            "uuid"          : str(artifact_id),
+            "alias"         : str(artifact_alias),
+            "name"          : str(artifact_name),
+            "type"          : str(artifact_type),
+            "checksum"      : str(artifact_checksum),
+            "label"         : str(artifact_label),
+            "openchain"     : str(artifact_openchain),
+            "action"        : str(action),
+            "prev_block"    : str(prev),
+            "cur_block"     : str(cur),
+            "timestamp"     : str(timestamp),
+            "artifact_list" : artifact_list,
+            "uri_list"      : uri_list
         }
         payload = json.dumps(payload).encode()
         

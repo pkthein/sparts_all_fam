@@ -54,12 +54,12 @@ class OrganizationTransactionHandler:
         
         try:
             payload = json.loads(transaction.payload.decode())
-            org_id      = payload["organization_id"]
-            org_alias   = payload["organization_alias"]
-            org_name    = payload["organization_name"]
-            org_type    = payload["organization_type"]
+            org_id      = payload["uuid"]
+            org_alias   = payload["alias"]
+            org_name    = payload["name"]
+            org_type    = payload["type"]
             description = payload["description"]
-            org_url     = payload["organization_url"]
+            org_url     = payload["url"]
             action      = payload["action"]
             prev        = payload["prev_block"]
             cur         = payload["cur_block"]
@@ -79,7 +79,7 @@ class OrganizationTransactionHandler:
             try:
 
                 stored_organization = json.loads(state_entries[0].data.decode())
-                stored_organization_id = stored_organization['organization_id']
+                stored_organization_id = stored_organization["uuid"]
                 
             except ValueError:
                 raise InternalError("Failed to deserialize data.")
@@ -117,16 +117,16 @@ def create_organization(org_id, org_alias, org_name, org_type, description,
                         org_url, prev, cur, timestamp, pt_id=[]):
     
     return {
-                "organization_id"       : org_id, 
-                "organization_alias"    : org_alias, 
-                "organization_name"     : org_name, 
-                "organization_type"     : org_type, 
-                "description"           : description, 
-                "organization_url"      : org_url,
-                "prev_block"            : prev, 
-                "cur_block"             : cur,
-                "timestamp"             : timestamp,
-                "pt_list"               : pt_id
+                "uuid"          : org_id, 
+                "alias"         : org_alias, 
+                "name"          : org_name, 
+                "type"          : org_type, 
+                "description"   : description, 
+                "url"           : org_url,
+                "prev_block"    : prev, 
+                "cur_block"     : cur,
+                "timestamp"     : timestamp,
+                "pt_list"       : pt_id
             } 
 
 def validate_transaction(org_id, action):

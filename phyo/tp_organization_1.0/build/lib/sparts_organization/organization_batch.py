@@ -71,21 +71,21 @@ class OrganizationBatch:
             jresponse = json.loads(response_bytes.decode())
             
             if org_alias == "null":
-                org_alias = jresponse["organization_alias"]
+                org_alias = jresponse["alias"]
             if org_name == "null":
-                org_name = jresponse["organization_name"]
+                org_name = jresponse["name"]
             if  org_type == "null":
-                org_type = jresponse["organization_type"]
+                org_type = jresponse["type"]
             if description == "null":
                 description = jresponse["description"]
             if org_url == "null":
-                org_url = jresponse["organization_url"]
+                org_url = jresponse["url"]
             
-            if (jresponse["organization_alias"] == org_alias and
-                jresponse["organization_name"] == org_name and
-                jresponse["organization_type"] == org_type and
+            if (jresponse["alias"] == org_alias and
+                jresponse["name"] == org_name and
+                jresponse["type"] == org_type and
                 jresponse["description"] == description and
-                jresponse["organization_url"] == org_url):
+                jresponse["url"] == org_url):
                 return None
             else:
                 cur = self._get_block_num()
@@ -190,11 +190,11 @@ class OrganizationBatch:
                 
                 cur = self._get_block_num()
                 return self.create_organization_transaction(org_id, 
-                            jresponse["organization_alias"], 
-                            jresponse["organization_name"], 
-                            jresponse["organization_type"], 
+                            jresponse["alias"], 
+                            jresponse["name"], 
+                            jresponse["type"], 
                             jresponse["description"],
-                            jresponse["organization_url"], 
+                            jresponse["url"], 
                             "AddPart", private_key, public_key, 
                             jresponse["cur_block"], cur,
                             str(datetime.datetime.utcnow()),
@@ -219,11 +219,11 @@ class OrganizationBatch:
                 
                 cur = self._get_block_num()
                 return self.create_organization_transaction(org_id, 
-                            jresponse["organization_alias"], 
-                            jresponse["organization_name"], 
-                            jresponse["organization_type"], 
+                            jresponse["alias"], 
+                            jresponse["name"], 
+                            jresponse["type"], 
                             jresponse["description"],
-                            jresponse["organization_url"], 
+                            jresponse["url"], 
                             "AddPart", private_key, public_key, 
                             jresponse["cur_block"], cur,
                             str(datetime.datetime.utcnow()),
@@ -311,17 +311,17 @@ class OrganizationBatch:
         self._private_key = private_key
         
         payload  = {
-            "organization_id"       : str(org_id),
-            "organization_alias"    : str(org_alias),
-            "organization_name"     : str(org_name),
-            "organization_type"     : str(org_type),
-            "description"           : str(description),
-            "organization_url"      : str(org_url),
-            "action"                : str(action),
-            "prev_block"            : str(prev),
-            "cur_block"             : str(cur),
-            "timestamp"             : str(timestamp),
-            "pt_list"               : pt_id
+            "uuid"          : str(org_id),
+            "alias"         : str(org_alias),
+            "name"          : str(org_name),
+            "type"          : str(org_type),
+            "description"   : str(description),
+            "url"           : str(org_url),
+            "action"        : str(action),
+            "prev_block"    : str(prev),
+            "cur_block"     : str(cur),
+            "timestamp"     : str(timestamp),
+            "pt_list"       : pt_id
         }
         payload = json.dumps(payload).encode()
 

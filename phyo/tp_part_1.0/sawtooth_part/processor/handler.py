@@ -53,13 +53,13 @@ class PartTransactionHandler:
         try:
             # The payload is csv utf-8 encoded string
             payload = json.loads(transaction.payload.decode())
-            pt_id       = payload["pt_id"]
-            pt_name     = payload["pt_name"]
-            checksum    = payload["pt_checksum"]
-            version     = payload["pt_version"]
-            alias       = payload["pt_alias"]
-            licensing   = payload["pt_licensing"]
-            label       = payload["pt_label"]
+            pt_id       = payload["uuid"]
+            pt_name     = payload["name"]
+            checksum    = payload["checksum"]
+            version     = payload["version"]
+            alias       = payload["alias"]
+            licensing   = payload["licensing"]
+            label       = payload["label"]
             description = payload["description"]
             action      = payload["action"]
             prev        = payload["prev_block"]
@@ -72,7 +72,7 @@ class PartTransactionHandler:
         except ValueError:
             raise InvalidTransaction("Invalid payload serialization")
         
-        validate_transaction( pt_id,action)  
+        validate_transaction(pt_id, action)  
              
         data_address = make_part_address(self._namespace_prefix, pt_id)
         
@@ -82,7 +82,7 @@ class PartTransactionHandler:
             try:
 
                 stored_pt = json.loads(state_entries[0].data.decode())
-                stored_pt_id = stored_pt["pt_id"]
+                stored_pt_id = stored_pt["uuid"]
                     
             except ValueError:
                 raise InternalError("Failed to deserialize data.")
@@ -123,13 +123,13 @@ def create_part(pt_id, pt_name, checksum, version, alias, licensing, label,
                 description, prev, cur, timestamp, artifact_id=[], 
                 category_id=[], supplier_id=[]):
     return {
-                "pt_id"         : pt_id,
-                "pt_name"       : pt_name,
-                "pt_checksum"   : checksum, 
-                "pt_version"    : version, 
-                "pt_alias"      : alias, 
-                "pt_licensing"  : licensing, 
-                "pt_label"      : label, 
+                "uuid"          : pt_id,
+                "name"          : pt_name,
+                "checksum"      : checksum, 
+                "version"       : version, 
+                "alias"         : alias, 
+                "licensing"     : licensing, 
+                "label"         : label, 
                 "description"   : description,
                 "prev_block"    : prev,
                 "cur_block"     : cur,
@@ -139,7 +139,7 @@ def create_part(pt_id, pt_name, checksum, version, alias, licensing, label,
                 "supplier_list" : supplier_id 
             }
 
-def validate_transaction( pt_id,action):
+def validate_transaction(pt_id, action):
     if not pt_id:
         raise InvalidTransaction('Part ID is required')
  

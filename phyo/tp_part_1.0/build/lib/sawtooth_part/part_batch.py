@@ -69,26 +69,26 @@ class PartBatch:
             jresponse = json.loads(response_bytes.decode())
             
             if pt_name == "null":
-                pt_name = jresponse["pt_name"]
+                pt_name = jresponse["name"]
             if checksum == "null":
-                checksum = jresponse["pt_checksum"]
+                checksum = jresponse["checksum"]
             if version == "null":
-                version = jresponse["pt_version"]
+                version = jresponse["version"]
             if alias == "null":
-                alias = jresponse["pt_alias"]
+                alias = jresponse["alias"]
             if licensing == "null":
-                licensing = jresponse["pt_licensing"]
+                licensing = jresponse["licensing"]
             if label == "null":
-                label = jresponse["pt_label"]
+                label = jresponse["label"]
             if description == "null":
                 description = jresponse["description"]
 
-            if (jresponse["pt_name"]        == pt_name      and
-                jresponse["pt_checksum"]    == checksum     and
-                jresponse["pt_version"]     == version      and
-                jresponse["pt_alias"]       == alias        and
-                jresponse["pt_licensing"]   == licensing    and
-                jresponse["pt_label"]       == label        and
+            if (jresponse["name"]        == pt_name      and
+                jresponse["checksum"]    == checksum     and
+                jresponse["version"]     == version      and
+                jresponse["alias"]       == alias        and
+                jresponse["licensing"]   == licensing    and
+                jresponse["label"]       == label        and
                 jresponse["description"]    == description):
                 return None
             else:
@@ -126,10 +126,10 @@ class PartBatch:
                 jresponse["artifact_list"].remove(artifact_id)
                 
                 cur = self._get_block_num()
-                return self.create_part_transaction(pt_id, jresponse["pt_name"], 
-                            jresponse["pt_checksum"], jresponse["pt_version"], 
-                            jresponse["pt_alias"], jresponse["pt_licensing"], 
-                            jresponse["pt_label"], jresponse["description"], 
+                return self.create_part_transaction(pt_id, jresponse["name"], 
+                            jresponse["checksum"], jresponse["version"], 
+                            jresponse["alias"], jresponse["licensing"], 
+                            jresponse["label"], jresponse["description"], 
                             "AddArtifact", private_key, public_key, 
                             jresponse["artifact_list"],
                             jresponse["category_list"], 
@@ -155,10 +155,10 @@ class PartBatch:
                         )
                 
                 cur = self._get_block_num()
-                return self.create_part_transaction(pt_id, jresponse["pt_name"], 
-                            jresponse["pt_checksum"], jresponse["pt_version"], 
-                            jresponse["pt_alias"], jresponse["pt_licensing"], 
-                            jresponse["pt_label"], jresponse["description"], 
+                return self.create_part_transaction(pt_id, jresponse["name"], 
+                            jresponse["checksum"], jresponse["version"], 
+                            jresponse["alias"], jresponse["licensing"], 
+                            jresponse["label"], jresponse["description"], 
                             "AddArtifact", private_key, public_key, 
                             jresponse["artifact_list"],
                             jresponse["category_list"], 
@@ -190,10 +190,10 @@ class PartBatch:
                 jresponse["category_list"].remove(category_id)
                 
                 cur = self._get_block_num()
-                return self.create_part_transaction(pt_id, jresponse["pt_name"], 
-                            jresponse["pt_checksum"], jresponse["pt_version"], 
-                            jresponse["pt_alias"], jresponse["pt_licensing"], 
-                            jresponse["pt_label"], jresponse["description"], 
+                return self.create_part_transaction(pt_id, jresponse["name"], 
+                            jresponse["checksum"], jresponse["version"], 
+                            jresponse["alias"], jresponse["licensing"], 
+                            jresponse["label"], jresponse["description"], 
                             "AddCategory", private_key, public_key, 
                             jresponse["artifact_list"],
                             jresponse["category_list"], 
@@ -219,10 +219,10 @@ class PartBatch:
                         )
                 
                 cur = self._get_block_num()
-                return self.create_part_transaction(pt_id, jresponse["pt_name"], 
-                            jresponse["pt_checksum"], jresponse["pt_version"], 
-                            jresponse["pt_alias"], jresponse["pt_licensing"], 
-                            jresponse["pt_label"], jresponse["description"], 
+                return self.create_part_transaction(pt_id, jresponse["name"], 
+                            jresponse["checksum"], jresponse["version"], 
+                            jresponse["alias"], jresponse["licensing"], 
+                            jresponse["label"], jresponse["description"], 
                             "AddCategory", private_key, public_key, 
                             jresponse["artifact_list"],
                             jresponse["category_list"], 
@@ -256,10 +256,10 @@ class PartBatch:
                 jresponse["supplier_list"].remove(supplier_id)
                 
                 cur = self._get_block_num()
-                return self.create_part_transaction(pt_id, jresponse["pt_name"], 
-                            jresponse["pt_checksum"], jresponse["pt_version"], 
-                            jresponse["pt_alias"], jresponse["pt_licensing"], 
-                            jresponse["pt_label"], jresponse["description"], 
+                return self.create_part_transaction(pt_id, jresponse["name"], 
+                            jresponse["checksum"], jresponse["version"], 
+                            jresponse["alias"], jresponse["licensing"], 
+                            jresponse["label"], jresponse["description"], 
                             "AddSupplier", private_key, public_key, 
                             jresponse["artifact_list"],
                             jresponse["category_list"], 
@@ -285,10 +285,10 @@ class PartBatch:
                         )
                 
                 cur = self._get_block_num()
-                return self.create_part_transaction(pt_id, jresponse["pt_name"], 
-                            jresponse["pt_checksum"], jresponse["pt_version"], 
-                            jresponse["pt_alias"], jresponse["pt_licensing"], 
-                            jresponse["pt_label"], jresponse["description"], 
+                return self.create_part_transaction(pt_id, jresponse["name"], 
+                            jresponse["checksum"], jresponse["version"], 
+                            jresponse["alias"], jresponse["licensing"], 
+                            jresponse["label"], jresponse["description"], 
                             "AddSupplier", private_key, public_key, 
                             jresponse["artifact_list"],
                             jresponse["category_list"], 
@@ -461,13 +461,13 @@ class PartBatch:
         self._private_key = private_key
         
         payload = {
-            "pt_id"         : str(pt_id),
-            "pt_name"       : str(pt_name),
-            "pt_checksum"   : str(checksum),
-            "pt_version"    : str(version),
-            "pt_alias"      : str(alias),
-            "pt_licensing"  : str(licensing),
-            "pt_label"      : str(label),
+            "uuid"          : str(pt_id),
+            "name"          : str(pt_name),
+            "checksum"      : str(checksum),
+            "version"       : str(version),
+            "alias"         : str(alias),
+            "licensing"     : str(licensing),
+            "label"         : str(label),
             "description"   : str(description),
             "action"        : str(action),
             "prev_block"    : str(prev),

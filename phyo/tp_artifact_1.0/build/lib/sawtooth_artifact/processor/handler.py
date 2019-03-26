@@ -54,13 +54,13 @@ class ArtifactTransactionHandler:
         try:
             # The payload is csv utf-8 encoded string
             payload = json.loads(transaction.payload.decode())
-            artifact_id             = payload["artifact_id"]
-            artifact_alias          = payload["artifact_alias"]
-            artifact_name           = payload["artifact_name"]
-            artifact_type           = payload["artifact_type"]
-            artifact_checksum       = payload["artifact_checksum"]
-            artifact_label          = payload["artifact_label"]
-            artifact_openchain      = payload["artifact_openchain"]
+            artifact_id             = payload["uuid"]
+            artifact_alias          = payload["alias"]
+            artifact_name           = payload["name"]
+            artifact_type           = payload["type"]
+            artifact_checksum       = payload["checksum"]
+            artifact_label          = payload["label"]
+            artifact_openchain      = payload["openchain"]
             action                  = payload["action"]
             prev                    = payload["prev_block"]
             cur                     = payload["cur_block"]
@@ -82,7 +82,7 @@ class ArtifactTransactionHandler:
             try:
                 
                 stored_artifact = json.loads(state_entries[0].data.decode())
-                stored_artifact_id = stored_artifact["artifact_id"]
+                stored_artifact_id = stored_artifact["uuid"]
                              
             except ValueError:
                 raise InternalError("Failed to deserialize data.")
@@ -124,18 +124,18 @@ def create_artifact(artifact_id, artifact_alias, artifact_name, artifact_type,
                     artifact_checksum, artifact_label, artifact_openchain, 
                     prev, cur, timestamp, artifact_list=[], uri_list=[]):
     return {    
-                "artifact_id"           : artifact_id,
-                "artifact_alias"        : artifact_alias,
-                "artifact_name"         : artifact_name,
-                "artifact_type"         : artifact_type,
-                "artifact_checksum"     : artifact_checksum,
-                "artifact_label"        : artifact_label,
-                "artifact_openchain"    : artifact_openchain,
-                "prev_block"            : prev, 
-                "cur_block"             : cur,
-                "timestamp"             : timestamp,
-                "artifact_list"         : artifact_list,
-                "uri_list"              : uri_list
+                "uuid"          : artifact_id,
+                "alias"         : artifact_alias,
+                "name"          : artifact_name,
+                "type"          : artifact_type,
+                "checksum"      : artifact_checksum,
+                "label"         : artifact_label,
+                "openchain"     : artifact_openchain,
+                "prev_block"    : prev, 
+                "cur_block"     : cur,
+                "timestamp"     : timestamp,
+                "artifact_list" : artifact_list,
+                "uri_list"      : uri_list
             }
 
 def validate_transaction( artifact_id, action):

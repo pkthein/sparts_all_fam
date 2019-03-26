@@ -542,65 +542,65 @@ def add_artifact_to_part():
 # Establishes relationship between organization and part
 @app.route('/ledger/api/v1/parts/orgs', methods=['POST'])
 def add_organization_to_part():
-        try:
-                if not request.json or not 'private_key' in request.json or not 'public_key' in request.json or not 'relation' in request.json:
-                        return ret_exception_msg('Invalid JSON')
-                uuid = request.json['relation']['part_uuid']
-                organization_uuid = request.json['relation']['organization_uuid']
-                public_key = request.json['public_key']
-                private_key = request.json['private_key']
-                cmd = "pt AddSupplier " + uuid + " " + organization_uuid + " "+ private_key + " "+ public_key
-                
-                cmd = shlex.split(cmd)
-                process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-                process.wait()
-                output = ''
-                add_part_to_organization(organization_uuid, uuid,private_key,public_key)
+    try:
+        if not request.json or not 'private_key' in request.json or not 'public_key' in request.json or not 'relation' in request.json:
+                return ret_exception_msg('Invalid JSON')
+        uuid = request.json['relation']['part_uuid']
+        organization_uuid = request.json['relation']['organization_uuid']
+        public_key = request.json['public_key']
+        private_key = request.json['private_key']
+        cmd = "pt AddSupplier " + uuid + " " + organization_uuid + " "+ private_key + " "+ public_key
+        
+        cmd = shlex.split(cmd)
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+        process.wait()
+        output = ''
+        add_part_to_organization(organization_uuid, uuid,private_key,public_key)
 
-                for line in process.stdout:
-                        output += line.decode("utf-8").strip()
-                return output
-        except Exception as e:
-                exp = ret_exception_msg(e) 
-                return exp
+        for line in process.stdout:
+                output += line.decode("utf-8").strip()
+        return output
+    except Exception as e:
+        exp = ret_exception_msg(e) 
+        return exp
 
 # Establishes relationship between category and part
 @app.route('/api/sparts/ledger/parts/AddCategory', methods=['POST'])
 def add_category_to_part():
-        try:
-                if not request.json or not 'private_key' in request.json or not 'public_key' in request.json:
-                        return 'Invalid JSON'
-                uuid = request.json['add_category']['part_uuid']
-                category_uuid = request.json['add_category']['category_uuid']
-                public_key = request.json['public_key']
-                private_key = request.json['private_key']
-                cmd = "pt AddCategory " + uuid + " " + category_uuid + " " + private_key + " "+ public_key
-                
-                cmd = shlex.split(cmd)
-                process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-                process.wait()
-                output = ''
-                for line in process.stdout:
-                        output += line.decode("utf-8").strip()
-                return output
-        except Exception as e:
-                exp = ret_exception_msg(e) 
-                return exp
+    try:
+        if not request.json or not 'private_key' in request.json or not 'public_key' in request.json:
+                return 'Invalid JSON'
+        uuid = request.json['add_category']['part_uuid']
+        category_uuid = request.json['add_category']['category_uuid']
+        public_key = request.json['public_key']
+        private_key = request.json['private_key']
+        cmd = "pt AddCategory " + uuid + " " + category_uuid + " " + private_key + " "+ public_key
+        
+        cmd = shlex.split(cmd)
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+        process.wait()
+        output = ''
+        for line in process.stdout:
+                output += line.decode("utf-8").strip()
+        return output
+    except Exception as e:
+        exp = ret_exception_msg(e) 
+        return exp
 
 @app.route('/api/sparts/ledger/envelopes/searchbychecksum/<string:checksum_id>', methods=['GET'])
 def artifact_verify_checksum(checksum_id):
-        try:
-            artifactlist = get_envelopes()
-            jdata = json.loads(artifactlist)
-        
-            output = ''
-            for i in jdata:
-                if i['checksum'] == checksum_id:
-                    output = json.dumps(i) 
-            return output
-        except Exception as e:
-                exp = ret_exception_msg(e)
-                return exp
+    try:
+        artifactlist = get_envelopes()
+        jdata = json.loads(artifactlist)
+    
+        output = ''
+        for i in jdata:
+            if i['checksum'] == checksum_id:
+                output = json.dumps(i) 
+        return output
+    except Exception as e:
+        exp = ret_exception_msg(e)
+        return exp
 
 @app.route('/api/sparts/ledger/parts/artifact/<string:part_id>', methods=['GET'])
 def get_part_artifact(part_id):
@@ -626,8 +626,8 @@ def get_part_artifact(part_id):
         output = json.dumps(jArtifactsData)
         return output
     except Exception as e:
-                exp = ret_exception_msg(e)
-                return exp
+        exp = ret_exception_msg(e)
+        return exp
 ################################################################################
 #                             SAWTOOTH VERSION                                 #
 ################################################################################

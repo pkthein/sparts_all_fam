@@ -136,11 +136,11 @@ class CategoryBatch:
             jresponse = json.loads(response_bytes.decode())
             
             if category_name == "null":
-                category_name = jresponse["category_name"]
+                category_name = jresponse["name"]
             if description == "null":
                 description = jresponse["description"]
             
-            if jresponse["category_name"] == category_name and \
+            if jresponse["name"] == category_name and \
                 jresponse["description"] == description:
                 return None
             else:
@@ -229,8 +229,8 @@ class CategoryBatch:
         self._private_key = private_key
         
         payload = {
-            "category_id"   : str(category_id),
-            "category_name" : str(category_name),
+            "uuid"          : str(category_id),
+            "name"          : str(category_name),
             "description"   : str(description),
             "action"        : str(action),
             "prev_block"    : str(prev),
