@@ -30,7 +30,7 @@ import uuid
 from random import randint
 app = Flask(__name__)
 
-@app.route('/ledger/api/v1/ping', methods=['GET'])
+@app.route("/ledger/api/v1/ping", methods=["GET"])
 def get_ping_result():
     
     output = ret_msg("success","OK","EmptyRecord","{}")
@@ -38,44 +38,45 @@ def get_ping_result():
 ################################################################################
 #                                  ARTIFACT                                    #
 ################################################################################
-@app.route('/ledger/api/v1/artifacts/<string:artifact_id>', methods=['GET'])
-def get_artifact(artifact_id):
-    try:
-        cmd = "artifact retrieve " + artifact_id
-        process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
-        process.wait()
-        output = ''
-        for line in process.stdout:
-            output += line.decode("utf-8").strip()
-        return output
-    except Exception as e:
-        exp = ret_exception_msg(e)
-        return exp
+def create_artifact_cmd(artifact_id, alias, filename, content_type, checksum,
+                            label, openchain, private_key, public_key):
+    return "artifact create {} {} {} {} {} {} {} {} {}".format(
+                str_qt(artifact_id), str_qt(alias), str_qt(filename),
+                str_qt(content_type), str_qt(checksum), str_qt(label),
+                str_qt(openchain), str_qt(private_key), str_qt(public_key)
+            )
+    # return "artifact create {} {} {} {} {} {} {} {} {}".format(
+    #             artifact_id, alias, filename, content_type, checksum, label,
+    #             openchain, private_key, public_key
+    #         )
+    # cmd = "artifact create " + str_qt(artifact_id) + " " + str_qt(alias) + " " + str_qt(filename)+ " " + str_qt(content_type) + " " + str_qt(checksum) + " " + str_qt(label) + " " + str_qt(openchain) + " "+ str_qt(private_key) + " "+ str_qt(public_key)
+    # return cmd
 
-def create_artifact_cmd(artifact_id, alias, filename, content_type, checksum, label, openchain, private_key, public_key):
-    cmd = "artifact create " + str_qt(artifact_id) + " " + str_qt(alias) + " " + str_qt(filename)+ " " + str_qt(content_type) + " " + str_qt(checksum) + " " +str_qt(label)+ " " + str_qt(openchain) + " "+ str_qt(private_key) + " "+ str_qt(public_key)
-    return cmd
-
-@app.route('/ledger/api/v1/artifacts', methods=['POST'])
+@app.route("/ledger/api/v1/artifacts", methods=["POST"])
 def create_artifact():
     try:
-        if not request.json or not 'private_key' in request.json or not 'public_key' in request.json or not 'artifact' in request.json:
-            return ret_exception_msg('Invalid Input')
-        output = '' 
-        public_key = request.json['public_key']
-        private_key = request.json['private_key']
-        artifact_id = request.json['artifact']['uuid']
-        filename = request.json['artifact']['name']
+        if (not request.json or 
+            "private_key" not in request.json or
+            "public_key" not in request.json or 
+            "artifact" not in request.json):
+            return ret_exception_msg("Invalid Input")
+        output = ""
         
-        alias = request.json['artifact']['alias']
-        checksum = request.json['artifact']['checksum']
-        content_type = request.json['artifact']['content_type']       
-        label = request.json['artifact']['label']
+        public_key = request.json["public_key"]
+        private_key = request.json["private_key"]
         
-        openchain = request.json['artifact']['openchain']
+        artifact_id = request.json["artifact"]["uuid"]
+        filename = request.json["artifact"]["name"]
+        alias = request.json["artifact"]["alias"]
+        checksum = request.json["artifact"]["checksum"]
+        content_type = request.json["artifact"]["content_type"]       
+        label = request.json["artifact"]["label"]
+        openchain = request.json["artifact"]["openchain"]
           
-        cmd = create_artifact_cmd(artifact_id, alias, filename, content_type, checksum, label, openchain,private_key,public_key) 
+        cmd = create_artifact_cmd(artifact_id, alias, filename, content_type,
+                            checksum, label, openchain, private_key, public_key) 
         cmd = shlex.split(cmd)
+        
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
         process.wait()
         for line in process.stdout:
@@ -85,61 +86,44 @@ def create_artifact():
         exp =  ret_exception_msg(e)
         return exp
 
-def add_uri_cmd(artifact_id, version,checksum,content_type,size,uri_type,location,private_key,public_key):
-    cmd = "artifact AddURI " + str_qt(artifact_id) + " " + str_qt(version) + " " + str_qt(checksum) + " " + str_qt(content_type) + " " + size +  " " +str_qt(uri_type)+" "+ str_qt(location) + " " + str_qt(private_key) + " "+ str_qt(public_key)
-    return cmd
+def amend_artifact_cmd(artifact_id, alias, filename, content_type, checksum,
+                            label, openchain, private_key, public_key):
+    return "artifact amend {} {} {} {} {} {} {} {} {}".format(
+                str_qt(artifact_id), str_qt(alias), str_qt(filename),
+                str_qt(content_type), str_qt(checksum), str_qt(label),
+                str_qt(openchain), str_qt(private_key), str_qt(public_key)
+            )
+    # return "artifact amend {} {} {} {} {} {} {} {} {}".format(
+    #             artifact_id, alias, filename, content_type, checksum, label,
+    #             openchain, private_key, public_key
+    #         )
+    # cmd = "artifact amend " + str_qt(artifact_id) + " " + str_qt(alias) + " " + str_qt(filename)+ " " + str_qt(content_type) + " " + str_qt(checksum) + " " + str_qt(label) + " " + str_qt(openchain) + " "+ str_qt(private_key) + " "+ str_qt(public_key)
+    # return cmd
 
-# Create record for the artifact  
-@app.route('/ledger/api/v1/artifacts/uri', methods=['POST'])
-def add_uri_to_artifact():
+@app.route("/ledger/api/v1/artifacts/amend", methods=["POST"])
+def amend_artifact():
     try:
-        if not request.json or not 'private_key' in request.json or not 'public_key' in request.json or not 'uri' in request.json or not 'uuid' in request.json:
-            return ret_exception_msg('Invalid Input')
+        if (not request.json or 
+            "private_key" not in request.json or
+            "public_key" not in request.json or
+            "artifact" not in request.json):
+            return ret_exception_msg("Invalid Input")
+        output = ""
         
-        output = '' 
-        public_key = request.json['public_key']
-        private_key = request.json['private_key']
-         
-        artifact_id = request.json['uuid']
-        version = request.json['uri']['version']
-        checksum = request.json['uri']['checksum']
-        content_type = request.json['uri']['content_type'] 
-        size = request.json['uri']['size']
-        uri_type = request.json['uri']['uri_type']
-        location = request.json['uri']['location']
-              
-        cmd = add_uri_cmd(artifact_id, version,checksum,content_type,size,uri_type,location,private_key,public_key) 
-        cmd = shlex.split(cmd)
-        process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-        process.wait()
-        for line in process.stdout:
-            output += line.decode("utf-8").strip()
-        return output 
-    except Exception as e:
-        exp =  ret_exception_msg(e)
-        return exp
-
-def add_artifact_to_envelope_cmd(envelope_uuid,artifact_uuid,private_key,public_key,path):
-    cmd = "artifact AddArtifact " + str_qt(envelope_uuid) + " " +str_qt(artifact_uuid) + " "+str_qt(path)+" "+ str_qt(private_key) + " "+ str_qt(public_key)
-    return cmd
-
-@app.route('/ledger/api/v1/envelope/artifact', methods=['POST'])
-def add_artifact_to_envelope():
-    try:
-        if not request.json or not 'private_key' in request.json or not 'public_key' in request.json or not 'relation' in request.json:
-            return ret_exception_msg('Invalid Input')
+        public_key = request.json["public_key"]
+        private_key = request.json["private_key"]
         
-        output = '' 
-        public_key = request.json['public_key']
-        private_key = request.json['private_key']
-         
-        artifact_uuid = request.json['relation']['artifact_uuid']
-        envelope_uuid = request.json['relation']['envelope_uuid']
-        path = request.json['relation']['path']
+        artifact_id = request.json["artifact"]["uuid"]
         
-              
-        cmd = add_artifact_to_envelope_cmd(envelope_uuid,artifact_uuid,private_key,public_key,path)
-         
+        filename = nullCast(request.json["artifact"], "name")
+        alias = nullCast(request.json["artifact"], "alias") 
+        checksum = nullCast(request.json["artifact"], "checksum") 
+        content_type = nullCast(request.json["artifact"], "content_type")      
+        label = nullCast(request.json["artifact"], "label")
+        openchain = nullCast(request.json["artifact"], "openchain")
+          
+        cmd = amend_artifact_cmd(artifact_id, alias, filename, content_type,
+                            checksum, label, openchain, private_key, public_key) 
         cmd = shlex.split(cmd)
         
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
@@ -151,7 +135,7 @@ def add_artifact_to_envelope():
         exp =  ret_exception_msg(e)
         return exp
 
-@app.route('/ledger/api/v1/artifacts', methods=['GET'])
+@app.route("/ledger/api/v1/artifacts", methods=["GET"])
 def get_artifacts():
     try:
         cmd = "artifact list-artifact"
@@ -164,31 +148,143 @@ def get_artifacts():
     except Exception as e:
         exp = ret_exception_msg(e) 
         return exp
+
+@app.route("/ledger/api/v1/artifacts/<string:artifact_id>", methods=["GET"])
+def get_artifact(artifact_id):
+    try:
+        cmd = "artifact retrieve " + artifact_id
+        process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
+        process.wait()
+        output = ""
+        for line in process.stdout:
+            output += line.decode("utf-8").strip()
+        return output
+    except Exception as e:
+        exp = ret_exception_msg(e)
+        return exp
+
+def add_artifact_to_envelope_cmd(envelope_uuid, artifact_uuid, private_key,
+                                    public_key, path):
+    return "artifact AddArtifact {} {} {} {} {}".format(
+                str_qt(envelope_uuid), str_qt(artifact_uuid), str_qt(path),
+                str_qt(private_key), str_qt(public_key)
+            )
+    # return "artifact AddArtifact {} {} {} {} {}".format(
+    #             envelope_uuid, artifact_uuid, path, private_key, public_key
+    #         )
+    # cmd = "artifact AddArtifact " + str_qt(envelope_uuid) + " " + str_qt(artifact_uuid) + " " + str_qt(path) + " " + str_qt(private_key) + " " + str_qt(public_key)
+    # return cmd
+
+@app.route("/ledger/api/v1/envelope/artifact", methods=["POST"])
+def add_artifact_to_envelope():
+    try:
+        if (not request.json or
+            "private_key" not in request.json or
+            "public_key" not in request.json or
+            "relation" not in request.json):
+            return ret_exception_msg("Invalid Input")
+        output = "" 
+        
+        public_key = request.json["public_key"]
+        private_key = request.json["private_key"]
+         
+        artifact_uuid = request.json["relation"]["artifact_uuid"]
+        envelope_uuid = request.json["relation"]["envelope_uuid"]
+        path = request.json["relation"]["path"]
+        
+        cmd = add_artifact_to_envelope_cmd(envelope_uuid, artifact_uuid,
+                                            private_key, public_key, path)
+        cmd = shlex.split(cmd)
+        
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+        process.wait()
+        for line in process.stdout:
+            output += line.decode("utf-8").strip()
+        return output 
+    except Exception as e:
+        exp =  ret_exception_msg(e)
+        return exp
+
+def add_uri_cmd(artifact_id, version, checksum, content_type, size, uri_type,
+                location, private_key, public_key):
+    return "artifact AddURI {} {} {} {} {} {} {} {} {}".format(
+                str_qt(artifact_id), str_qt(version), str_qt(checksum),
+                str_qt(content_type), size, str_qt(uri_type), str_qt(location),
+                str_qt(private_key), str_qt(public_key)
+            )
+    # return "artifact AddURI {} {} {} {} {} {} {} {} {}".format(
+    #             artifact_id, version, checksum, content_type, size, uri_type,
+    #             location, private_key, public_key
+    #         )
+    # cmd = "artifact AddURI " + str_qt(artifact_id) + " " + str_qt(version) + " " + str_qt(checksum) + " " + str_qt(content_type) + " " + size +  " " +str_qt(uri_type)+" "+ str_qt(location) + " " + str_qt(private_key) + " "+ str_qt(public_key)
+    # return cmd
+
+# Create record for the artifact  
+@app.route("/ledger/api/v1/artifacts/uri", methods=["POST"])
+def add_uri_to_artifact():
+    try:
+        if (not request.json or
+            "private_key" not in request.json or
+            "public_key" not in request.json or
+            "uri" not in request.json or
+            "uuid" not in request.json):
+            return ret_exception_msg("Invalid Input")
+        output = "" 
+        
+        public_key = request.json["public_key"]
+        private_key = request.json["private_key"]
+         
+        artifact_id = request.json["uuid"]
+        version = request.json["uri"]["version"]
+        checksum = request.json["uri"]["checksum"]
+        content_type = request.json["uri"]["content_type"] 
+        size = request.json["uri"]["size"]
+        uri_type = request.json["uri"]["uri_type"]
+        location = request.json["uri"]["location"]
+              
+        cmd = add_uri_cmd(artifact_id, version, checksum, content_type, size,
+                            uri_type, location, private_key, public_key) 
+        cmd = shlex.split(cmd)
+        
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+        process.wait()
+        for line in process.stdout:
+            output += line.decode("utf-8").strip()
+        return output 
+    except Exception as e:
+        exp =  ret_exception_msg(e)
+        return exp
 ################################################################################
 #                                     USER                                     #
 ################################################################################    
-@app.route('/ledger/api/v1/registeruser', methods=['POST'])
+@app.route("/ledger/api/v1/registeruser", methods=["POST"])
 def register_user():
     try:
-        
-        if not request.json  or not 'private_key' in request.json or not 'public_key' in request.json:
-            return  ret_exception_msg('Invalid JSON')
-        user_public_key = request.json['user']['user_public_key']
-        name = request.json['user']['user_name']
+        if (not request.json or 
+            "private_key" not in request.json or
+            "public_key" not in request.json):
+            return  ret_exception_msg("Invalid JSON")
+        output = ""
+            
+        user_public_key = request.json["user"]["user_public_key"]
+        name = request.json["user"]["user_name"]
         name = format_str(name) 
-        email_address = request.json['user']['email_address']
+        email_address = request.json["user"]["email_address"]
         email_address = format_str(email_address)
-        authorized = request.json['user']["authorized"]
-        role = request.json['user']["role"]     
-        public_key = request.json['public_key']
-        private_key = request.json['private_key']
+        authorized = request.json["user"]["authorized"]
+        role = request.json["user"]["role"]     
+        public_key = request.json["public_key"]
+        private_key = request.json["private_key"]
         
-        cmd = "user register " + user_public_key + " " + str(name) + " " + str(email_address) + " " + authorized +" " + role+ " " + private_key + " "+ public_key
-        
+        # cmd = "user register " + user_public_key + " " + str(name) + " " + str(email_address) + " " + authorized +" " + role+ " " + private_key + " "+ public_key
+        cmd = "user register {} {} {} {} {} {} {}".format(
+                    user_public_key, str(name), str(email_address), authorized,
+                    role, private_key, public_key
+                )
         cmd = shlex.split(cmd)
+        
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
         process.wait()
-        output = ''
         for line in process.stdout:
             output += line.decode("utf-8").strip()
         return output
@@ -199,24 +295,31 @@ def register_user():
 #                                   CATEGORY                                   #
 ################################################################################    
 # Create record for category
-@app.route('/ledger/api/v1/categories', methods=['POST'])
+@app.route("/ledger/api/v1/categories", methods=["POST"])
 def create_category():
     try:
-        if not request.json  or not 'private_key' in request.json or not 'public_key' in request.json:
-            return 'Invalid JSON'
-        uuid = request.json['category']['uuid']
-        name = request.json['category']['name']
-        # name = format_str(name)
-        description = request.json['category']['description']
-        # description = format_str(description)
-        public_key = request.json['public_key']
-        private_key = request.json['private_key']
-        cmd = "category create " + uuid + " " + str(name) + " " + str(description) + " " + private_key + " "+ public_key
+        if (not request.json or
+            "private_key" not in request.json or
+            "public_key" not in request.json):
+            return "Invalid JSON"
+        output = ""
         
+        public_key = request.json["public_key"]
+        private_key = request.json["private_key"]
+        
+        uuid = request.json["category"]["uuid"]
+        name = request.json["category"]["name"]
+        name = format_str(name)
+        description = request.json["category"]["description"]
+        description = format_str(description)
+        
+        cmd = "category create {} {} {} {} {}".format(
+                    uuid, str(name), str(description), private_key, public_key
+                )
         cmd = shlex.split(cmd)
+        
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
         process.wait()
-        output = ''
         for line in process.stdout:
             output += line.decode("utf-8").strip()
         return output
@@ -224,26 +327,33 @@ def create_category():
         exp = ret_exception_msg(e) 
         return exp
 
-@app.route('/ledger/api/v1/categories/amend', methods=['POST'])
+# Amend category record
+@app.route("/ledger/api/v1/categories/amend", methods=["POST"])
 def amend_category():
     try:
-        if not request.json  or not 'private_key' in request.json or not 'public_key' in request.json:
-            return 'Invalid JSON'
-        uuid = request.json['category']['uuid']
+        if (not request.json or
+            "private_key" not in request.json or
+            "public_key" not in request.json):
+            return "Invalid JSON"
+        output = ""
         
-        name = "null" if "name" not in request.json['category'] else request.json['category']['name']
+        public_key = request.json["public_key"]
+        private_key = request.json["private_key"]
+        uuid = request.json["category"]["uuid"]
+        
+        name = nullCast(request.json["category"], "name")
         name = format_str(name) 
-        
-        description = "null" if "description" not in request.json['category'] else request.json['category']['description']
+        description = nullCast(request.json["category"], "description")
         description = format_str(description)
-        public_key = request.json['public_key']
-        private_key = request.json['private_key']
-        cmd = "category amend " + uuid + " " + str(name) + " " + str(description) + " " + private_key + " "+ public_key
         
+        # cmd = "category amend " + uuid + " " + str(name) + " " + str(description) + " " + private_key + " "+ public_key
+        cmd = "category amend {} {} {} {} {}".format(
+                    uuid, str(name), str(description), private_key, public_key
+                )
         cmd = shlex.split(cmd)
+        
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
         process.wait()
-        output = ''
         for line in process.stdout:
             output += line.decode("utf-8").strip()
         return output
@@ -252,7 +362,7 @@ def amend_category():
         return exp
 
 # Retrieves categories list
-@app.route('/ledger/api/v1/categories', methods=['GET'])
+@app.route("/ledger/api/v1/categories", methods=["GET"])
 def get_categories():
     try:
         cmd = "category list-category"
@@ -267,14 +377,54 @@ def get_categories():
         exp = ret_exception_msg(e) 
         return exp
         
-# Retrieves category record by category id   
-@app.route('/ledger/api/v1/categories/<string:category_id>', methods=['GET'])
+# Retrieves most recent category record by category id   
+@app.route("/ledger/api/v1/categories/<string:category_id>", methods=["GET"])
 def get_category(category_id):
     try:
         cmd = "category retrieve " + category_id
         process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
         process.wait()
-        output = ''
+        output = ""
+        for line in process.stdout:
+            output += line.decode("utf-8").strip()
+            output = refine_output(output)
+        return output
+    except Exception as e:
+        exp = ret_exception_msg(e) 
+        return exp
+
+# Retrieves historical category record by category id   
+@app.route(
+    "/ledger/api/v1/categories/<string:category_id>/history",
+    methods=["GET"]
+)
+def log_uuid_category(category_id):
+    try:
+        cmd = "category retrieve --all " + category_id
+        process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
+        process.wait()
+        output = ""
+        for line in process.stdout:
+            output += line.decode("utf-8").strip()
+            output = refine_output(output)
+        return output
+    except Exception as e:
+        exp = ret_exception_msg(e) 
+        return exp
+
+# Retrieves historical category record on certain date by category id
+@app.route(
+    "/ledger/api/v1/categories/<string:category_id>/<string:START>",
+    methods=["GET"]
+)
+def day_uuid_category(category_id, START):
+    try:
+        cmd = "category retrieve --range {} {} {}".format(
+                    START, START, category_id
+                )
+        process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
+        process.wait()
+        output = ""
         for line in process.stdout:
             output += line.decode("utf-8").strip()
             output = refine_output(output)
@@ -285,34 +435,40 @@ def get_category(category_id):
 ################################################################################
 #                                 ORGANIZATION                                 #
 ################################################################################
-@app.route('/ledger/api/v1/orgs', methods=['POST'])
+@app.route("/ledger/api/v1/orgs", methods=["POST"])
 def create_organization():
     try:
-        if not request.json or not 'private_key' in request.json or not 'public_key' in request.json:
-            return  ret_exception_msg('Invalid JSON')
-        uuid = request.json['organization']['uuid']
-        uuid = format_str(uuid)
-        alias = request.json['organization']['alias']
-        alias = format_str(alias)
+        if (not request.json or
+            "private_key" not in request.json or
+            "public_key" not in request.json):
+            return  ret_exception_msg("Invalid JSON")
+        output = ""
         
-        name = request.json['organization']['name']
+        public_key = request.json["public_key"]
+        private_key = request.json["private_key"] 
+        
+        uuid = request.json["organization"]["uuid"]
+        uuid = format_str(uuid)
+        alias = request.json["organization"]["alias"]
+        alias = format_str(alias)
+        name = request.json["organization"]["name"]
         name = format_str(name) 
-        type = request.json['organization']['type']
+        type = request.json["organization"]["type"]
         type = format_str(type)
-        description = request.json['organization']['description']
+        description = request.json["organization"]["description"]
         description = format_str(description)
-        url = request.json['organization']['url']
+        url = request.json["organization"]["url"]
         url = format_str(url)
         
-        public_key = request.json['public_key']
-        private_key = request.json['private_key'] 
-            
-        cmd = "organization create " + uuid + " " + alias + " " + str(name)+" "+str(type)+" "+description + " "+ str(url) + " "+ private_key + " "+public_key
+        # cmd = "organization create " + uuid + " " + alias + " " + str(name)+" "+str(type)+" "+description + " "+ str(url) + " "+ private_key + " "+public_key
+        cmd = "organization create {} {} {} {} {} {} {} {}".format(
+                    uuid, alias, str(name), str(type), description, str(url),
+                    private_key, public_key
+                )
         cmd = shlex.split(cmd)
     
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
         process.wait()
-        output = ''
         for line in process.stdout:
             output += line.decode("utf-8").strip()
         return output
@@ -320,39 +476,39 @@ def create_organization():
         exp = ret_exception_msg(e)
         return exp
 
-@app.route('/ledger/api/v1/orgs/amend', methods=['POST'])
+@app.route("/ledger/api/v1/orgs/amend", methods=["POST"])
 def amend_organization():
     try:
-        if not request.json or not 'private_key' in request.json or not 'public_key' in request.json:
-            return  ret_exception_msg('Invalid JSON')
+        if (not request.json or
+            "private_key" not in request.json or
+            "public_key" not in request.json):
+            return  ret_exception_msg("Invalid JSON")
+        output = ""
         
-        uuid = request.json['organization']['uuid']
+        public_key = request.json["public_key"]
+        private_key = request.json["private_key"]
+        uuid = request.json["organization"]["uuid"]
         uuid = format_str(uuid)
         
-        alias = "null" if "alias" not in request.json else request.json['organization']['alias']
+        alias = nullCast(request.json["organization"], "alias")
         alias = format_str(alias)
-        
-        name = request.json['organization']['name']
+        name = nullCast(request.json["organization"], "name")
         name = format_str(name)
-        
-        org_type = request.json['organization']['type']
+        org_type = nullCast(request.json["organization"], "type")
         org_type = format_str(org_type)
-        
-        description = request.json['organization']['description']
+        description = nullCast(request.json["organization"], "description")
         description = format_str(description)
-        
-        url = request.json['organization']['url']
+        url = nullCast(request.json["organization"], "url")
         url = format_str(url)
         
-        public_key = request.json['public_key']
-        private_key = request.json['private_key'] 
-        
-        cmd = "organization amend {} {} {} {} {} {} {} {}".format(uuid, alias, str(name), str(org_type), description, str(url), private_key, public_key)
+        cmd = "organization amend {} {} {} {} {} {} {} {}".format(
+                    uuid, alias, str(name), str(org_type), description,
+                    str(url), private_key, public_key
+                )
         cmd = shlex.split(cmd)
     
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
         process.wait()
-        output = ''
         for line in process.stdout:
             output += line.decode("utf-8").strip()
         return output
@@ -361,29 +517,29 @@ def amend_organization():
         return exp
 
 # Retrieves list of all organizations from the ledger
-@app.route('/ledger/api/v1/orgs', methods=['GET'])
+@app.route("/ledger/api/v1/orgs", methods=["GET"])
 def get_organizations():
-        try:
-                cmd = "organization list-organization"
-                process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
-                process.wait()
-                output = ''
-                for line in process.stdout:
-                        output += line.decode("utf-8").strip()
-                        output = refine_output(output)
-                return output
-        except Exception as e:
-                exp = ret_exception_msg(e) 
-                return exp
+    try:
+        cmd = "organization list-organization"
+        process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
+        process.wait()
+        output = ""
+        for line in process.stdout:
+                output += line.decode("utf-8").strip()
+                output = refine_output(output)
+        return output
+    except Exception as e:
+        exp = ret_exception_msg(e) 
+        return exp
 
 # Retrieves organization record by organization id
-@app.route('/ledger/api/v1/orgs/<string:org_id>', methods=['GET'])
+@app.route("/ledger/api/v1/orgs/<string:org_id>", methods=["GET"])
 def get_organization(org_id):
     try:
         cmd = "organization retrieve " + org_id
         process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
         process.wait()
-        output = ''
+        output = ""
         for line in process.stdout:
             output += line.decode("utf-8").strip()
             output = refine_output(output)
@@ -394,51 +550,61 @@ def get_organization(org_id):
         
 # Establishes relationship between part and organization 
 def add_part_to_organization(uuid, part_uuid, private_key, public_key):
-        try:    
-                cmd = "organization AddPart " + uuid + " " + part_uuid + " "+ private_key + " "+ public_key
-                cmd = shlex.split(cmd)
-                process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-                process.wait()
-                output = ''
-                for line in process.stdout:
-                        output += line.decode("utf-8").strip()
-                return output
-        except Exception as e:
-                exp = ret_exception_msg(e) 
-                return exp
-################################################################################
-#                                    PART                                      #
-################################################################################
-@app.route('/ledger/api/v1/parts', methods=['POST'])
-def create_part():
-    try:
-
-        if not request.json or not 'private_key' in request.json or not 'public_key' in request.json:
-            return  ret_exception_msg('Invalid JSON')
-        uuid = request.json['part']['uuid']
-        name = request.json['part']['name']
-        name = format_str(name)
-        sp = " "
-        checksum = request.json['part']['checksum']
-        checksum = format_str(checksum)
-        version = request.json['part']['version']
-        version = format_str(version)
-        alias = request.json['part']['alias']
-
-        alias = format_str(alias)
-        licensing = request.json['part']['licensing']
-        licensing = format_str(licensing)
-        label = request.json['part']['label']
-        label = format_str(label)
-        description = request.json['part']['description']
-        description = format_str(description)
-        public_key = request.json['public_key']
-        private_key = request.json['private_key']
-        cmd = "pt create " + uuid + sp + str(name) + sp + checksum + sp + version + sp + str(alias) + sp + str(licensing) + sp + str(label) + sp + str(description) + sp + private_key + sp + public_key
+    try:    
+        # cmd = "organization AddPart " + uuid + " " + part_uuid + " "+ private_key + " "+ public_key
+        cmd = "organization AddPart {} {} {} {}".format(
+                    uuid, part_uuid, private_key, public_key
+                )
         cmd = shlex.split(cmd)
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
         process.wait()
-        output = '' 
+        output = ""
+        for line in process.stdout:
+                output += line.decode("utf-8").strip()
+        return output
+    except Exception as e:
+        exp = ret_exception_msg(e) 
+        return exp
+################################################################################
+#                                    PART                                      #
+################################################################################
+@app.route("/ledger/api/v1/parts", methods=["POST"])
+def create_part():
+    try:
+        if (not request.json or
+            "private_key" not in request.json or
+            "public_key" not in request.json):
+            return  ret_exception_msg("Invalid JSON")
+        output = ""
+        
+        public_key = request.json["public_key"]
+        private_key = request.json["private_key"]
+        
+        uuid = request.json["part"]["uuid"]
+        name = request.json["part"]["name"]
+        name = format_str(name)
+        checksum = request.json["part"]["checksum"]
+        checksum = format_str(checksum)
+        version = request.json["part"]["version"]
+        version = format_str(version)
+        alias = request.json["part"]["alias"]
+        alias = format_str(alias)
+        licensing = request.json["part"]["licensing"]
+        licensing = format_str(licensing)
+        label = request.json["part"]["label"]
+        label = format_str(label)
+        description = request.json["part"]["description"]
+        description = format_str(description)
+        
+        cmd = "pt create {} {} {} {} {} {} {} {} {} {}".format(
+                    uuid, str(name), checksum, version, str(alias),
+                    str(licensing), str(label), str(description), private_key,
+                    public_key
+                )
+        cmd = shlex.split(cmd)
+        
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+        process.wait()
         for line in process.stdout:
             output += line.decode("utf-8").strip()
         return output
@@ -446,36 +612,43 @@ def create_part():
             exp = ret_exception_msg(e) 
             return exp
 
-@app.route('/ledger/api/v1/parts/amend', methods=['POST'])
+@app.route("/ledger/api/v1/parts/amend", methods=["POST"])
 def amend_part():
     try:
-
-        if not request.json or not 'private_key' in request.json or not 'public_key' in request.json:
-            return  ret_exception_msg('Invalid JSON')
-        uuid = request.json['part']['uuid']
-        name = request.json['part']['name']
+        if (not request.json or
+            "private_key" not in request.json or
+            "public_key" not in request.json):
+            return  ret_exception_msg("Invalid JSON")
+        output = ""
+        
+        public_key = request.json["public_key"]
+        private_key = request.json["private_key"]
+        uuid = request.json["part"]["uuid"]
+        
+        name = nullCast(request.json["part"], "name")
         name = format_str(name)
-        sp = " "
-        checksum = request.json['part']['checksum']
+        checksum = nullCast(request.json["part"], "checksum")
         checksum = format_str(checksum)
-        version = request.json['part']['version']
+        version = nullCast(request.json["part"], "version")
         version = format_str(version)
-        alias = request.json['part']['alias']
-
+        alias = nullCast(request.json["part"], "alias")
         alias = format_str(alias)
-        licensing = request.json['part']['licensing']
+        licensing = nullCast(request.json["part"], "licensing")
         licensing = format_str(licensing)
-        label = request.json['part']['label']
+        label = nullCast(request.json["part"], "label")
         label = format_str(label)
-        description = request.json['part']['description']
+        description = nullCast(request.json["part"], "description")
         description = format_str(description)
-        public_key = request.json['public_key']
-        private_key = request.json['private_key']
-        cmd = "pt amend " + uuid + sp + str(name) + sp + checksum + sp + version + sp + str(alias) + sp + str(licensing) + sp + str(label) + sp + str(description) + sp + private_key + sp + public_key
+        
+        cmd = "pt amend {} {} {} {} {} {} {} {} {} {}".format(
+                    uuid, str(name), checksum, version, str(alias),
+                    str(licensing), str(label), str(description), private_key,
+                    public_key
+                )
         cmd = shlex.split(cmd)
+        
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
         process.wait()
-        output = '' 
         for line in process.stdout:
             output += line.decode("utf-8").strip()
         return output
@@ -484,13 +657,13 @@ def amend_part():
             return exp
 
 # Retrieves list of all parts
-@app.route('/ledger/api/v1/parts', methods=['GET'])
+@app.route("/ledger/api/v1/parts", methods=["GET"])
 def get_parts():
     try:
         cmd = "pt list-part"
         process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
         process.wait()
-        output = ''
+        output = ""
         for line in process.stdout:
             output += line.decode("utf-8").strip()
             output = refine_output(output)
@@ -500,13 +673,13 @@ def get_parts():
         return exp
 
 # Retrieves part record by part id
-@app.route('/ledger/api/v1/parts/<string:part_id>', methods=['GET'])
+@app.route("/ledger/api/v1/parts/<string:part_id>", methods=["GET"])
 def get_part(part_id):
     try:    
         cmd = "pt retrieve " + part_id
         process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
         process.wait()
-        output = ''
+        output = ""
         for line in process.stdout:
             output += line.decode("utf-8").strip()
             output = refine_output(output)
@@ -516,22 +689,29 @@ def get_part(part_id):
         return exp
 
 # Establishes relationship between envelopes and part
-@app.route('/ledger/api/v1/artifacts/part', methods=['POST'])
+@app.route("/ledger/api/v1/artifacts/part", methods=["POST"])
 def add_artifact_to_part():
     try:
-        if not request.json or not 'private_key' in request.json or not 'public_key' in request.json or not 'relation' in request.json:
-            return  ret_exception_msg('Invalid JSON')
-        uuid = request.json['relation']['part_uuid']
-        sp = " "
-        envelope_uuid = request.json['relation']['artifact_uuid']
-        public_key = request.json['public_key']
-        private_key = request.json['private_key']
-        cmd = "pt AddArtifact " + uuid + sp + envelope_uuid + sp + private_key + sp + public_key
-
+        if (not request.json or
+            "private_key" not in request.json or
+            "public_key" not in request.json or
+            "relation" not in request.json):
+            return  ret_exception_msg("Invalid JSON")
+        output = ""
+        
+        uuid = request.json["relation"]["part_uuid"]
+        envelope_uuid = request.json["relation"]["artifact_uuid"]
+        public_key = request.json["public_key"]
+        private_key = request.json["private_key"]
+        
+        # cmd = "pt AddArtifact " + uuid + sp + envelope_uuid + sp + private_key + sp + public_key
+        cmd = "pt AddArtifact {} {} {} {}".format(
+                    uuid, envelope_uuid, private_key, public_key
+                )
         cmd = shlex.split(cmd)
+        
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
         process.wait()
-        output = ''
         for line in process.stdout:
             output += line.decode("utf-8").strip()
         return output
@@ -540,22 +720,31 @@ def add_artifact_to_part():
         return exp
 
 # Establishes relationship between organization and part
-@app.route('/ledger/api/v1/parts/orgs', methods=['POST'])
+@app.route("/ledger/api/v1/parts/orgs", methods=["POST"])
 def add_organization_to_part():
     try:
-        if not request.json or not 'private_key' in request.json or not 'public_key' in request.json or not 'relation' in request.json:
-                return ret_exception_msg('Invalid JSON')
-        uuid = request.json['relation']['part_uuid']
-        organization_uuid = request.json['relation']['organization_uuid']
-        public_key = request.json['public_key']
-        private_key = request.json['private_key']
-        cmd = "pt AddSupplier " + uuid + " " + organization_uuid + " "+ private_key + " "+ public_key
+        if (not request.json or
+            "private_key" not in request.json or
+            "public_key" not in request.json or
+            "relation" not in request.json):
+            return ret_exception_msg("Invalid JSON")
+        output = ""
         
+        uuid = request.json["relation"]["part_uuid"]
+        organization_uuid = request.json["relation"]["organization_uuid"]
+        public_key = request.json["public_key"]
+        private_key = request.json["private_key"]
+        # cmd = "pt AddSupplier " + uuid + " " + organization_uuid + " "+ private_key + " "+ public_key
+        cmd = "pt AddSupplier {} {} {} {}".format(
+                    uuid, organization_uuid, private_key, public_key
+                )
         cmd = shlex.split(cmd)
+        
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
         process.wait()
-        output = ''
-        add_part_to_organization(organization_uuid, uuid,private_key,public_key)
+        
+        add_part_to_organization(organization_uuid, uuid, private_key, 
+                                    public_key)
 
         for line in process.stdout:
                 output += line.decode("utf-8").strip()
@@ -565,21 +754,29 @@ def add_organization_to_part():
         return exp
 
 # Establishes relationship between category and part
-@app.route('/api/sparts/ledger/parts/AddCategory', methods=['POST'])
+@app.route("/api/sparts/ledger/parts/AddCategory", methods=["POST"])
 def add_category_to_part():
     try:
-        if not request.json or not 'private_key' in request.json or not 'public_key' in request.json:
-                return 'Invalid JSON'
-        uuid = request.json['add_category']['part_uuid']
-        category_uuid = request.json['add_category']['category_uuid']
-        public_key = request.json['public_key']
-        private_key = request.json['private_key']
-        cmd = "pt AddCategory " + uuid + " " + category_uuid + " " + private_key + " "+ public_key
+        if (not request.json or
+            "private_key" not in request.json or
+            "public_key" not in request.json):
+            return "Invalid JSON"
+        output = ""
         
+        uuid = request.json["add_category"]["part_uuid"]
+        category_uuid = request.json["add_category"]["category_uuid"]
+        public_key = request.json["public_key"]
+        private_key = request.json["private_key"]
+        
+        # cmd = "pt AddCategory " + uuid + " " + category_uuid + " " + private_key + " "+ public_key
+        cmd = "pt AddCategory {} {} {} {}".format(
+                    uuid, category_uuid, private_key, public_key
+                )
         cmd = shlex.split(cmd)
+        
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
         process.wait()
-        output = ''
+        
         for line in process.stdout:
                 output += line.decode("utf-8").strip()
         return output
@@ -587,29 +784,29 @@ def add_category_to_part():
         exp = ret_exception_msg(e) 
         return exp
 
-@app.route('/api/sparts/ledger/envelopes/searchbychecksum/<string:checksum_id>', methods=['GET'])
+@app.route("/api/sparts/ledger/envelopes/searchbychecksum/<string:checksum_id>", methods=["GET"])
 def artifact_verify_checksum(checksum_id):
     try:
         artifactlist = get_envelopes()
         jdata = json.loads(artifactlist)
     
-        output = ''
+        output = ""
         for i in jdata:
-            if i['checksum'] == checksum_id:
+            if i["checksum"] == checksum_id:
                 output = json.dumps(i) 
         return output
     except Exception as e:
         exp = ret_exception_msg(e)
         return exp
 
-@app.route('/api/sparts/ledger/parts/artifact/<string:part_id>', methods=['GET'])
+@app.route("/api/sparts/ledger/parts/artifact/<string:part_id>", methods=["GET"])
 def get_part_artifact(part_id):
     try:
         cmd = "pt retrieve " + part_id
         process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
         process.wait()
-        partsOut = ''
-        output = ''
+        partsOut = ""
+        output = ""
         for line in process.stdout:
             partsOut += line.decode("utf-8").strip()
             partsOut = refine_output(partsOut)
@@ -617,10 +814,10 @@ def get_part_artifact(part_id):
         artifactListJSON = "[]"
         jArtifactsData = json.loads(artifactListJSON)
         data = json.loads(partsOut)
-        for element in data['envelopes']:
-            artifactD = get_envelope(element['envelope_id'])
+        for element in data["envelopes"]:
+            artifactD = get_envelope(element["envelope_id"])
             artJSONObj = json.loads(artifactD)
-            del artJSONObj['sub_artifact']
+            del artJSONObj["sub_artifact"]
             jArtifactsData.append(artJSONObj)
                 
         output = json.dumps(jArtifactsData)
@@ -631,7 +828,7 @@ def get_part_artifact(part_id):
 ################################################################################
 #                             SAWTOOTH VERSION                                 #
 ################################################################################
-@app.route('/ledger/api/v1/parts/sawtooth/version', methods=['GET'])
+@app.route("/ledger/api/v1/parts/sawtooth/version", methods=["GET"])
 def get_sawtooth_version():
     output = "{\"name\":\"Hyperledger Sawtooth\",\"version\":\"0.8.8\"}"
     return output
@@ -649,60 +846,74 @@ def ret_success_auth_msg(input):
     else:
         return input
 
-@app.route('/api/sparts/ledger/auth', methods=['POST'])
+@app.route("/api/sparts/ledger/auth", methods=["POST"])
 def sparts_auth():
     try:
-        if not request.json or not 'privatekey' in request.json or not 'publickey' in request.json or not 'allowedrole' in request.json:
-            return ret_exception_msg('Invalid JSON')
+        if (not request.json or
+            "privatekey" not in request.json or
+            "publickey" not in request.json or
+            "allowedrole" not in request.json):
+            return ret_exception_msg("Invalid JSON")
+        output = ""
         
         uuid = get_uuid()
-        private_key = request.json['privatekey']
-        public_key = request.json['publickey']
-        output = ''
+        private_key = request.json["privatekey"]
+        public_key = request.json["publickey"]
+
         if len(private_key) == 64 and len(public_key) == 66:
             
-            signature = get_signature(uuid, private_key, 'wif')
+            signature = get_signature(uuid, private_key, "wif")
             verify = verify_signature(uuid, signature, public_key)
             print("Verify Sign: " + str(verify)) 
-            if str(verify) == 'True':
+            if str(verify) == "True":
                 cmd = "user retrieve " + public_key
                 cmd = shlex.split(cmd)
                 process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
                 process.wait()
-                ojson = ''
+                ojson = ""
                 for line in process.stdout:
                     ojson += line.decode("utf-8").strip()
                
                 userinfo = json.loads(ojson)
                 
-                if userinfo.get('user_name'):
-                    authorized=userinfo['authorized']
+                if userinfo.get("user_name"):
+                    authorized = userinfo["authorized"]
                     
-                    assignedrole=userinfo['role']
-                    if str(authorized) == 'allow':
+                    assignedrole = userinfo["role"]
+                    if str(authorized) == "allow":
                         for i in request.json["allowedrole"]:
-                            if str(i['role']) == str(assignedrole):          
+                            if str(i["role"]) == str(assignedrole):          
                                 output = ret_success_auth_msg("success")
                                 return output 
                             
-                        output = ret_access_denied__msg('Unauthorized, access is denied')
-                    elif str(authorized) == 'deny':
-                        output = ret_access_denied__msg('Unauthorized, access is denied')
-                elif userinfo.get('message'):
-                    output = ret_access_denied__msg('Unauthorized, access is denied')    
+                        output = ret_access_denied__msg(
+                                        "Unauthorized, access is denied"
+                                    )
+                    elif str(authorized) == "deny":
+                        output = ret_access_denied__msg(
+                                        "Unauthorized, access is denied"
+                                    )
+                elif userinfo.get("message"):
+                    output = ret_access_denied__msg(
+                                    "Unauthorized, access is denied"
+                                )    
             else:
-                output = ret_access_denied__msg('Invalid keys, access is denied')
+                output = ret_access_denied__msg(
+                                "Invalid keys, access is denied"
+                            )
         else:
-            output = ret_access_denied__msg('Invalid keys, access is denied')
+            output = ret_access_denied__msg(
+                            "Invalid keys, access is denied"
+                        )
         return output
     
     except Exception as e:
         exp = ret_access_denied__msg(str(e))
         return exp
 
-@app.route('/ledger/api/v1/keys', methods=['GET']) 
+@app.route("/ledger/api/v1/keys", methods=["GET"]) 
 def get_keys():
-    context = create_context('secp256k1')
+    context = create_context("secp256k1")
     privkey = context.new_random_private_key()
     pubkey = context.get_public_key(privkey)
     userKeyJSON = "{}"
@@ -711,7 +922,7 @@ def get_keys():
     keys["private_key"] = privkey.as_hex()
     return ret_msg("success", "OK", "Keys", keys)
     
-def ret_msg(status,message,result_type,result):
+def ret_msg(status, message, result_type, result):
     msgJSON = "{}"
     key = json.loads(msgJSON)
     key["status"] = status
@@ -741,8 +952,8 @@ def ret_access_denied__msg(message):
     expJson = json.dumps(key)
     return expJson 
 
-def get_signature(message, private_key, privkey_format='wif'):
-    context = create_context('secp256k1')
+def get_signature(message, private_key, privkey_format="wif"):
+    context = create_context("secp256k1")
     factory = CryptoFactory(context)
     
     privkey = Secp256k1PrivateKey.from_hex(private_key)  
@@ -752,7 +963,7 @@ def get_signature(message, private_key, privkey_format='wif'):
 
 def verify_signature(message, signature, public_key):
     try:
-        context = create_context('secp256k1')
+        context = create_context("secp256k1")
         pubkey = Secp256k1PublicKey.from_hex(public_key)
         result = context.verify(signature,message.encode(),pubkey)
         return result 
@@ -764,8 +975,8 @@ def ret_auth_msg(status, message, auth, role):
     key = json.loads(expJson)
     key["status"] = status
     key["message"] = message
-    key['authorized'] = auth;
-    key['role'] = role
+    key["authorized"] = auth;
+    key["role"] = role
     expJson = json.dumps(key)
     return expJson 
 
@@ -777,12 +988,12 @@ def get_uuid():
     return str(uuid.uuid4())
 
 def not_found():
-    status = "{'error':'Not found'}"
+    status = "{\"error\":\"Not found\"}"
     return status
 
 def format_str(inputstr):
-    if ',' in inputstr:
-        inputstr = str(inputstr).replace(",", '##')
+    if "," in inputstr:
+        inputstr = str(inputstr).replace(",", "##")
     output = "\"{}\"".format(inputstr)
     return output 
 
@@ -791,10 +1002,16 @@ def refine_output(inputstr):
     if "##" in ins:
         ins = ins.replace("##", ",")
     return ins
+    
+def nullCast(dic, key):
+    if key not in dic:
+        return "null"
+    else:
+        return dic[key]
 ################################################################################
 #                                   MAIN                                       #
 ################################################################################
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(host="0.0.0.0", port="818")
 ################################################################################
 #                                                                              #

@@ -57,7 +57,7 @@ class ArtifactTransactionHandler:
             artifact_id             = payload["uuid"]
             artifact_alias          = payload["alias"]
             artifact_name           = payload["name"]
-            artifact_type           = payload["type"]
+            artifact_type           = payload["content_type"]
             artifact_checksum       = payload["checksum"]
             artifact_label          = payload["label"]
             artifact_openchain      = payload["openchain"]
@@ -127,7 +127,7 @@ def create_artifact(artifact_id, artifact_alias, artifact_name, artifact_type,
                 "uuid"          : artifact_id,
                 "alias"         : artifact_alias,
                 "name"          : artifact_name,
-                "type"          : artifact_type,
+                "content_type"  : artifact_type,
                 "checksum"      : artifact_checksum,
                 "label"         : artifact_label,
                 "openchain"     : artifact_openchain,

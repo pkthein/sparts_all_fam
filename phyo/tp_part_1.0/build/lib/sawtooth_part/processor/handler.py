@@ -72,7 +72,7 @@ class PartTransactionHandler:
         except ValueError:
             raise InvalidTransaction("Invalid payload serialization")
         
-        validate_transaction( pt_id,action)  
+        validate_transaction(pt_id, action)  
              
         data_address = make_part_address(self._namespace_prefix, pt_id)
         
@@ -139,7 +139,7 @@ def create_part(pt_id, pt_name, checksum, version, alias, licensing, label,
                 "supplier_list" : supplier_id 
             }
 
-def validate_transaction( pt_id,action):
+def validate_transaction(pt_id, action):
     if not pt_id:
         raise InvalidTransaction('Part ID is required')
  

@@ -73,7 +73,7 @@ class ArtifactBatch:
             if artifact_name == "null":
                 artifact_name = jresponse["name"]
             if artifact_type == "null":
-                artifact_type = jresponse["type"]
+                artifact_type = jresponse["content_type"]
             if artifact_checksum == "null":
                 artifact_checksum = jresponse["checksum"]
             if artifact_label == "null":
@@ -83,7 +83,7 @@ class ArtifactBatch:
             
             if (jresponse["alias"] == artifact_alias and
                 jresponse["name"] == artifact_name and
-                jresponse["type"] == artifact_type and
+                jresponse["content_type"] == artifact_type and
                 jresponse["checksum"] == artifact_checksum and
                 jresponse["label"] == artifact_label and
                 jresponse["openchain"] == artifact_openchain) :
@@ -199,7 +199,7 @@ class ArtifactBatch:
                 return self.artifact_transaction(private_key, public_key,
                             artifact_id, jresponse["alias"],
                             jresponse["name"],
-                            jresponse["type"],
+                            jresponse["content_type"],
                             jresponse["checksum"],
                             jresponse["label"],
                             jresponse["openchain"],
@@ -246,7 +246,7 @@ class ArtifactBatch:
                 return self.artifact_transaction(private_key, public_key,
                             artifact_id, jresponse["alias"],
                             jresponse["name"],
-                            jresponse["type"],
+                            jresponse["content_type"],
                             jresponse["checksum"],
                             jresponse["label"],
                             jresponse["openchain"],
@@ -289,7 +289,7 @@ class ArtifactBatch:
                 return self.artifact_transaction(private_key, public_key,
                             artifact_id, jresponse["alias"],
                             jresponse["name"],
-                            jresponse["type"],
+                            jresponse["content_type"],
                             jresponse["checksum"],
                             jresponse["label"],
                             jresponse["openchain"],
@@ -328,7 +328,7 @@ class ArtifactBatch:
                 return self.artifact_transaction(private_key, public_key,
                             artifact_id, jresponse["alias"],
                             jresponse["name"],
-                            jresponse["type"],
+                            jresponse["content_type"],
                             jresponse["checksum"],
                             jresponse["label"],
                             jresponse["openchain"],
@@ -426,7 +426,7 @@ class ArtifactBatch:
             "uuid"          : str(artifact_id),
             "alias"         : str(artifact_alias),
             "name"          : str(artifact_name),
-            "type"          : str(artifact_type),
+            "content_type"  : str(artifact_type),
             "checksum"      : str(artifact_checksum),
             "label"         : str(artifact_label),
             "openchain"     : str(artifact_openchain),

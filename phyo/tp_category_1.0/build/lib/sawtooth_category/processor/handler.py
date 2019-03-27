@@ -111,7 +111,7 @@ class CategoryTransactionHandler(TransactionHandler):
         return addresses
 
 
-def create_category_payload(category_id,category_name,description, 
+def create_category_payload(category_id, category_name, description, 
                             prev, cur, timestamp):
     return {
                 "uuid"          : category_id,
@@ -123,7 +123,7 @@ def create_category_payload(category_id,category_name,description,
             }
 
 
-def validate_transaction( category_id,category_name,description,action):
+def validate_transaction(category_id, category_name, description, action):
     if not category_id:
         raise InvalidTransaction("Category ID is required")
 
