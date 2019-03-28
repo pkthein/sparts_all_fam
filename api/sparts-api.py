@@ -25,6 +25,7 @@ from sawtooth_signing import ParseError
 from sawtooth_signing.secp256k1 import Secp256k1PublicKey
 from sawtooth_signing.secp256k1 import Secp256k1PrivateKey
 #
+import base64
 
 import uuid
 from random import randint
@@ -398,7 +399,7 @@ def get_category(category_id):
     "/ledger/api/v1/categories/<string:category_id>/history",
     methods=["GET"]
 )
-def log_uuid_category(category_id):
+def get_uuid_category_history(category_id):
     try:
         cmd = "category retrieve --all " + category_id
         process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
@@ -417,7 +418,7 @@ def log_uuid_category(category_id):
     "/ledger/api/v1/categories/<string:category_id>/<string:START>",
     methods=["GET"]
 )
-def day_uuid_category(category_id, START):
+def get_uuid_category_day(category_id, START):
     try:
         cmd = "category retrieve --range {} {} {}".format(
                     START, START, category_id
@@ -432,6 +433,18 @@ def day_uuid_category(category_id, START):
     except Exception as e:
         exp = ret_exception_msg(e) 
         return exp
+        
+@app.route("/ledger/phyo/test", methods=["POST"])
+def testing_():
+    try:
+        if not request.json or "data" not in request.json:
+            return "Error"
+        data = json.dumps(request.json["data"])
+        if data[-2:] == "==":
+            data = base64.b64decode(data.encode()).decode()
+        return data
+    except Exception as e:
+        return e
 ################################################################################
 #                                 ORGANIZATION                                 #
 ################################################################################
