@@ -14,14 +14,16 @@ services:
         container_name: phyo
         expose:
             - '818'
+            - '850'
             # - '80'
         ports:
             - '8080:818'
+            - '8800:850'
             # - '80:80'
         tty: true
-        # volumes:
-        #     - ./phyo:/project/src
-        #     - ./api/sparts-api.py:/project/sparts-api.py
+        volumes:
+            - ./phyo:/project/src
+            - ./api/sparts-api.py:/project/sparts-api.py
         # RUNNING FROM phyohtut/sparts-test:part
         entrypoint: "bash -c \"\
             cd /project/src/tp_artifact_1.0 && \

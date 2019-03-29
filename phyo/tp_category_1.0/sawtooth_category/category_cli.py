@@ -410,3 +410,41 @@ def main_wrapper():
 ################################################################################
 #                                                                              #
 ################################################################################
+def api_do_create_category(args, config):
+    
+    category_id = args["uuid"]
+    category_name = args["name"]
+    description = args["description"]
+    private_key = args["private_key"]
+    public_key = args["public_key"]
+
+    payload = "{}"
+    key = json.loads(payload)
+    key["publickey"] = public_key
+    key["privatekey"] = private_key
+    key["allowedrole"] = [{"role":"admin"}, {"role":"member"}]
+    payload = json.dumps(key)
+    
+    headers = {"content-type": "application/json"}
+    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth", 
+                    data=json.dumps(key), headers=headers)
+    output = response.content.decode("utf-8").strip()
+    statusinfo = json.loads(output)
+       
+    if statusinfo.get("status") and statusinfo.get("message"):
+            
+        status = statusinfo["status"]
+        message = statusinfo["message"]
+            
+        if status == "success" and message == "authorized":
+            
+            b_url = config.get("DEFAULT", "url")
+            client = CategoryBatch(base_url=b_url)
+            response = client.create_category(category_id, category_name, 
+                            description, private_key, public_key)
+            print_msg(response)
+            
+        else:
+            return output
+    else:
+        return output

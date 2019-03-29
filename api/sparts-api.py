@@ -309,13 +309,13 @@ def create_category():
         private_key = request.json["private_key"]
         
         uuid = request.json["category"]["uuid"]
+        
         name = request.json["category"]["name"]
-        name = format_str(name)
+        
         description = request.json["category"]["description"]
-        description = format_str(description)
         
         cmd = "category create {} {} {} {} {}".format(
-                    uuid, str(name), str(description), private_key, public_key
+                    uuid, name, description, private_key, public_key
                 )
         cmd = shlex.split(cmd)
         
@@ -343,13 +343,11 @@ def amend_category():
         uuid = request.json["category"]["uuid"]
         
         name = nullCast(request.json["category"], "name")
-        name = format_str(name) 
-        description = nullCast(request.json["category"], "description")
-        description = format_str(description)
         
-        # cmd = "category amend " + uuid + " " + str(name) + " " + str(description) + " " + private_key + " "+ public_key
+        description = nullCast(request.json["category"], "description")
+        
         cmd = "category amend {} {} {} {} {}".format(
-                    uuid, str(name), str(description), private_key, public_key
+                    uuid, name, description, private_key, public_key
                 )
         cmd = shlex.split(cmd)
         
@@ -396,7 +394,7 @@ def get_category(category_id):
 
 # Retrieves historical category record by category id   
 @app.route(
-    "/ledger/api/v1/categories/<string:category_id>/history",
+    "/ledger/api/v1/categories/history/<string:category_id>",
     methods=["GET"]
 )
 def get_uuid_category_history(category_id):
@@ -415,7 +413,7 @@ def get_uuid_category_history(category_id):
 
 # Retrieves historical category record on certain date by category id
 @app.route(
-    "/ledger/api/v1/categories/<string:category_id>/<string:START>",
+    "/ledger/api/v1/categories/<string:category_id>/date/<string:START>",
     methods=["GET"]
 )
 def get_uuid_category_day(category_id, START):
@@ -433,16 +431,17 @@ def get_uuid_category_day(category_id, START):
     except Exception as e:
         exp = ret_exception_msg(e) 
         return exp
-        
+
+# Retrieve most appropriate category record on certain date by category id
+# TODO : --limit needs to be implemented first
 @app.route("/ledger/phyo/test", methods=["POST"])
 def testing_():
     try:
         if not request.json or "data" not in request.json:
             return "Error"
         data = json.dumps(request.json["data"])
-        if data[-2:] == "==":
-            data = base64.b64decode(data.encode()).decode()
-        return data
+        
+        return json.loads(data)
     except Exception as e:
         return e
 ################################################################################
@@ -461,21 +460,19 @@ def create_organization():
         private_key = request.json["private_key"] 
         
         uuid = request.json["organization"]["uuid"]
-        uuid = format_str(uuid)
-        alias = request.json["organization"]["alias"]
-        alias = format_str(alias)
-        name = request.json["organization"]["name"]
-        name = format_str(name) 
-        type = request.json["organization"]["type"]
-        type = format_str(type)
-        description = request.json["organization"]["description"]
-        description = format_str(description)
-        url = request.json["organization"]["url"]
-        url = format_str(url)
         
-        # cmd = "organization create " + uuid + " " + alias + " " + str(name)+" "+str(type)+" "+description + " "+ str(url) + " "+ private_key + " "+public_key
+        alias = request.json["organization"]["alias"]
+        
+        name = request.json["organization"]["name"]
+         
+        _type = request.json["organization"]["type"]
+        
+        description = request.json["organization"]["description"]
+        
+        url = request.json["organization"]["url"]
+
         cmd = "organization create {} {} {} {} {} {} {} {}".format(
-                    uuid, alias, str(name), str(type), description, str(url),
+                    uuid, alias, name, _type, description, url,
                     private_key, public_key
                 )
         cmd = shlex.split(cmd)
@@ -501,22 +498,20 @@ def amend_organization():
         public_key = request.json["public_key"]
         private_key = request.json["private_key"]
         uuid = request.json["organization"]["uuid"]
-        uuid = format_str(uuid)
         
         alias = nullCast(request.json["organization"], "alias")
-        alias = format_str(alias)
+        
         name = nullCast(request.json["organization"], "name")
-        name = format_str(name)
+        
         org_type = nullCast(request.json["organization"], "type")
-        org_type = format_str(org_type)
+        
         description = nullCast(request.json["organization"], "description")
-        description = format_str(description)
+        
         url = nullCast(request.json["organization"], "url")
-        url = format_str(url)
         
         cmd = "organization amend {} {} {} {} {} {} {} {}".format(
-                    uuid, alias, str(name), str(org_type), description,
-                    str(url), private_key, public_key
+                    uuid, alias, name, org_type, description, url,
+                    private_key, public_key
                 )
         cmd = shlex.split(cmd)
     
@@ -560,11 +555,44 @@ def get_organization(org_id):
     except Exception as e:
         exp = ret_exception_msg(e) 
         return exp
-        
+
+# Retrieves historical organization record by organization id
+@app.route("/ledger/api/v1/orgs/history/<string:org_id>", methods=["GET"])
+def get_uuid_organization_history(org_id):
+    try:
+        cmd = "organization retrieve --all " + org_id
+        process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
+        process.wait()
+        output = ""
+        for line in process.stdout:
+            output += line.decode("utf-8").strip()
+            output = refine_output(output)
+        return output
+    except Exception as e:
+        exp = ret_exception_msg(e) 
+        return exp
+
+# Retrieves historical organization record on certain date by organization id
+@app.route("/ledger/api/v1/orgs/<string:org_id>/date/<string:START>", methods=["GET"])
+def get_uuid_organization_day(org_id, START):
+    try:
+        cmd = "organization retrieve --range {} {} {}".format(
+                    START, START, org_id
+                )
+        process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
+        process.wait()
+        output = ""
+        for line in process.stdout:
+            output += line.decode("utf-8").strip()
+            output = refine_output(output)
+        return output
+    except Exception as e:
+        exp = ret_exception_msg(e) 
+        return exp
+
 # Establishes relationship between part and organization 
 def add_part_to_organization(uuid, part_uuid, private_key, public_key):
-    try:    
-        # cmd = "organization AddPart " + uuid + " " + part_uuid + " "+ private_key + " "+ public_key
+    try:
         cmd = "organization AddPart {} {} {} {}".format(
                     uuid, part_uuid, private_key, public_key
                 )
@@ -595,24 +623,22 @@ def create_part():
         
         uuid = request.json["part"]["uuid"]
         name = request.json["part"]["name"]
-        name = format_str(name)
+        
         checksum = request.json["part"]["checksum"]
-        checksum = format_str(checksum)
+        
         version = request.json["part"]["version"]
-        version = format_str(version)
+        
         alias = request.json["part"]["alias"]
-        alias = format_str(alias)
+        
         licensing = request.json["part"]["licensing"]
-        licensing = format_str(licensing)
+        
         label = request.json["part"]["label"]
-        label = format_str(label)
+        
         description = request.json["part"]["description"]
-        description = format_str(description)
         
         cmd = "pt create {} {} {} {} {} {} {} {} {} {}".format(
-                    uuid, str(name), checksum, version, str(alias),
-                    str(licensing), str(label), str(description), private_key,
-                    public_key
+                    uuid, name, checksum, version, alias, licensing, label,
+                    description, private_key, public_key
                 )
         cmd = shlex.split(cmd)
         
@@ -639,24 +665,22 @@ def amend_part():
         uuid = request.json["part"]["uuid"]
         
         name = nullCast(request.json["part"], "name")
-        name = format_str(name)
+        
         checksum = nullCast(request.json["part"], "checksum")
-        checksum = format_str(checksum)
+        
         version = nullCast(request.json["part"], "version")
-        version = format_str(version)
+        
         alias = nullCast(request.json["part"], "alias")
-        alias = format_str(alias)
+        
         licensing = nullCast(request.json["part"], "licensing")
-        licensing = format_str(licensing)
+        
         label = nullCast(request.json["part"], "label")
-        label = format_str(label)
+        
         description = nullCast(request.json["part"], "description")
-        description = format_str(description)
         
         cmd = "pt amend {} {} {} {} {} {} {} {} {} {}".format(
-                    uuid, str(name), checksum, version, str(alias),
-                    str(licensing), str(label), str(description), private_key,
-                    public_key
+                    uuid, name, checksum, version, alias, licensing, label,
+                    description, private_key, public_key
                 )
         cmd = shlex.split(cmd)
         
@@ -690,6 +714,38 @@ def get_parts():
 def get_part(part_id):
     try:    
         cmd = "pt retrieve " + part_id
+        process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
+        process.wait()
+        output = ""
+        for line in process.stdout:
+            output += line.decode("utf-8").strip()
+            output = refine_output(output)
+        return output
+    except Exception as e: 
+        exp = ret_exception_msg(e)
+        return exp
+
+# Retrieves historical part record by part id
+@app.route("/ledger/api/v1/parts/history/<string:part_id>", methods=["GET"])
+def get_uuid_part_history(part_id):
+    try:    
+        cmd = "pt retrieve --all " + part_id
+        process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
+        process.wait()
+        output = ""
+        for line in process.stdout:
+            output += line.decode("utf-8").strip()
+            output = refine_output(output)
+        return output
+    except Exception as e: 
+        exp = ret_exception_msg(e)
+        return exp
+
+# Retrieves historical part record on certain date by part id
+@app.route("/ledger/api/v1/parts/<string:part_id>/date/<string:START>", methods=["GET"])
+def get_uuid_part_day(part_id, START):
+    try:    
+        cmd = "pt retrieve --range {} {} {}".format(START, START, part_id)
         process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
         process.wait()
         output = ""
@@ -994,7 +1050,7 @@ def ret_auth_msg(status, message, auth, role):
     return expJson 
 
 def str_qt(input):
-    output = "'"+input +"'"
+    output = "'" + input + "'"
     return output
     
 def get_uuid():
@@ -1005,8 +1061,8 @@ def not_found():
     return status
 
 def format_str(inputstr):
-    if "," in inputstr:
-        inputstr = str(inputstr).replace(",", "##")
+    # if "," in inputstr:
+    #     inputstr = str(inputstr).replace(",", "##")
     output = "\"{}\"".format(inputstr)
     return output 
 
