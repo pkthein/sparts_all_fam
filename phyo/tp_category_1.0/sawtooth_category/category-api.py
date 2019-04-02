@@ -26,24 +26,60 @@ def get_ping_result():
     return output 
 
 @app.route("/phyo/cat", methods=["POST"])
-def create():
+def create_category():
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
-    # output = category_cli.api_do_create_category(request.json, config)
-    # return output
-    return request.json
+    
+    try:
+        
+        output = category_cli.api_do_create_category(request.json, config)    
+        
+        return output
+    except Exception as e:
+        return e
 
+@app.route("/phyo/cat", methods=["GET"])
+def list_category():
+    config = configparser.ConfigParser()
+    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+    
+    try:
+        output = category_cli.api_do_list_category(config)
+        
+        return output
+    except Exception as e:
+        return e
+################################################################################
+#                                   TEST                                       #
+################################################################################
 @app.route("/phyo/test", methods=["POST"])
 def testing_():
     try:
-        if not request.json or "data" not in request.json:
-            return "Error"
-        data = json.dumps(request.json["data"])
+        # if not request.json or "category" not in request.json:
+        #     return "Error"
+        # data = json.dumps(request.json["private_key"])
         
-        return json.loads(data)
+        # return json.loads(data)
+        # return (request.json["category"]["uuid"] + request.json["category"]["name"])
+        return json.dumps(request.json)
     except Exception as e:
         return e
-    
+
+@app.route("/phyo/test", methods=["GET"])
+def testing_get():
+    try:
+        # if not request.json or "category" not in request.json:
+        #     return "Error"
+        # data = json.dumps(request.json["private_key"])
+        
+        # return json.loads(data)
+        # return (request.json["category"]["uuid"] + request.json["category"]["name"])
+        return "phyo test get was called successfully"
+    except Exception as e:
+        return e
+################################################################################
+#                                                                              #
+################################################################################
 def ret_msg(status, message, result_type, result):
     msgJSON = "{}"
     key = json.loads(msgJSON)

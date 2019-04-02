@@ -17,6 +17,7 @@
 import os
 import subprocess, shlex, re
 from flask import Flask, jsonify, make_response, request, json
+import requests
 # import sawtooth_signing.secp256k1_signer as signing
 #
 from sawtooth_signing import create_context
@@ -1061,8 +1062,6 @@ def not_found():
     return status
 
 def format_str(inputstr):
-    # if "," in inputstr:
-    #     inputstr = str(inputstr).replace(",", "##")
     output = "\"{}\"".format(inputstr)
     return output 
 
@@ -1077,6 +1076,68 @@ def nullCast(dic, key):
         return "null"
     else:
         return dic[key]
+################################################################################
+#                                API to API                                    #
+################################################################################
+@app.route("/phyo/api/test", methods=["POST"])
+def api_test_post():
+    key =   {
+                "private_key": "978fac33144135c4dbdb462f2172250951856b9f66a91b8ed0c885858ee54710",
+                "public_key": "030c997d29830073d8137485623c9741fc6e3b5cba535539a98cd7fea66d332e03",
+                "category": {
+                                "uuid": "aHR0cDovL3d3dy5hcGFjaGUub3JnL2xpY2Vuc2VzLw==",
+                                "name": "Apache License",
+                                "description":" derp"
+                            }
+            }
+    
+    headers = {"content-type": "application/json"}
+    response = requests.post("http://127.0.0.1:850/phyo/test", 
+                    data=json.dumps(key), headers=headers)
+    output = response.content.decode("utf-8")
+    # statusinfo = json.loads(output)
+       
+    # if statusinfo.get("status") and statusinfo.get("message"):
+            
+    #     status = statusinfo["status"]
+    #     message = statusinfo["message"]
+            
+    #     if status == "success" and message == "authorized":
+            
+    #         b_url = config.get("DEFAULT", "url")
+    #         client = CategoryBatch(base_url=b_url)
+    #         response = client.create_category(category_id, category_name, 
+    #                         description, private_key, public_key)
+    #         print_msg(response)
+            
+    #     else:
+    #         print(output)
+    # else:
+    #     print(output)
+    return output
+
+@app.route("/phyo/api/test", methods=["GET"])
+def api_test_get():
+    # headers = {"content-type": "application/json"}
+    response = requests.get("http://127.0.0.1:850/phyo/test")
+    output = response.content.decode("utf-8").strip()
+    # statusinfo = json.loads(output)
+       
+    # if statusinfo.get("status") and statusinfo.get("message"):
+            
+    #     status = statusinfo["status"]
+    #     message = statusinfo["message"]
+            
+    #     if status == "success" and message == "authorized":
+
+    #         return (response)
+            
+    #     else:
+    #         return (output)
+    # else:
+    #     return (output)
+    # print(statusinfo)
+    return output
 ################################################################################
 #                                   MAIN                                       #
 ################################################################################

@@ -217,11 +217,8 @@ def do_list_category(args, config):
     if category_list is not None:
         
         if str(category_list) != "[]":
-            result = ("[" + str(category_list)[3:-2] + "]").replace("b'", "")\
-                        .replace("'", "")
-            result = json.loads(result)
-            result.sort(key=lambda x:x["timestamp"], reverse=True)
-            result = json.dumps(result)
+            category_list.sort(key=lambda x:x["timestamp"], reverse=True)
+            result = json.dumps(category_list)
             
             output = ret_msg("success", "OK", "ListOf:CategoryRecord", result)
         else:
@@ -249,7 +246,7 @@ def do_retrieve_category(args, config):
         if all_flag == False:
             output = ret_msg("success", "OK", "CategoryRecord", data.decode())
         else:
-            output = ret_msg("success", "OK", "CategoryRecord", json.loads(data))
+            output = ret_msg("success", "OK", "CategoryRecord", data)
             
         print(output)
     else:
@@ -330,7 +327,6 @@ def do_amend_category(args, config):
             print(output)
     else:
         print(output)
-        
 ################################################################################
 #                                   PRINT                                      #
 ################################################################################
@@ -343,10 +339,13 @@ def load_config():
 def print_msg(response):
     if response == None:
         print(ret_msg("failed","Exception raised","EmptyRecord","{}"))
+        return ret_msg("failed","Exception raised","EmptyRecord","{}")
     elif "batch_statuses?id" in response:
         print(ret_msg("success","OK","EmptyRecord","{}"))
+        return ret_msg("success","OK","EmptyRecord","{}")
     else:
         print(ret_msg("failed","Exception raised","EmptyRecord","{}"))
+        return ret_msg("failed","Exception raised","EmptyRecord","{}")
         
 def ret_msg(status, message, result_type, result):
     msgJSON = "{}"
@@ -354,7 +353,7 @@ def ret_msg(status, message, result_type, result):
     key["status"] = status
     key["message"] = message
     key["result_type"] = result_type
-    key["result"] = json.loads(result)
+    key["result"] = result if type(result) is list else json.loads(result)
    
     msgJSON = json.dumps(key)
     return msgJSON
@@ -410,3 +409,85 @@ def main_wrapper():
 ################################################################################
 #                                                                              #
 ################################################################################
+def api_do_create_category(args, config):
+    # args            = json.loads(args)
+    category_id     = args["category"]["uuid"]
+    category_name   = args["category"]["name"]
+    description     = args["category"]["description"]
+    private_key     = args["private_key"]
+    public_key      = args["public_key"]
+    
+    payload             = "{}"
+    key                 = json.loads(payload)
+    key["publickey"]    = public_key
+    key["privatekey"]   = private_key
+    key["allowedrole"]  = [{ "role" : "admin" }, { "role" : "member" }]
+    payload = json.dumps(key)
+    
+    headers = {"content-type": "application/json"}
+    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth", 
+                    data=json.dumps(key), headers=headers)
+    output = response.content.decode("utf-8").strip()
+    statusinfo = json.loads(output)
+       
+    if statusinfo.get("status") and statusinfo.get("message"):
+            
+        status = statusinfo["status"]
+        message = statusinfo["message"]
+            
+        if status == "success" and message == "authorized":
+            
+            b_url = config.get("DEFAULT", "url")
+            client = CategoryBatch(base_url=b_url)
+            response = client.create_category(category_id, category_name, 
+                            description, private_key, public_key)
+            # return response
+            return print_msg(response)
+            # print(output, '@445 cli')
+        else:
+            return output
+    else:
+        return output
+
+def api_do_list_category(config):
+    b_url = config.get("DEFAULT", "url")
+    client = CategoryBatch(base_url=b_url)
+    category_list = client.list_category()
+
+    if category_list is not None:
+        
+        if str(category_list) != "[]":
+            category_list.sort(key=lambda x:x["timestamp"], reverse=True)
+            result = json.dumps(category_list)
+            
+            output = ret_msg("success", "OK", "ListOf:CategoryRecord", result)
+        else:
+            output = ret_msg("success", "OK", "ListOf:CategoryRecord", 
+                        str(category_list))
+        return output
+    else:
+        raise CategoryException("Could not retrieve category listing.")
+
+def api_do_retrieve_category(category_id, config,
+            all_flag=False, range_flag=None):
+    
+    if range_flag != None:
+        all_flag = True
+    
+    b_url = config.get("DEFAULT", "url")
+    client = CategoryBatch(base_url=b_url)
+    data = client.retreive_category(category_id, all_flag, range_flag)
+    
+    if data is not None:
+        
+        if all_flag == False:
+            output = ret_msg("success", "OK", "CategoryRecord", data.decode())
+        else:
+            output = ret_msg("success", "OK", "CategoryRecord", json.loads(data))
+            
+        print(output)
+    else:
+        raise CategoryException("Category not found: {}".format(category_id))
+    
+def api_test():
+    return 'i was here'

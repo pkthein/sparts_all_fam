@@ -53,6 +53,11 @@ class CategoryBatch:
 ################################################################################    
     def create_category(self, category_id, category_name, description, 
                             private_key, public_key):
+        response_bytes = self.retreive_category(category_id)
+        
+        if response_bytes != None:
+            return None
+        
         cur = self._get_block_num();
         return self.send_category_transactions(category_id, category_name,
                     description, "create", private_key, public_key, "0", 
@@ -64,12 +69,13 @@ class CategoryBatch:
         result = self._send_request(
             "state?address={}".format(category_prefix)
         )
-
+        
         try:
             encoded_entries = yaml.safe_load(result)["data"]
 
             return [
-                base64.b64decode(entry["data"]) for entry in encoded_entries
+                json.loads(base64.b64decode(entry["data"]).decode()) for entry \
+                    in encoded_entries
             ]
 
         except BaseException:
@@ -87,11 +93,9 @@ class CategoryBatch:
                 curTime = int(response["timestamp"].split()[0].replace("-", ""))
                 if (curTime <= int(range_flag[1]) and 
                         curTime >= int(range_flag[0])):
-                    jresponse = json.dumps(response)
-                    retVal.append(jresponse)
+                    retVal.append(response)
             else:
-                jresponse = json.dumps(response)
-                retVal.append(jresponse)
+                retVal.append(response)
             
             while str(response["prev_block"]) != "0":
                 
@@ -102,20 +106,16 @@ class CategoryBatch:
                 
                 del response["action"]
                 
-                jresponse = json.dumps(response)
-                
                 if range_flag != None:
                     curTime = int(timestamp.split()[0].replace("-", ""))
                     if curTime < int(range_flag[0]):
                         break
                     elif curTime <= int(range_flag[1]):
-                        retVal.append(jresponse)
+                        retVal.append(response)
                 else:
-                    retVal.append(jresponse)
-                
-            retVal = str(retVal).replace("'", '')
+                    retVal.append(response)
             
-            return json.dumps(retVal)
+            return retVal
         else:        
             address = self._get_address(category_id)
             result = self._send_request("state/{}".format(address), \
