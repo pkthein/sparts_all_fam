@@ -157,9 +157,9 @@ def ret_msg(status, message, result_type, result):
     msgJSON = json.dumps(key)
     return msgJSON
     
-@app.errorhandler(500)
-def custom500(message):
-    return "yolo"
+# @app.errorhandler(500)
+# def custom500(message):
+#     return "yolo"
 ################################################################################
 #                                   MAIN                                       #
 ################################################################################

@@ -16,34 +16,43 @@
 from flask import Flask, jsonify, make_response, request, json
 import category_cli
 import configparser
-
+################################################################################
+#                               LIBS & DEPS                                    #
+################################################################################
 app = Flask(__name__)
 
-@app.route("/phyo/ping", methods=["GET"])
+# PING
+@app.route("/tp/category/ping", methods=["GET"])
 def get_ping_result():
     
     output = ret_msg("success","OK","EmptyRecord","phyo is here")
     return output 
 
-@app.route("/phyo/cat", methods=["POST"])
+# CREATE
+@app.route("/tp/category", methods=["POST"])
 def create_category():
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
     try:
-        
+        if not request.json:
+            return "Expecting JSON Object."
+            
         output = category_cli.api_do_create_category(request.json, config)    
         
         return output
     except Exception as e:
         return e
 
-@app.route("/phyo/cat/amend", methods=["POST"])
+# AMEND
+@app.route("/tp/category/amend", methods=["POST"])
 def amend_category():
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
     try:
+        if not request.json:
+            return "Expecting JSON Object."
         
         output = category_cli.api_do_amend_category(request.json, config)    
         
@@ -51,7 +60,8 @@ def amend_category():
     except Exception as e:
         return e
 
-@app.route("/phyo/cat", methods=["GET"])
+# LIST
+@app.route("/tp/category", methods=["GET"])
 def list_category():
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
@@ -62,9 +72,10 @@ def list_category():
         return output
     except Exception as e:
         return e
-        
-@app.route("/phyo/cat/<string:category_id>", methods=["GET"])
-def retreive_category(category_id):
+
+# RETRIEVE MOST RECENT BY UUID
+@app.route("/tp/category/<string:category_id>", methods=["GET"])
+def retrieve_category(category_id):
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
@@ -75,8 +86,9 @@ def retreive_category(category_id):
     except Exception as e:
         return e
 
-@app.route("/phyo/cat/history/<string:category_id>", methods=["GET"])
-def retreive_category_history(category_id):
+# RETRIEVE HISTORY OF UUID
+@app.route("/tp/category/history/<string:category_id>", methods=["GET"])
+def retrieve_category_history(category_id):
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
@@ -87,12 +99,13 @@ def retreive_category_history(category_id):
         return output
     except Exception as e:
         return e
-        
+
+# RETRIEVE UUID ON CERTAIN DATE     
 @app.route(
-    "/phyo/cat/<string:category_id>/date/<string:START>",
+    "/tp/category/<string:category_id>/date/<string:START>",
     methods=["GET"]
 )
-def retreive_category_history_date(category_id, START):
+def retrieve_category_history_date(category_id, START):
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
@@ -100,14 +113,13 @@ def retreive_category_history_date(category_id, START):
         output = category_cli.api_do_retrieve_category(
                         category_id, config, range_flag=[START, START]
                     )
-        print(output)
         return output
     except Exception as e:
         return e
 ################################################################################
 #                                   TEST                                       #
 ################################################################################
-@app.route("/phyo/test", methods=["POST"])
+@app.route("/tp/test", methods=["POST"])
 def testing_():
     try:
         # if not request.json or "category" not in request.json:
@@ -120,7 +132,7 @@ def testing_():
     except Exception as e:
         return e
 
-@app.route("/phyo/test", methods=["GET"])
+@app.route("/tp/test", methods=["GET"])
 def testing_get():
     try:
         # if not request.json or "category" not in request.json:
@@ -133,7 +145,7 @@ def testing_get():
     except Exception as e:
         return e
 ################################################################################
-#                                                                              #
+#                                  PRINT                                       #
 ################################################################################
 def ret_msg(status, message, result_type, result):
     msgJSON = "{}"
@@ -144,6 +156,10 @@ def ret_msg(status, message, result_type, result):
     key["result"] = result
     msgJSON = json.dumps(key)
     return msgJSON
+    
+# @app.errorhandler(500)
+# def custom500(message):
+#     return "yolo"
 ################################################################################
 #                                   MAIN                                       #
 ################################################################################

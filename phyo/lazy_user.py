@@ -97,6 +97,8 @@ os.system(
 	'echo category create 8000 {} {} {} {} &&'.format('start', 'genesis', pri_key, pub_key) +
 	'echo category create 9000 {} {} {} {} &&'.format('genesis', 'start', pri_key, pub_key) +
 	'echo category amend 9000 {} {} {} {} &&'.format('start', 'genesis', pri_key, pub_key) +
+	'echo {} {} &&'.format('pri : ', pri_key) +
+	'echo {} {} &&'.format('pub : ', pub_key) +
 	'echo "====================PLEASE RUN THE FOLLOWING CHECKS====================" &&' +
 	'echo "======================================================================="'
 	)

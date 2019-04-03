@@ -80,7 +80,7 @@ class CategoryBatch:
             
             if jresponse["name"] == category_name and \
                 jresponse["description"] == description:
-                return None
+                return [None]
             else:
                 cur = self._get_block_num()
                 return self.send_category_transactions(category_id, 
@@ -221,7 +221,7 @@ class CategoryBatch:
 
         except BaseException as err:
             print(err)
-            raise CategoryException(err)
+            return None
         
         return result.text
 

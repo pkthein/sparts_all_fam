@@ -336,16 +336,36 @@ def load_config():
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     return config
 
-def print_msg(response):
-    if response == None:
-        print(ret_msg("failed","Exception raised","EmptyRecord","{}"))
-        return ret_msg("failed","Exception raised","EmptyRecord","{}")
-    elif "batch_statuses?id" in response:
-        print(ret_msg("success","OK","EmptyRecord","{}"))
-        return ret_msg("success","OK","EmptyRecord","{}")
-    else:
-        print(ret_msg("failed","Exception raised","EmptyRecord","{}"))
-        return ret_msg("failed","Exception raised","EmptyRecord","{}")
+def print_msg(response, cmd=None):
+    try:
+        if type(response) is list and response[0] == None:
+            raise CategoryException(
+                        "CategoryException : No change."
+                    )
+        
+        if response == None:
+            if cmd == "create":
+                raise CategoryException("CategoryException : Duplicate UUID.")
+                
+            elif cmd == "amend":
+                raise CategoryException(
+                            "CategoryException : UUID does not exist."
+                        )
+                
+            raise CategoryException("Exception raised.")
+        elif "batch_statuses?id" in response:
+            print(ret_msg("success", "OK", "CategoryRecord", "{}"))
+            return ret_msg("success", "OK", "CategoryRecord", "{}")
+        else:
+            raise CategoryException("Exception raised.")
+    except BaseException as err:
+        output = ret_msg(
+                            "failed",
+                            str(err),
+                            "CategoryRecord", "{}"
+                        )
+        print(output)
+        return output
         
 def ret_msg(status, message, result_type, result):
     msgJSON = "{}"
@@ -407,9 +427,14 @@ def main_wrapper():
         traceback.print_exc(file=sys.stderr)
         sys.exit(1)
 ################################################################################
-#                                                                              #
+#                                 API                                          #
 ################################################################################
 def api_do_create_category(args, config):
+    param_check = _payload_check_(args, creation=True)
+    
+    if param_check[0]:
+        return ret_msg("failed", param_check[1], "EmptyRecord", "{}")
+    
     category_id     = args["category"]["uuid"]
     category_name   = args["category"]["name"]
     description     = args["category"]["description"]
@@ -441,16 +466,23 @@ def api_do_create_category(args, config):
             response = client.create_category(category_id, category_name, 
                             description, private_key, public_key)
             
-            return print_msg(response)
+            return print_msg(response, "create")
         else:
             return output
     else:
         return output
 
 def api_do_amend_category(args, config):
+    param_check = _payload_check_(args)
+    
+    if param_check[0]:
+        return ret_msg("failed", param_check[1], "EmptyRecord", "{}")
+    
     category_id     = args["category"]["uuid"]
-    category_name   = args["category"]["name"]
-    description     = args["category"]["description"]
+    
+    category_name   = _null_cast(args["category"], "name")
+    description     = _null_cast(args["category"], "description")
+    
     private_key     = args["private_key"]
     public_key      = args["public_key"]
     
@@ -479,7 +511,7 @@ def api_do_amend_category(args, config):
             response = client.amend_category(category_id, category_name, 
                             description, private_key, public_key)
             
-            return print_msg(response)
+            return print_msg(response, "amend")
         else:
             return output
     else:
@@ -489,7 +521,7 @@ def api_do_list_category(config):
     b_url = config.get("DEFAULT", "url")
     client = CategoryBatch(base_url=b_url)
     category_list = client.list_category()
-
+    
     if category_list is not None:
         
         if str(category_list) != "[]":
@@ -502,7 +534,11 @@ def api_do_list_category(config):
                         str(category_list))
         return output
     else:
-        raise CategoryException("Could not retrieve category listing.")
+        return ret_msg(
+                    "failed", 
+                    "CategoryException : Could not retrieve category listing.", 
+                    "CategoryRecord", "{}"
+                )
 
 def api_do_retrieve_category(category_id, config,
             all_flag=False, range_flag=None):
@@ -523,7 +559,47 @@ def api_do_retrieve_category(category_id, config,
             
         return output
     else:
-        raise CategoryException("Category not found: {}".format(category_id))
-    
-def api_test():
-    return 'i was here'
+        return ret_msg(
+                    "failed",
+                    "CategoryException : UUID {} does not exist." \
+                    .format(category_id),
+                    "CategoryRecord", "{}"
+                )
+################################################################################
+#                           API PRIVATE FUNCTIONS                              #
+################################################################################
+def _payload_check_(args, creation=False):
+    if creation:
+        if "category" not in args:
+            return [True, "Category missing."]
+        elif "private_key" not in args:
+            return [True, "Private-Key missing."]
+        elif "public_key" not in args:
+            return [True, "Public-Key missing."]
+        elif "uuid" not in args["category"]:
+            return [True, "UUID missing."]
+        elif "name" not in args["category"]:
+            return [True, "Name missing."]
+        elif "description" not in args["category"]:
+            return [True, "Description missing."]
+        else:
+            return [False]
+    else:
+        if "category" not in args:
+            return [True, "Category missing."]
+        elif "private_key" not in args:
+            return [True, "Private-Key missing."]
+        elif "public_key" not in args:
+            return [True, "Public-Key missing."]
+        elif "uuid" not in args["category"]:
+            return [True, "UUID missing."]
+        else:
+            return [False]
+
+def _null_cast(dic, key):
+    if key not in dic:
+        return "null"
+    return dic[key]
+################################################################################
+#                                                                              #
+################################################################################

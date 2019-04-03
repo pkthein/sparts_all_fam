@@ -1081,8 +1081,8 @@ def api_create_category():
     return output
 
 # API : CATEGORY AMEND
-@app.route("/phyo/api/test/amend/category", methods=["POST"])
-def api_test_amend_category():
+@app.route("/phyo/api/amend/category", methods=["POST"])
+def api_amend_category():
     
     headers = {"content-type": "application/json"}
     response = requests.post("http://127.0.0.1:850/tp/category/amend", 
