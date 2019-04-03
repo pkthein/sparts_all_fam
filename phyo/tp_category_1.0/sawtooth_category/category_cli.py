@@ -407,10 +407,14 @@ def main_wrapper():
         traceback.print_exc(file=sys.stderr)
         sys.exit(1)
 ################################################################################
-#                                                                              #
+#                                 API                                          #
 ################################################################################
 def api_do_create_category(args, config):
-    # args            = json.loads(args)
+    param_check = _payload_check_(args, creation=True)
+    
+    if param_check[0]:
+        return ret_msg("failed", param_check[1], "EmptyRecord", "{}")
+    
     category_id     = args["category"]["uuid"]
     category_name   = args["category"]["name"]
     description     = args["category"]["description"]
@@ -441,9 +445,53 @@ def api_do_create_category(args, config):
             client = CategoryBatch(base_url=b_url)
             response = client.create_category(category_id, category_name, 
                             description, private_key, public_key)
-            # return response
+            
             return print_msg(response)
-            # print(output, '@445 cli')
+        else:
+            return output
+    else:
+        return output
+
+def api_do_amend_category(args, config):
+    param_check = _payload_check_(args)
+    
+    if param_check[0]:
+        return ret_msg("failed", param_check[1], "EmptyRecord", "{}")
+    
+    category_id     = args["category"]["uuid"]
+    
+    category_name   = _null_cast(args["category"], "name")
+    description     = _null_cast(args["category"], "description")
+    
+    private_key     = args["private_key"]
+    public_key      = args["public_key"]
+    
+    payload             = "{}"
+    key                 = json.loads(payload)
+    key["publickey"]    = public_key
+    key["privatekey"]   = private_key
+    key["allowedrole"]  = [{ "role" : "admin" }, { "role" : "member" }]
+    payload = json.dumps(key)
+    
+    headers = {"content-type": "application/json"}
+    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth", 
+                    data=json.dumps(key), headers=headers)
+    output = response.content.decode("utf-8").strip()
+    statusinfo = json.loads(output)
+       
+    if statusinfo.get("status") and statusinfo.get("message"):
+            
+        status = statusinfo["status"]
+        message = statusinfo["message"]
+            
+        if status == "success" and message == "authorized":
+            
+            b_url = config.get("DEFAULT", "url")
+            client = CategoryBatch(base_url=b_url)
+            response = client.amend_category(category_id, category_name, 
+                            description, private_key, public_key)
+            
+            return print_msg(response)
         else:
             return output
     else:
@@ -483,11 +531,46 @@ def api_do_retrieve_category(category_id, config,
         if all_flag == False:
             output = ret_msg("success", "OK", "CategoryRecord", data.decode())
         else:
-            output = ret_msg("success", "OK", "CategoryRecord", json.loads(data))
+            output = ret_msg("success", "OK", "CategoryRecord", data)
             
-        print(output)
+        return output
     else:
         raise CategoryException("Category not found: {}".format(category_id))
-    
-def api_test():
-    return 'i was here'
+################################################################################
+#                           API PRIVATE FUNCTIONS                              #
+################################################################################
+def _payload_check_(args, creation=False):
+    if creation:
+        if "category" not in args:
+            return [True, "Category missing."]
+        elif "private_key" not in args:
+            return [True, "Private-Key missing."]
+        elif "public_key" not in args:
+            return [True, "Public-Key missing."]
+        elif "uuid" not in args["category"]:
+            return [True, "UUID missing."]
+        elif "name" not in args["category"]:
+            return [True, "Name missing."]
+        elif "description" not in args["category"]:
+            return [True, "Description missing."]
+        else:
+            return [False]
+    else:
+        if "category" not in args:
+            return [True, "Category missing."]
+        elif "private_key" not in args:
+            return [True, "Private-Key missing."]
+        elif "public_key" not in args:
+            return [True, "Public-Key missing."]
+        elif "uuid" not in args["category"]:
+            return [True, "UUID missing."]
+        else:
+            return [False]
+
+def _null_cast(dic, key):
+    if key not in dic:
+        return "null"
+    return dic[key]
+################################################################################
+#                                                                              #
+################################################################################

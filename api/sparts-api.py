@@ -435,16 +435,6 @@ def get_uuid_category_day(category_id, START):
 
 # Retrieve most appropriate category record on certain date by category id
 # TODO : --limit needs to be implemented first
-@app.route("/ledger/phyo/test", methods=["POST"])
-def testing_():
-    try:
-        if not request.json or "data" not in request.json:
-            return "Error"
-        data = json.dumps(request.json["data"])
-        
-        return json.loads(data)
-    except Exception as e:
-        return e
 ################################################################################
 #                                 ORGANIZATION                                 #
 ################################################################################
@@ -1020,7 +1010,7 @@ def ret_access_denied__msg(message):
     key["status"] = "failed"
     key["message"] = message
     expJson = json.dumps(key)
-    return expJson 
+    return expJson
 
 def get_signature(message, private_key, privkey_format="wif"):
     context = create_context("secp256k1")
@@ -1077,23 +1067,84 @@ def nullCast(dic, key):
     else:
         return dic[key]
 ################################################################################
-#                                API to API                                    #
+#                            API to API CATEGORY                               #
 ################################################################################
-@app.route("/phyo/api/test", methods=["POST"])
-def api_test_post():
-    key =   {
-                "private_key": "978fac33144135c4dbdb462f2172250951856b9f66a91b8ed0c885858ee54710",
-                "public_key": "030c997d29830073d8137485623c9741fc6e3b5cba535539a98cd7fea66d332e03",
-                "category": {
-                                "uuid": "aHR0cDovL3d3dy5hcGFjaGUub3JnL2xpY2Vuc2VzLw==",
-                                "name": "Apache License",
-                                "description":" derp"
-                            }
-            }
+# API : CATEGORY CREATE 
+@app.route("/phyo/api/create/category", methods=["POST"])
+def api_create_category():
     
     headers = {"content-type": "application/json"}
-    response = requests.post("http://127.0.0.1:850/phyo/test", 
-                    data=json.dumps(key), headers=headers)
+    response = requests.post("http://127.0.0.1:850/tp/category", 
+                    data=json.dumps(request.json), headers=headers)
+    output = response.content.decode("utf-8")
+    
+    return output
+
+# API : CATEGORY AMEND
+@app.route("/phyo/api/test/amend/category", methods=["POST"])
+def api_test_amend_category():
+    
+    headers = {"content-type": "application/json"}
+    response = requests.post("http://127.0.0.1:850/tp/category/amend", 
+                    data=json.dumps(request.json), headers=headers)
+    output = response.content.decode("utf-8")
+    
+    return output
+
+# API : CATEGORY LIST CATEGORY
+@app.route("/phyo/api/list/category", methods=["GET"])
+def api_list_category():
+    response = requests.get("http://127.0.0.1:850/tp/category")
+    output = response.content.decode("utf-8").strip()
+    
+    return output
+
+# API : CATEGORY RETRIEVE {UUID}
+@app.route("/phyo/api/retrieve/category/<string:category_id>", methods=["GET"])
+def api_retrieve_category(category_id):
+    response = requests.get(
+                    "http://127.0.0.1:850/tp/category/{}".format(category_id)
+                )
+    output = response.content.decode("utf-8").strip()
+    
+    return output
+    
+# API : CATEGORY RETRIEVE --ALL {UUID}
+@app.route(
+    "/phyo/api/retrieve/category/history/<string:category_id>",
+    methods=["GET"]
+)
+def api_retrieve_category_history(category_id):
+    response = requests.get(
+                    "http://127.0.0.1:850/tp/category/history/{}" \
+                    .format(category_id)
+                )
+    output = response.content.decode("utf-8").strip()
+    
+    return output
+
+# API : CATEGORY RETRIEVE --RANGE START END {UUID}
+@app.route(
+    "/phyo/api/retrieve/category/<string:category_id>/date/<string:START>",
+    methods=["GET"]
+)
+def api_category_history_date(category_id, START):
+    response = requests.get(
+                    "http://127.0.0.1:850/tp/category/{}/date/{}" \
+                    .format(category_id, START)
+                )
+    output = response.content.decode("utf-8").strip()
+    
+    return output
+################################################################################
+#                          API to API ORGANIZATION                             #
+################################################################################
+@app.route("/proto/api/test", methods=["POST"])
+def api_test_post():
+    
+    headers = {"content-type": "application/json"}
+    response = requests.post("http://127.0.0.1:850/tp/test", 
+                    data=json.dumps(request.json), headers=headers)
     output = response.content.decode("utf-8")
     # statusinfo = json.loads(output)
        
@@ -1116,10 +1167,10 @@ def api_test_post():
     #     print(output)
     return output
 
-@app.route("/phyo/api/test", methods=["GET"])
+@app.route("/proto/api/test", methods=["GET"])
 def api_test_get():
     # headers = {"content-type": "application/json"}
-    response = requests.get("http://127.0.0.1:850/phyo/test")
+    response = requests.get("http://127.0.0.1:850/tp/test")
     output = response.content.decode("utf-8").strip()
     # statusinfo = json.loads(output)
        

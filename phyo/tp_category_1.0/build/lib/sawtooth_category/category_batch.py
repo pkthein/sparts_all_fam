@@ -53,7 +53,9 @@ class CategoryBatch:
 ################################################################################    
     def create_category(self, category_id, category_name, description, 
                             private_key, public_key):
-        response_bytes = self.retreive_category(category_id)
+        address = self._get_address(category_id)
+        response_bytes = self._send_request("state/{}".format(address), \
+                    category_id=category_id, creation=True)
         
         if response_bytes != None:
             return None
@@ -62,6 +64,31 @@ class CategoryBatch:
         return self.send_category_transactions(category_id, category_name,
                     description, "create", private_key, public_key, "0", 
                     cur, str(datetime.datetime.utcnow()))
+    
+    def amend_category(self, category_id, category_name, description,
+                            private_key, public_key):
+        response_bytes = self.retreive_category(category_id)
+        
+        if response_bytes != None:
+            
+            jresponse = json.loads(response_bytes.decode())
+            
+            if category_name == "null":
+                category_name = jresponse["name"]
+            if description == "null":
+                description = jresponse["description"]
+            
+            if jresponse["name"] == category_name and \
+                jresponse["description"] == description:
+                return None
+            else:
+                cur = self._get_block_num()
+                return self.send_category_transactions(category_id, 
+                            category_name, description, "amend", private_key, 
+                            public_key, jresponse["cur_block"], cur, 
+                            str(datetime.datetime.utcnow()))
+                            
+        return None
                                 
     def list_category(self):
         category_prefix = self._get_prefix()
@@ -126,31 +153,6 @@ class CategoryBatch:
     
             except BaseException:
                 return None
-        
-    def amend_category(self, category_id, category_name, description,
-                            private_key, public_key):
-        response_bytes = self.retreive_category(category_id)
-        
-        if response_bytes != None:
-            
-            jresponse = json.loads(response_bytes.decode())
-            
-            if category_name == "null":
-                category_name = jresponse["name"]
-            if description == "null":
-                description = jresponse["description"]
-            
-            if jresponse["name"] == category_name and \
-                jresponse["description"] == description:
-                return None
-            else:
-                cur = self._get_block_num()
-                return self.send_category_transactions(category_id, 
-                            category_name, description, "amend", private_key, 
-                            public_key, jresponse["cur_block"], cur, 
-                            str(datetime.datetime.utcnow()))
-                            
-        return None
 ################################################################################
 #                           PRIVATE FUNCTIONS                                  #
 ################################################################################
@@ -189,9 +191,9 @@ class CategoryBatch:
             return base64.b64decode(payload)
         return None
         
-    def _send_request(
-            self, suffix, data=None,
-            content_type=None, category_id=None):
+    def _send_request(self, suffix, data=None, content_type=None,
+                        category_id=None, creation=False):
+        
         if self._base_url.startswith("http://"):
             url = "{}/{}".format(self._base_url, suffix)
         else:
@@ -208,6 +210,8 @@ class CategoryBatch:
                 result = requests.get(url, headers=headers)
 
             if result.status_code == 404:
+                if creation:
+                    return None
                 raise CategoryException("No such Category: {}".\
                         format(category_id))
 
