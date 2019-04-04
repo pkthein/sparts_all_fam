@@ -14,7 +14,7 @@
 # ------------------------------------------------------------------------------
 
 from flask import Flask, jsonify, make_response, request, json
-import category_cli
+import organization_cli
 import configparser
 ################################################################################
 #                               LIBS & DEPS                                    #
@@ -22,100 +22,100 @@ import configparser
 app = Flask(__name__)
 
 # PING
-@app.route("/tp/category/ping", methods=["GET"])
+@app.route("/tp/organization/ping", methods=["GET"])
 def get_ping_result():
     
-    output = ret_msg("success","OK","EmptyRecord","Category")
+    output = ret_msg("success","OK","EmptyRecord","phyo is here")
     return output 
 
-# CREATE
-@app.route("/tp/category", methods=["POST"])
-def create_category():
-    config = configparser.ConfigParser()
-    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+# # CREATE
+# @app.route("/tp/category", methods=["POST"])
+# def create_organization():
+#     config = configparser.ConfigParser()
+#     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
-    try:
-        if not request.json:
-            return "Expecting JSON Object."
+#     try:
+#         if not request.json:
+#             return "Expecting JSON Object."
             
-        output = category_cli.api_do_create_category(request.json, config)    
+#         output = organization_cli.api_do_create_organization(request.json, config)    
         
-        return output
-    except Exception as e:
-        return e
+#         return output
+#     except Exception as e:
+#         return e
 
-# AMEND
-@app.route("/tp/category/amend", methods=["POST"])
-def amend_category():
-    config = configparser.ConfigParser()
-    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+# # AMEND
+# @app.route("/tp/organization/amend", methods=["POST"])
+# def amend_organization():
+#     config = configparser.ConfigParser()
+#     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
-    try:
-        if not request.json:
-            return "Expecting JSON Object."
+#     try:
+#         if not request.json:
+#             return "Expecting JSON Object."
         
-        output = category_cli.api_do_amend_category(request.json, config)    
+#         output = organization_cli.api_do_amend_organization(request.json, config)    
         
-        return output
-    except Exception as e:
-        return e
+#         return output
+#     except Exception as e:
+#         return e
 
-# LIST
-@app.route("/tp/category", methods=["GET"])
-def list_category():
-    config = configparser.ConfigParser()
-    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+# # LIST
+# @app.route("/tp/category", methods=["GET"])
+# def list_organization():
+#     config = configparser.ConfigParser()
+#     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
-    try:
-        output = category_cli.api_do_list_category(config)
+#     try:
+#         output = organization_cli.api_do_list_organization(config)
         
-        return output
-    except Exception as e:
-        return e
+#         return output
+#     except Exception as e:
+#         return e
 
-# RETRIEVE MOST RECENT BY UUID
-@app.route("/tp/category/<string:category_id>", methods=["GET"])
-def retrieve_category(category_id):
-    config = configparser.ConfigParser()
-    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+# # RETRIEVE MOST RECENT BY UUID
+# @app.route("/tp/organization/<string:organization_id>", methods=["GET"])
+# def retrieve_organization(organization_id):
+#     config = configparser.ConfigParser()
+#     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
-    try:
-        output = category_cli.api_do_retrieve_category(category_id, config)
+#     try:
+#         output = organization_cli.api_do_retrieve_organization(organization_id, config)
         
-        return output
-    except Exception as e:
-        return e
+#         return output
+#     except Exception as e:
+#         return e
 
-# RETRIEVE HISTORY OF UUID
-@app.route("/tp/category/history/<string:category_id>", methods=["GET"])
-def retrieve_category_history(category_id):
-    config = configparser.ConfigParser()
-    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+# # RETRIEVE HISTORY OF UUID
+# @app.route("/tp/organization/history/<string:organization_id>", methods=["GET"])
+# def retrieve_organization_history(organization_id):
+#     config = configparser.ConfigParser()
+#     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
-    try:
-        output = category_cli.api_do_retrieve_category(
-                        category_id, config, all_flag=True
-                    )
-        return output
-    except Exception as e:
-        return e
+#     try:
+#         output = organization_cli.api_do_retrieve_organization(
+#                         organization_id, config, all_flag=True
+#                     )
+#         return output
+#     except Exception as e:
+#         return e
 
-# RETRIEVE UUID ON CERTAIN DATE     
-@app.route(
-    "/tp/category/<string:category_id>/date/<string:START>",
-    methods=["GET"]
-)
-def retrieve_category_history_date(category_id, START):
-    config = configparser.ConfigParser()
-    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+# # RETRIEVE UUID ON CERTAIN DATE     
+# @app.route(
+#     "/tp/organization/<string:organization_id>/date/<string:START>",
+#     methods=["GET"]
+# )
+# def retrieve_organization_history_date(organization_id, START):
+#     config = configparser.ConfigParser()
+#     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
-    try:
-        output = category_cli.api_do_retrieve_category(
-                        category_id, config, range_flag=[START, START]
-                    )
-        return output
-    except Exception as e:
-        return e
+#     try:
+#         output = organization_cli.api_do_retrieve_organization(
+#                         organization_id, config, range_flag=[START, START]
+#                     )
+#         return output
+#     except Exception as e:
+#         return e
 ################################################################################
 #                                   TEST                                       #
 ################################################################################
@@ -164,7 +164,7 @@ def ret_msg(status, message, result_type, result):
 #                                   MAIN                                       #
 ################################################################################
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port="850")
+    app.run(host="0.0.0.0", port="851")
 ################################################################################
 #                                                                              #
 ################################################################################

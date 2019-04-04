@@ -1143,7 +1143,7 @@ def api_category_history_date(category_id, START):
 def api_test_post():
     
     headers = {"content-type": "application/json"}
-    response = requests.post("http://127.0.0.1:850/tp/test", 
+    response = requests.post("http://127.0.0.1:851/tp/test", 
                     data=json.dumps(request.json), headers=headers)
     output = response.content.decode("utf-8")
     # statusinfo = json.loads(output)
@@ -1170,7 +1170,7 @@ def api_test_post():
 @app.route("/proto/api/test", methods=["GET"])
 def api_test_get():
     # headers = {"content-type": "application/json"}
-    response = requests.get("http://127.0.0.1:850/tp/test")
+    response = requests.get("http://127.0.0.1:851/tp/organization/ping")
     output = response.content.decode("utf-8").strip()
     # statusinfo = json.loads(output)
        
