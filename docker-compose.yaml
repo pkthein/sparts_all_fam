@@ -13,12 +13,14 @@ services:
             - ROLE_=admin
         container_name: phyo
         expose:
-            - '818'
-            - '850'
+            - '818' # sParts api
+            - '850' # category api
+            - '851' # organization api
             # - '80'
         ports:
             - '8080:818'
             - '8800:850'
+            - '8880:851'
             # - '80:80'
         tty: true
         volumes:
