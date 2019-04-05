@@ -1232,7 +1232,7 @@ def api_organization_history_date(org_id, START):
 def api_test_post():
     
     headers = {"content-type": "application/json"}
-    response = requests.post("http://127.0.0.1:851/tp/organization/addpart", 
+    response = requests.post("http://127.0.0.1:852/tp/part/", 
                     data=json.dumps(request.json), headers=headers)
     output = response.content.decode("utf-8")
     # statusinfo = json.loads(output)
@@ -1260,7 +1260,7 @@ def api_test_post():
 def api_test_get():
     
     # headers = {"content-type": "application/json"}
-    response = requests.get("http://127.0.0.1:851/tp/organization/history/8001")
+    response = requests.get("http://127.0.0.1:852/tp/part/ping")
     output = response.content.decode("utf-8").strip()
     # statusinfo = json.loads(output)
        
