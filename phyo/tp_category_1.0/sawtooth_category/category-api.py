@@ -116,34 +116,6 @@ def retrieve_category_history_date(category_id, START):
     except Exception as e:
         return e
 ################################################################################
-#                                   TEST                                       #
-################################################################################
-@app.route("/tp/test", methods=["POST"])
-def testing_():
-    try:
-        # if not request.json or "category" not in request.json:
-        #     return "Error"
-        # data = json.dumps(request.json["private_key"])
-        
-        # return json.loads(data)
-        # return (request.json["category"]["uuid"] + request.json["category"]["name"])
-        return json.dumps(request.json)
-    except Exception as e:
-        return e
-
-@app.route("/tp/test", methods=["GET"])
-def testing_get():
-    try:
-        # if not request.json or "category" not in request.json:
-        #     return "Error"
-        # data = json.dumps(request.json["private_key"])
-        
-        # return json.loads(data)
-        # return (request.json["category"]["uuid"] + request.json["category"]["name"])
-        return "phyo test get was called successfully"
-    except Exception as e:
-        return e
-################################################################################
 #                                  PRINT                                       #
 ################################################################################
 def ret_msg(status, message, result_type, result):
@@ -155,10 +127,6 @@ def ret_msg(status, message, result_type, result):
     key["result"] = result
     msgJSON = json.dumps(key)
     return msgJSON
-    
-# @app.errorhandler(500)
-# def custom500(message):
-#     return "yolo"
 ################################################################################
 #                                   MAIN                                       #
 ################################################################################

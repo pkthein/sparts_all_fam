@@ -1226,60 +1226,6 @@ def api_organization_history_date(org_id, START):
 #                            API to API RELATION                               #
 ################################################################################
 ################################################################################
-#                                   TEST                                       #
-################################################################################
-@app.route("/proto/api/test", methods=["POST"])
-def api_test_post():
-    
-    headers = {"content-type": "application/json"}
-    response = requests.post("http://127.0.0.1:851/tp/organization/addpart", 
-                    data=json.dumps(request.json), headers=headers)
-    output = response.content.decode("utf-8")
-    # statusinfo = json.loads(output)
-       
-    # if statusinfo.get("status") and statusinfo.get("message"):
-            
-    #     status = statusinfo["status"]
-    #     message = statusinfo["message"]
-            
-    #     if status == "success" and message == "authorized":
-            
-    #         b_url = config.get("DEFAULT", "url")
-    #         client = CategoryBatch(base_url=b_url)
-    #         response = client.create_category(category_id, category_name, 
-    #                         description, private_key, public_key)
-    #         print_msg(response)
-            
-    #     else:
-    #         print(output)
-    # else:
-    #     print(output)
-    return output
-
-@app.route("/proto/api/test", methods=["GET"])
-def api_test_get():
-    
-    # headers = {"content-type": "application/json"}
-    response = requests.get("http://127.0.0.1:851/tp/organization/history/8001")
-    output = response.content.decode("utf-8").strip()
-    # statusinfo = json.loads(output)
-       
-    # if statusinfo.get("status") and statusinfo.get("message"):
-            
-    #     status = statusinfo["status"]
-    #     message = statusinfo["message"]
-            
-    #     if status == "success" and message == "authorized":
-
-    #         return (response)
-            
-    #     else:
-    #         return (output)
-    # else:
-    #     return (output)
-    # print(statusinfo)
-    return output
-################################################################################
 #                                   MAIN                                       #
 ################################################################################
 if __name__ == "__main__":

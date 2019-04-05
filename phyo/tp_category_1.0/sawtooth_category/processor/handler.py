@@ -1,4 +1,4 @@
-#copyright 2016 Intel Corporation
+# Copyright 2016 Intel Corporation
 # Copyright 2017 Wind River
 
 # Licensed under the Apache License, Version 2.0 (the "License");
