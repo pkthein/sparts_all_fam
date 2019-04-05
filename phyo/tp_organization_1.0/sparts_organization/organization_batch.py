@@ -55,15 +55,22 @@ class OrganizationBatch:
 ################################################################################
 #                            PUBLIC FUNCTIONS                                  #
 ################################################################################
-    def create(self, org_id, org_alias, org_name, org_type, description, 
-                    org_url, private_key, public_key):
+    def create_organization(self, org_id, org_alias, org_name, org_type,
+                description, org_url, private_key, public_key):
+        address = self._get_address(org_id)
+        response_bytes = self._send_request("state/{}".format(address), 
+                    org_id=org_id, creation=True)            
+        
+        if response_bytes != None:
+            return None
+        
         cur = self._get_block_num()
         return self.create_organization_transaction(org_id, org_alias, org_name, 
                     org_type, description, org_url, "create", private_key, 
                     public_key, "0", cur, str(datetime.datetime.utcnow()), "")
     
-    def amend(self, org_id, org_alias, org_name, org_type, description, 
-                    org_url, private_key, public_key):
+    def amend_organization(self, org_id, org_alias, org_name, org_type,
+                description, org_url, private_key, public_key):
         response_bytes = self.retrieve_organization(org_id)
         
         if response_bytes != None:
@@ -86,7 +93,7 @@ class OrganizationBatch:
                 jresponse["type"] == org_type and
                 jresponse["description"] == description and
                 jresponse["url"] == org_url):
-                return None
+                return [None]
             else:
                 cur = self._get_block_num()
                 return self.create_organization_transaction(org_id, org_alias, 
@@ -108,7 +115,8 @@ class OrganizationBatch:
             encoded_entries = yaml.safe_load(result)["data"]
 
             return [
-                base64.b64decode(entry["data"]) for entry in encoded_entries
+                json.loads(base64.b64decode(entry["data"]).decode()) for entry \
+                    in encoded_entries
             ]
 
         except BaseException:
@@ -126,11 +134,9 @@ class OrganizationBatch:
                 curTime = int(response["timestamp"].split()[0].replace("-", ""))
                 if (curTime <= int(range_flag[1]) and 
                         curTime >= int(range_flag[0])):
-                    jresponse = json.dumps(response)
-                    retVal.append(jresponse)
+                    retVal.append(response)
             else:
-                jresponse = json.dumps(response)
-                retVal.append(jresponse)
+                retVal.append(response)
                 
             while str(response["prev_block"]) != "0":
                 
@@ -141,20 +147,16 @@ class OrganizationBatch:
                 
                 del response["action"]
                 
-                jresponse = json.dumps(response)
-                
                 if range_flag != None:
                     curTime = int(timestamp.split()[0].replace("-", ""))
                     if curTime < int(range_flag[0]):
                         break
                     elif curTime <= int(range_flag[1]):
-                        retVal.append(jresponse)
+                        retVal.append(response)
                 else:
-                    retVal.append(jresponse)
+                    retVal.append(response)
             
-            retVal = str(retVal).replace("'", '')
-            
-            return json.dumps(retVal)
+            return retVal
         else:
             address = self._get_address(org_id)
     
@@ -169,76 +171,81 @@ class OrganizationBatch:
     
     def add_part(self, org_id, pt_id, private_key, 
                     public_key, deletePart=False):
-        if deletePart:
-            response_bytes = self.retrieve_organization(org_id)
-            
-            if response_bytes != None:
+        try:
+            if deletePart:
+                response_bytes = self.retrieve_organization(org_id)
                 
-                jresponse = json.loads(response_bytes.decode())
-                
-                if len(jresponse["pt_list"]) == 0:
-                    raise OrganizationException("No {} to remove from this {}."\
-                            .format("pt", "Organization")
-                        )
-                        
-                if pt_id not in jresponse["pt_list"]:
-                    raise OrganizationException("No such {} in this {}." \
-                            .format("pt", "Organization")
-                        )
-                
-                jresponse["pt_list"].remove(pt_id)
-                
-                cur = self._get_block_num()
-                return self.create_organization_transaction(org_id, 
-                            jresponse["alias"], 
-                            jresponse["name"], 
-                            jresponse["type"], 
-                            jresponse["description"],
-                            jresponse["url"], 
-                            "AddPart", private_key, public_key, 
-                            jresponse["cur_block"], cur,
-                            str(datetime.datetime.utcnow()),
-                            jresponse["pt_list"])
+                if response_bytes != None:
+                    
+                    jresponse = json.loads(response_bytes.decode())
+                    
+                    if len(jresponse["pt_list"]) == 0:
+                        raise OrganizationException("No {} to remove from this {}."\
+                                .format("pt", "Organization")
+                            )
                             
-            return None
-        else:
-            response_bytes = self.retrieve_organization(org_id)
-            
-            self._validate_pt_id(pt_id)
-             
-            if response_bytes != None:
+                    if pt_id not in jresponse["pt_list"]:
+                        raise OrganizationException("No such {} in this {}." \
+                                .format("pt", "Organization")
+                            )
+                    
+                    jresponse["pt_list"].remove(pt_id)
+                    
+                    cur = self._get_block_num()
+                    return self.create_organization_transaction(org_id, 
+                                jresponse["alias"], 
+                                jresponse["name"], 
+                                jresponse["type"], 
+                                jresponse["description"],
+                                jresponse["url"], 
+                                "AddPart", private_key, public_key, 
+                                jresponse["cur_block"], cur,
+                                str(datetime.datetime.utcnow()),
+                                jresponse["pt_list"])
+                                
+                return None
+            else:
+                response_bytes = self.retrieve_organization(org_id)
                 
-                jresponse = json.loads(response_bytes.decode())
-                
-                if pt_id not in jresponse["pt_list"]:
-                    jresponse["pt_list"].append(pt_id)
-                else:
-                    raise OrganizationException(
-                            "Part already exists for this Organization."
-                        )
-                
-                cur = self._get_block_num()
-                return self.create_organization_transaction(org_id, 
-                            jresponse["alias"], 
-                            jresponse["name"], 
-                            jresponse["type"], 
-                            jresponse["description"],
-                            jresponse["url"], 
-                            "AddPart", private_key, public_key, 
-                            jresponse["cur_block"], cur,
-                            str(datetime.datetime.utcnow()),
-                            jresponse["pt_list"])
-                            
+                if self._validate_pt_id(pt_id) == None:
+                    return None
+                 
+                if response_bytes != None:
+                    
+                    jresponse = json.loads(response_bytes.decode())
+                    
+                    if pt_id not in jresponse["pt_list"]:
+                        jresponse["pt_list"].append(pt_id)
+                    else:
+                        raise OrganizationException(
+                                "Part already exists for this Organization."
+                            )
+                    
+                    cur = self._get_block_num()
+                    return self.create_organization_transaction(org_id, 
+                                jresponse["alias"], 
+                                jresponse["name"], 
+                                jresponse["type"], 
+                                jresponse["description"],
+                                jresponse["url"], 
+                                "AddPart", private_key, public_key, 
+                                jresponse["cur_block"], cur,
+                                str(datetime.datetime.utcnow()),
+                                jresponse["pt_list"])
+                                
+                return None
+        except BaseException as err:
+            print(err)
             return None
 ################################################################################
 #                            PRIVATE FUNCTIONS                                 #
 ################################################################################
     def _get_prefix(self):
-        return _sha512('organization'.encode('utf-8'))[0:6]
+        return _sha512("organization".encode("utf-8"))[0:6]
 
     def _get_address(self, org_id):
         organization_prefix = self._get_prefix()
-        address = _sha512(org_id.encode('utf-8'))[0:64]
+        address = _sha512(org_id.encode("utf-8"))[0:64]
         return organization_prefix + address
     
     def _get_block_num(self):
@@ -269,12 +276,13 @@ class OrganizationBatch:
         return None
     
     def _validate_pt_id(self, pt_id):
-        part_prefix = _sha512('pt'.encode('utf-8'))[0:6]
-        address = _sha512(pt_id.encode('utf-8'))[0:64]
+        part_prefix = _sha512("pt".encode("utf-8"))[0:6]
+        address = _sha512(pt_id.encode("utf-8"))[0:64]
         address = part_prefix + address
-        self._send_request("state/{}".format(address))
+        return self._send_request("state/{}".format(address))
     
-    def _send_request(self, suffix, data=None, content_type=None, org_id=None):
+    def _send_request(self, suffix, data=None, content_type=None,
+                        org_id=None, creation=False):
         
         if self._base_url.startswith("http://"):
             url = "{}/{}".format(self._base_url, suffix)
@@ -283,7 +291,7 @@ class OrganizationBatch:
 
         headers = {}
         if content_type is not None:
-            headers['Content-Type'] = content_type
+            headers["Content-Type"] = content_type
 
         try:
             if data is not None:
@@ -292,6 +300,8 @@ class OrganizationBatch:
                 result = requests.get(url, headers=headers)
 
             if result.status_code == 404:
+                if creation:
+                    return None
                 raise OrganizationException("No such organization: {}".format(id))
 
             elif not result.ok:
@@ -299,7 +309,8 @@ class OrganizationBatch:
                     result.status_code, result.reason))
 
         except BaseException as err:
-            raise OrganizationException(err)
+            print(err)
+            return None
         
         return result.text
 
@@ -335,15 +346,14 @@ class OrganizationBatch:
             inputs = [address],
             outputs = [address],
             dependencies = [],
-            # payload_encoding="csv-utf8",
             payload_sha512 = _sha512(payload),
             batcher_public_key = self._public_key,
             nonce = time.time().hex().encode()
         ).SerializeToString()
 
-        # signature = signing.sign(header, self._private_key)
-        signature = CryptoFactory(create_context('secp256k1')) \
-            .new_signer(Secp256k1PrivateKey.from_hex(self._private_key)).sign(header)
+        signature = CryptoFactory(create_context("secp256k1")) \
+            .new_signer(Secp256k1PrivateKey.from_hex(self._private_key)) \
+            .sign(header)
 
 
         transaction = Transaction(
@@ -356,7 +366,7 @@ class OrganizationBatch:
         
         return self._send_request(
             "batches", batch_list.SerializeToString(),
-            'application/octet-stream'
+            "application/octet-stream"
         )
 
     def _create_batch_list(self, transactions):
@@ -367,9 +377,9 @@ class OrganizationBatch:
             transaction_ids = transaction_signatures
         ).SerializeToString()
 
-        # signature = signing.sign(header, self._private_key)
-        signature = CryptoFactory(create_context('secp256k1')) \
-            .new_signer(Secp256k1PrivateKey.from_hex(self._private_key)).sign(header)
+        signature = CryptoFactory(create_context("secp256k1")) \
+            .new_signer(Secp256k1PrivateKey.from_hex(self._private_key)) \
+            .sign(header)
 
         batch = Batch(
             header = header,

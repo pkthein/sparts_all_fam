@@ -733,7 +733,10 @@ def get_uuid_part_history(part_id):
         return exp
 
 # Retrieves historical part record on certain date by part id
-@app.route("/ledger/api/v1/parts/<string:part_id>/date/<string:START>", methods=["GET"])
+@app.route(
+    "/ledger/api/v1/parts/<string:part_id>/date/<string:START>",
+    methods=["GET"]
+)
 def get_uuid_part_day(part_id, START):
     try:    
         cmd = "pt retrieve --range {} {} {}".format(START, START, part_id)
@@ -844,7 +847,10 @@ def add_category_to_part():
         exp = ret_exception_msg(e) 
         return exp
 
-@app.route("/api/sparts/ledger/envelopes/searchbychecksum/<string:checksum_id>", methods=["GET"])
+@app.route(
+    "/api/sparts/ledger/envelopes/searchbychecksum/<string:checksum_id>",
+    methods=["GET"]
+)
 def artifact_verify_checksum(checksum_id):
     try:
         artifactlist = get_envelopes()
@@ -859,7 +865,10 @@ def artifact_verify_checksum(checksum_id):
         exp = ret_exception_msg(e)
         return exp
 
-@app.route("/api/sparts/ledger/parts/artifact/<string:part_id>", methods=["GET"])
+@app.route(
+    "/api/sparts/ledger/parts/artifact/<string:part_id>",
+    methods=["GET"]
+)
 def get_part_artifact(part_id):
     try:
         cmd = "pt retrieve " + part_id
@@ -1067,6 +1076,9 @@ def nullCast(dic, key):
     else:
         return dic[key]
 ################################################################################
+#                            API to API ARTIFACT                               #
+################################################################################
+################################################################################
 #                            API to API CATEGORY                               #
 ################################################################################
 # API : CATEGORY CREATE 
@@ -1139,11 +1151,88 @@ def api_category_history_date(category_id, START):
 ################################################################################
 #                          API to API ORGANIZATION                             #
 ################################################################################
+# API : ORGANIZATION CREATE 
+@app.route("/phyo/api/create/organization", methods=["POST"])
+def api_create_organization():
+    
+    headers = {"content-type": "application/json"}
+    response = requests.post("http://127.0.0.1:851/tp/organization", 
+                    data=json.dumps(request.json), headers=headers)
+    output = response.content.decode("utf-8")
+    
+    return output
+
+# API : ORGANIZATION AMEND
+@app.route("/phyo/api/amend/organization", methods=["POST"])
+def api_amend_organization():
+    
+    headers = {"content-type": "application/json"}
+    response = requests.post("http://127.0.0.1:851/tp/organization/amend", 
+                    data=json.dumps(request.json), headers=headers)
+    output = response.content.decode("utf-8")
+    
+    return output
+
+# API : ORGANIZATION LIST ORGANIZATION
+@app.route("/phyo/api/list/organization", methods=["GET"])
+def api_list_organization():
+    response = requests.get("http://127.0.0.1:851/tp/organization")
+    output = response.content.decode("utf-8").strip()
+    
+    return output
+
+# API : ORGANIZATION RETRIEVE {UUID}
+@app.route("/phyo/api/retrieve/organization/<string:org_id>", methods=["GET"])
+def api_retrieve_organization(org_id):
+    response = requests.get(
+                    "http://127.0.0.1:851/tp/organization/{}" \
+                        .format(org_id)
+                )
+    output = response.content.decode("utf-8").strip()
+    
+    return output
+    
+# API : ORGANIZATION RETRIEVE --ALL {UUID}
+@app.route(
+    "/phyo/api/retrieve/organization/history/<string:org_id>",
+    methods=["GET"]
+)
+def api_retrieve_organization_history(org_id):
+    response = requests.get(
+                    "http://127.0.0.1:851/tp/organization/history/{}" \
+                    .format(org_id)
+                )
+    output = response.content.decode("utf-8").strip()
+    
+    return output
+
+# API : ORGANIZATION RETRIEVE --RANGE START END {UUID}
+@app.route(
+    "/phyo/api/retrieve/organization/<string:org_id>/date/<string:START>",
+    methods=["GET"]
+)
+def api_organization_history_date(org_id, START):
+    response = requests.get(
+                    "http://127.0.0.1:851/tp/organization/{}/date/{}" \
+                    .format(org_id, START)
+                )
+    output = response.content.decode("utf-8").strip()
+    
+    return output
+################################################################################
+#                              API to API PART                                 #
+################################################################################
+################################################################################
+#                            API to API RELATION                               #
+################################################################################
+################################################################################
+#                                   TEST                                       #
+################################################################################
 @app.route("/proto/api/test", methods=["POST"])
 def api_test_post():
     
     headers = {"content-type": "application/json"}
-    response = requests.post("http://127.0.0.1:851/tp/test", 
+    response = requests.post("http://127.0.0.1:851/tp/organization/addpart", 
                     data=json.dumps(request.json), headers=headers)
     output = response.content.decode("utf-8")
     # statusinfo = json.loads(output)
@@ -1169,8 +1258,9 @@ def api_test_post():
 
 @app.route("/proto/api/test", methods=["GET"])
 def api_test_get():
+    
     # headers = {"content-type": "application/json"}
-    response = requests.get("http://127.0.0.1:851/tp/organization/ping")
+    response = requests.get("http://127.0.0.1:851/tp/organization/history/8001")
     output = response.content.decode("utf-8").strip()
     # statusinfo = json.loads(output)
        

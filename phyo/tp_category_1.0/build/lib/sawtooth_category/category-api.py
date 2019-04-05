@@ -1,5 +1,4 @@
-
-# copyright 2017 Wind River Systems
+# Copyright 2017 Wind River Systems
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -25,7 +24,7 @@ app = Flask(__name__)
 @app.route("/tp/category/ping", methods=["GET"])
 def get_ping_result():
     
-    output = ret_msg("success","OK","EmptyRecord","phyo is here")
+    output = ret_msg("success","OK","EmptyRecord","Category")
     return output 
 
 # CREATE

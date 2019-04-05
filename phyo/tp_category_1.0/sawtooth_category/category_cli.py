@@ -209,21 +209,15 @@ def create_parser(prog_name):
 ################################################################################
 def do_list_category(args, config):
     b_url = config.get("DEFAULT", "url")
-  
     client = CategoryBatch(base_url=b_url)
-
     category_list = client.list_category()
 
     if category_list is not None:
+        category_list.sort(key=lambda x:x["timestamp"], reverse=True)
+        result = json.dumps(category_list)
         
-        if str(category_list) != "[]":
-            category_list.sort(key=lambda x:x["timestamp"], reverse=True)
-            result = json.dumps(category_list)
-            
-            output = ret_msg("success", "OK", "ListOf:CategoryRecord", result)
-        else:
-            output = ret_msg("success", "OK", "ListOf:CategoryRecord", 
-                        str(category_list))
+        output = ret_msg("success", "OK", "ListOf:CategoryRecord", result)
+        
         print (output)
     else:
         raise CategoryException("Could not retrieve category listing.")
@@ -283,8 +277,8 @@ def do_create_category(args, config):
             client = CategoryBatch(base_url=b_url)
             response = client.create_category(category_id, category_name, 
                             description, private_key, public_key)
-            print_msg(response)
-            
+                            
+            print_msg(response, "create")
         else:
             print(output)
     else:
@@ -321,8 +315,8 @@ def do_amend_category(args, config):
             client = CategoryBatch(base_url=b_url)
             response = client.amend_category(category_id, category_name, 
                             description, private_key, public_key)
-            print_msg(response)
-            
+                            
+            print_msg(response, "amend")
         else:
             print(output)
     else:
@@ -523,15 +517,11 @@ def api_do_list_category(config):
     category_list = client.list_category()
     
     if category_list is not None:
+        category_list.sort(key=lambda x:x["timestamp"], reverse=True)
+        result = json.dumps(category_list)
         
-        if str(category_list) != "[]":
-            category_list.sort(key=lambda x:x["timestamp"], reverse=True)
-            result = json.dumps(category_list)
-            
-            output = ret_msg("success", "OK", "ListOf:CategoryRecord", result)
-        else:
-            output = ret_msg("success", "OK", "ListOf:CategoryRecord", 
-                        str(category_list))
+        output = ret_msg("success", "OK", "ListOf:CategoryRecord", result)
+        
         return output
     else:
         return ret_msg(
