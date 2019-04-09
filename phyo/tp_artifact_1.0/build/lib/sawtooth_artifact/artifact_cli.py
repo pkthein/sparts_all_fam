@@ -340,50 +340,7 @@ def create_parser(prog_name):
 ################################################################################
 #                               FUNCTIONS                                      #
 ################################################################################
-def do_list_artifact(args, config):
-    b_url = config.get('DEFAULT', 'url')
-    client = ArtifactBatch(base_url=b_url)
-    result = client.list_artifact()
-    
-    if result is not None:
-        result = ("[" + str(result)[3:-2] + "]").replace("b'", "") \
-                    .replace("'", "")
-        result = json.loads(result)
-        result.sort(key=lambda x:x["timestamp"], reverse=True)
-        result = json.dumps(result)
-        
-        output = ret_msg("success","OK","ListOf:ArtifactRecord", result)
-        
-        print(output)
-    else:     
-        raise ArtifactException("Could not retrieve artifact listing")
-
-def do_retrieve_artifact(args, config):
-    all_flag    = args.all
-    range_flag  = args.range
-    
-    artifact_id = args.artifact_id
-    
-    if range_flag != None:
-        all_flag = True
-    
-    b_url = config.get('DEFAULT', 'url')
-    client = ArtifactBatch(base_url=b_url)
-    data = client.retrieve_artifact(artifact_id, all_flag, range_flag)
-
-    if data is not None:
-        
-        if all_flag == False:
-            output = ret_msg("success", "OK", "ArtifactRecord", data.decode())
-        else:
-            output = ret_msg("success", "OK", "ArtifactRecord", 
-                        json.loads(data))
-        
-        print(output)
-    else:
-        raise ArtifactException("Artifact not found {}".format(artifact_id))
-    
-def do_create(args, config):
+def do_create_artifact(args, config):
     artifact_id         = args.artifact_id
     artifact_alias      = args.alias
     artifact_name       = args.artifact_name
@@ -425,7 +382,7 @@ def do_create(args, config):
     else:
         print(output)
 
-def do_amend(args, config):
+def do_amend_artifact(args, config):
     artifact_id         = args.artifact_id
     artifact_alias      = args.alias
     artifact_name       = args.artifact_name
@@ -467,6 +424,45 @@ def do_amend(args, config):
     else:
         print(output)
 
+def do_list_artifact(args, config):
+    b_url = config.get('DEFAULT', 'url')
+    client = ArtifactBatch(base_url=b_url)
+    result = client.list_artifact()
+    
+    if result is not None:
+        result.sort(key=lambda x:x["timestamp"], reverse=True)
+        result = json.dumps(result)
+        
+        output = ret_msg("success", "OK", "ListOf:ArtifactRecord", result)
+        
+        print(output)
+    else:     
+        raise ArtifactException("Could not retrieve artifact listing.")
+
+def do_retrieve_artifact(args, config):
+    all_flag    = args.all
+    range_flag  = args.range
+    
+    artifact_id = args.artifact_id
+    
+    if range_flag != None:
+        all_flag = True
+    
+    b_url = config.get('DEFAULT', 'url')
+    client = ArtifactBatch(base_url=b_url)
+    data = client.retrieve_artifact(artifact_id, all_flag, range_flag)
+
+    if data is not None:
+        
+        if all_flag == False:
+            output = ret_msg("success", "OK", "ArtifactRecord", data.decode())
+        else:
+            output = ret_msg("success", "OK", "ArtifactRecord", data)
+        
+        print(output)
+    else:
+        raise ArtifactException("Artifact not found {}".format(artifact_id))
+    
 def do_add_sub_artifact(args, config):
     deleteSub       = args.delete
     
@@ -550,18 +546,41 @@ def do_add_uri_to_artifact(args, config):
 ################################################################################
 #                                  PRINT                                       #
 ################################################################################
-def print_msg(response):
-    if response == None:
-        print(ret_msg("failed","Exception raised","EmptyRecord","{}"))
-    elif "batch_statuses?id" in response:
-        print(ret_msg("success","OK","EmptyRecord","{}"))
-    else:
-        print(ret_msg("failed","Exception raised","EmptyRecord","{}"))
-
 def load_config():
     config = configparser.ConfigParser()
     config.set('DEFAULT', 'url', 'http://127.0.0.1:8008')
     return config
+
+def print_msg(response, cmd=None):
+    try:
+        if type(response) is list and response[0] == None:
+            raise ArtifactException(
+                        "ArtifactException : No change."
+                    )
+        
+        if response == None:
+            if cmd == "create":
+                raise ArtifactException("ArtifactException : Duplicate UUID.")
+                
+            elif cmd == "amend":
+                raise ArtifactException(
+                            "ArtifactException : UUID does not exist."
+                        )
+                
+            raise ArtifactException("Exception raised.")
+        elif "batch_statuses?id" in response:
+            print(ret_msg("success", "OK", "ArtifactRecord", "{}"))
+            return ret_msg("success", "OK", "ArtifactRecord", "{}")
+        else:
+            raise ArtifactException("Exception raised.")
+    except BaseException as err:
+        output = ret_msg(
+                            "failed",
+                            str(err),
+                            "ArtifactRecord", "{}"
+                        )
+        print(output)
+        return output
 
 def ret_msg(status,message,result_type,result):
     msgJSON = "{}"
@@ -569,8 +588,8 @@ def ret_msg(status,message,result_type,result):
     key["status"] = status
     key["message"] = message
     key["result_type"] = result_type
-    key["result"] = json.loads(result)
-    
+    key["result"] = result if type(result) is list else json.loads(result)
+   
     msgJSON = json.dumps(key)
     return msgJSON
 ################################################################################
@@ -592,13 +611,13 @@ def main(prog_name=os.path.basename(sys.argv[0]), args=None):
     config = load_config()
 
     if args.command == 'create':
-        do_create(args, config) 
+        do_create_artifact(args, config) 
     elif args.command == 'list-artifact':
         do_list_artifact(args, config)
     elif args.command == 'retrieve':
         do_retrieve_artifact(args, config)
     elif args.command == 'amend':
-        do_amend(args, config)    
+        do_amend_artifact(args, config)    
     elif args.command == 'AddArtifact':
         do_add_sub_artifact(args, config)  
     elif args.command == 'AddURI':
@@ -626,6 +645,89 @@ def main_wrapper():
     except BaseException as err:
         traceback.print_exc(file=sys.stderr)
         sys.exit(1)
+################################################################################
+#                                 API                                          #
+################################################################################
+def api_do_list_artifact(config):
+    b_url = config.get('DEFAULT', 'url')
+    client = ArtifactBatch(base_url=b_url)
+    artifact_list = client.list_artifact()
+    
+    if artifact_list is not None:
+        artifact_list.sort(key=lambda x:x["timestamp"], reverse=True)
+        result = json.dumps(artifact_list)
+        
+        output = ret_msg("success", "OK", "ListOf:ArtifactRecord", result)
+        
+        return output
+    else:
+        return ret_msg(
+                    "failed", 
+                    "ArtifactException : Could not retrieve artifact listing.", 
+                    "ArtifactRecord", "{}"
+                )
+                
+def api_do_retrieve_artifact(
+        artifact_id, config, all_flag=False, range_flag=None
+    ):
+    
+    if range_flag != None:
+        all_flag = True
+    
+    b_url = config.get('DEFAULT', 'url')
+    client = ArtifactBatch(base_url=b_url)
+    data = client.retrieve_artifact(artifact_id, all_flag, range_flag)
+
+    if data is not None:
+        
+        if all_flag == False:
+            output = ret_msg("success", "OK", "ArtifactRecord", data.decode())
+        else:
+            output = ret_msg("success", "OK", "ArtifactRecord", data)
+        
+        return output
+    else:
+        return ret_msg(
+                    "failed",
+                    "ArtifactException : UUID {} does not exist." \
+                    .format(artifact_id), 
+                    "ArtifactRecord", "{}"
+                )
+################################################################################
+#                           API PRIVATE FUNCTIONS                              #
+################################################################################
+def _payload_check_(args, creation=False):
+    if creation:
+        if "artifact" not in args:
+            return [True, "Artifact missing."]
+        elif "private_key" not in args:
+            return [True, "Private-Key missing."]
+        elif "public_key" not in args:
+            return [True, "Public-Key missing."]
+        elif "uuid" not in args["artifact"]:
+            return [True, "UUID missing."]
+        elif "name" not in args["artifact"]:
+            return [True, "Name missing."]
+        elif "description" not in args["artifact"]:
+            return [True, "Description missing."]
+        else:
+            return [False]
+    else:
+        if "artifact" not in args:
+            return [True, "Artifact missing."]
+        elif "private_key" not in args:
+            return [True, "Private-Key missing."]
+        elif "public_key" not in args:
+            return [True, "Public-Key missing."]
+        elif "uuid" not in args["artifact"]:
+            return [True, "UUID missing."]
+        else:
+            return [False]
+
+def _null_cast(dic, key):
+    if key not in dic:
+        return "null"
+    return dic[key]
 ################################################################################
 #                                                                              #
 ################################################################################

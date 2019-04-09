@@ -14,7 +14,7 @@
 # ------------------------------------------------------------------------------
 
 from flask import Flask, jsonify, make_response, request, json
-import organization_cli
+import part_cli
 import configparser
 ################################################################################
 #                               LIBS & DEPS                                    #
@@ -28,26 +28,25 @@ def get_ping_result():
     output = ret_msg("success","OK","EmptyRecord","Part")
     return output 
 
-# # CREATE
-# @app.route("/tp/part", methods=["POST"])
-# def create_organization():
-#     config = configparser.ConfigParser()
-#     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+# CREATE
+@app.route("/tp/part", methods=["POST"])
+def create_part():
+    config = configparser.ConfigParser()
+    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
-#     try:
-#         if not request.json:
-#             return "Expecting JSON Object."
+    try:
+        if not request.json:
+            return "Expecting JSON Object."
             
-#         output = organization_cli \
-#                     .api_do_create_organization(request.json, config)    
+        output = part_cli.api_do_create_part(request.json, config)    
         
-#         return output
-#     except Exception as e:
-#         return e
+        return output
+    except Exception as e:
+        return e
 
 # # AMEND
 # @app.route("/tp/part/amend", methods=["POST"])
-# def amend_organization():
+# def amend_part():
 #     config = configparser.ConfigParser()
 #     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
@@ -55,75 +54,74 @@ def get_ping_result():
 #         if not request.json:
 #             return "Expecting JSON Object."
         
-#         output = organization_cli \
-#                     .api_do_amend_organization(request.json, config)    
+#         output = part_cli.api_do_amend_part(request.json, config)    
         
 #         return output
 #     except Exception as e:
 #         return e
 
-# # LIST
-# @app.route("/tp/part", methods=["GET"])
-# def list_organization():
-#     config = configparser.ConfigParser()
-#     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+# LIST
+@app.route("/tp/part", methods=["GET"])
+def list_part():
+    config = configparser.ConfigParser()
+    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
-#     try:
-#         output = organization_cli.api_do_list_organization(config)
+    try:
+        output = part_cli.api_do_list_part(config)
         
-#         return output
-#     except Exception as e:
-#         return e
+        return output
+    except Exception as e:
+        return e
 
-# # RETRIEVE MOST RECENT BY UUID
-# @app.route("/tp/part/<string:organization_id>", methods=["GET"])
-# def retrieve_organization(organization_id):
-#     config = configparser.ConfigParser()
-#     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+# RETRIEVE MOST RECENT BY UUID
+@app.route("/tp/part/<string:part_id>", methods=["GET"])
+def retrieve_part(part_id):
+    config = configparser.ConfigParser()
+    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
-#     try:
-#         output = organization_cli.api_do_retrieve_organization(
-#                     organization_id, config
-#                 )
+    try:
+        output = part_cli.api_do_retrieve_part(
+                    part_id, config
+                )
         
-#         return output
-#     except Exception as e:
-#         return e
+        return output
+    except Exception as e:
+        return e
 
-# # RETRIEVE HISTORY OF UUID
-# @app.route("/tp/part/history/<string:organization_id>", methods=["GET"])
-# def retrieve_organization_history(organization_id):
-#     config = configparser.ConfigParser()
-#     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+# RETRIEVE HISTORY OF UUID
+@app.route("/tp/part/history/<string:part_id>", methods=["GET"])
+def retrieve_part_history(part_id):
+    config = configparser.ConfigParser()
+    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
-#     try:
-#         output = organization_cli.api_do_retrieve_organization(
-#                         organization_id, config, all_flag=True
-#                     )
-#         return output
-#     except Exception as e:
-#         return e
+    try:
+        output = part_cli.api_do_retrieve_part(
+                        part_id, config, all_flag=True
+                    )
+        return output
+    except Exception as e:
+        return e
 
-# # RETRIEVE UUID ON CERTAIN DATE     
-# @app.route(
-#     "/tp/part/<string:organization_id>/date/<string:START>",
-#     methods=["GET"]
-# )
-# def retrieve_organization_history_date(organization_id, START):
-#     config = configparser.ConfigParser()
-#     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+# RETRIEVE UUID ON CERTAIN DATE     
+@app.route(
+    "/tp/part/<string:part_id>/date/<string:START>",
+    methods=["GET"]
+)
+def retrieve_part_history_date(part_id, START):
+    config = configparser.ConfigParser()
+    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
-#     try:
-#         output = organization_cli.api_do_retrieve_organization(
-#                         organization_id, config, range_flag=[START, START]
-#                     )
-#         return output
-#     except Exception as e:
-#         return e
+    try:
+        output = part_cli.api_do_retrieve_part(
+                        part_id, config, range_flag=[START, START]
+                    )
+        return output
+    except Exception as e:
+        return e
    
 # # ADDPART
 # @app.route("/tp/part/addpart", methods=["POST"])
-# def add_part_organization():
+# def add_part_part():
 #     config = configparser.ConfigParser()
 #     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
@@ -131,7 +129,7 @@ def get_ping_result():
 #         if not request.json:
 #             return "Expecting JSON Object."
         
-#         output = organization_cli.api_do_addpart(request.json, config)    
+#         output = part_cli.api_do_addpart(request.json, config)    
         
 #         return output
 #     except Exception as e:

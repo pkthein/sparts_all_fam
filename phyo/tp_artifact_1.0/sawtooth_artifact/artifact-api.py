@@ -1,5 +1,4 @@
-
-# copyright 2017 Wind River Systems
+# Copyright 2017 Wind River Systems
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -14,7 +13,7 @@
 # ------------------------------------------------------------------------------
 
 from flask import Flask, jsonify, make_response, request, json
-import part_cli
+import artifact_cli
 import configparser
 ################################################################################
 #                               LIBS & DEPS                                    #
@@ -22,31 +21,31 @@ import configparser
 app = Flask(__name__)
 
 # PING
-@app.route("/tp/part/ping", methods=["GET"])
+@app.route("/tp/artifact/ping", methods=["GET"])
 def get_ping_result():
     
-    output = ret_msg("success","OK","EmptyRecord","Part")
+    output = ret_msg("success", "OK", "EmptyRecord", "Artifact")
     return output 
 
-# CREATE
-@app.route("/tp/part", methods=["POST"])
-def create_part():
-    config = configparser.ConfigParser()
-    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+# # CREATE
+# @app.route("/tp/artifact", methods=["POST"])
+# def create_artifact():
+#     config = configparser.ConfigParser()
+#     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
-    try:
-        if not request.json:
-            return "Expecting JSON Object."
+#     try:
+#         if not request.json:
+#             return "Expecting JSON Object."
             
-        output = part_cli.api_do_create_part(request.json, config)    
+#         output = artifact_cli.api_do_create_artifact(request.json, config)  
         
-        return output
-    except Exception as e:
-        return e
+#         return output
+#     except Exception as e:
+#         return e
 
 # # AMEND
-# @app.route("/tp/part/amend", methods=["POST"])
-# def amend_part():
+# @app.route("/tp/artifact/amend", methods=["POST"])
+# def amend_artifact():
 #     config = configparser.ConfigParser()
 #     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
@@ -54,49 +53,47 @@ def create_part():
 #         if not request.json:
 #             return "Expecting JSON Object."
         
-#         output = part_cli.api_do_amend_part(request.json, config)    
+#         output = artifact_cli.api_do_amend_artifact(request.json, config)    
         
 #         return output
 #     except Exception as e:
 #         return e
 
 # LIST
-@app.route("/tp/part", methods=["GET"])
-def list_part():
+@app.route("/tp/artifact", methods=["GET"])
+def list_artifact():
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
     try:
-        output = part_cli.api_do_list_part(config)
+        output = artifact_cli.api_do_list_artifact(config)
         
         return output
     except Exception as e:
         return e
 
 # RETRIEVE MOST RECENT BY UUID
-@app.route("/tp/part/<string:part_id>", methods=["GET"])
-def retrieve_part(part_id):
+@app.route("/tp/artifact/<string:artifact_id>", methods=["GET"])
+def retrieve_artifact(artifact_id):
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
     try:
-        output = part_cli.api_do_retrieve_part(
-                    part_id, config
-                )
+        output = artifact_cli.api_do_retrieve_artifact(artifact_id, config)
         
         return output
     except Exception as e:
         return e
 
 # RETRIEVE HISTORY OF UUID
-@app.route("/tp/part/history/<string:part_id>", methods=["GET"])
-def retrieve_part_history(part_id):
+@app.route("/tp/artifact/history/<string:artifact_id>", methods=["GET"])
+def retrieve_artifact_history(artifact_id):
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
     try:
-        output = part_cli.api_do_retrieve_part(
-                        part_id, config, all_flag=True
+        output = artifact_cli.api_do_retrieve_artifact(
+                        artifact_id, config, all_flag=True
                     )
         return output
     except Exception as e:
@@ -104,48 +101,26 @@ def retrieve_part_history(part_id):
 
 # RETRIEVE UUID ON CERTAIN DATE     
 @app.route(
-    "/tp/part/<string:part_id>/date/<string:START>",
+    "/tp/artifact/<string:artifact_id>/date/<string:START>",
     methods=["GET"]
 )
-def retrieve_part_history_date(part_id, START):
+def retrieve_artifact_history_date(artifact_id, START):
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
     try:
-        output = part_cli.api_do_retrieve_part(
-                        part_id, config, range_flag=[START, START]
+        output = artifact_cli.api_do_retrieve_artifact(
+                        artifact_id, config, range_flag=[START, START]
                     )
         return output
     except Exception as e:
         return e
-   
-# # ADDPART
-# @app.route("/tp/part/addpart", methods=["POST"])
-# def add_part_part():
-#     config = configparser.ConfigParser()
-#     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
-    
-#     try:
-#         if not request.json:
-#             return "Expecting JSON Object."
-        
-#         output = part_cli.api_do_addpart(request.json, config)    
-        
-#         return output
-#     except Exception as e:
-#         return e
 ################################################################################
 #                                   TEST                                       #
 ################################################################################
 @app.route("/tp/test", methods=["POST"])
 def testing_():
     try:
-        # if not request.json or "category" not in request.json:
-        #     return "Error"
-        # data = json.dumps(request.json["private_key"])
-        
-        # return json.loads(data)
-        # return (request.json["category"]["uuid"] + request.json["category"]["name"])
         return json.dumps(request.json)
     except Exception as e:
         return e
@@ -153,12 +128,6 @@ def testing_():
 @app.route("/tp/test", methods=["GET"])
 def testing_get():
     try:
-        # if not request.json or "category" not in request.json:
-        #     return "Error"
-        # data = json.dumps(request.json["private_key"])
-        
-        # return json.loads(data)
-        # return (request.json["category"]["uuid"] + request.json["category"]["name"])
         return "phyo test get was called successfully"
     except Exception as e:
         return e
@@ -182,7 +151,7 @@ def ret_msg(status, message, result_type, result):
 #                                   MAIN                                       #
 ################################################################################
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port="852")
+    app.run(host="0.0.0.0", port="853")
 ################################################################################
 #                                                                              #
 ################################################################################

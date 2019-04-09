@@ -17,14 +17,14 @@ services:
             - '850' # category api
             - '851' # organization api
             - '852' # part api
-            # - '853' # artifact api
+            - '853' # artifact api
             # - '80'
         ports:
             - '8080:818'
             - '8800:850'
             - '8880:851'
             - '8888:852'
-            # - '0808:853'
+            - '0808:853'
             # - '80:80'
         tty: true
         volumes:

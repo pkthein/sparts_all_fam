@@ -53,6 +53,15 @@ class ArtifactBatch:
     def create(self, private_key, public_key, artifact_id, artifact_alias, 
                 artifact_name, artifact_type, artifact_checksum, artifact_label, 
                 artifact_openchain):
+        address = self._get_address(artifact_id)
+    
+        response_bytes = self._send_request("state/{}".format(address),
+                        artifact_id=artifact_id, creation=True
+                    )
+        
+        if response_bytes != None:
+            return None
+        
         cur = self._get_block_num() 
         return self.artifact_transaction(private_key, public_key, artifact_id, 
                     artifact_alias, artifact_name, artifact_type, 
@@ -87,7 +96,7 @@ class ArtifactBatch:
                 jresponse["checksum"] == artifact_checksum and
                 jresponse["label"] == artifact_label and
                 jresponse["openchain"] == artifact_openchain) :
-                return None
+                return [None]
             else:
                 cur = self._get_block_num()
                 return self.artifact_transaction(private_key, public_key,
@@ -110,7 +119,8 @@ class ArtifactBatch:
             encoded_entries = yaml.safe_load(result)["data"]
 
             return [
-                base64.b64decode(entry["data"]) for entry in encoded_entries
+                json.loads(base64.b64decode(entry["data"]).decode()) for entry \
+                    in encoded_entries
             ]
 
         except BaseException:
@@ -128,11 +138,9 @@ class ArtifactBatch:
                 curTime = int(response["timestamp"].split()[0].replace("-", ""))
                 if (curTime <= int(range_flag[1]) and 
                         curTime >= int(range_flag[0])):
-                    jresponse = json.dumps(response)
-                    retVal.append(jresponse)
+                    retVal.append(response)
             else:
-                jresponse = json.dumps(response)
-                retVal.append(jresponse)
+                retVal.append(response)
                 
             while str(response["prev_block"]) != "0":
                 
@@ -143,20 +151,16 @@ class ArtifactBatch:
                 
                 del response["action"]
                 
-                jresponse = json.dumps(response)
-                
                 if range_flag != None:
                     curTime = int(timestamp.split()[0].replace("-", ""))
                     if curTime < int(range_flag[0]):
                         break
                     elif curTime <= int(range_flag[1]):
-                        retVal.append(jresponse)
+                        retVal.append(response)
                 else:
-                    retVal.append(jresponse)
+                    retVal.append(response)
             
-            retVal = str(retVal).replace("'", '')
-            
-            return json.dumps(retVal)
+            return retVal
             
         else:
             address = self._get_address(artifact_id)
@@ -382,8 +386,9 @@ class ArtifactBatch:
         self._send_request("state/{}".format(address))
     
     def _send_request(
-            self, suffix, data=None,
-            content_type=None, artifact_id=None):
+            self, suffix, data=None, content_type=None,
+            artifact_id=None, creation=False):
+                
         if self._base_url.startswith("http://"):
             url = "{}/{}".format(self._base_url, suffix)
         else:
@@ -401,6 +406,8 @@ class ArtifactBatch:
                 result = requests.get(url, headers=headers)
 
             if result.status_code == 404:
+                if creation:
+                    return None
                 raise ArtifactException(
                         "No such artifact as {}".format(artifact_id)
                     )
@@ -410,7 +417,8 @@ class ArtifactBatch:
                     result.status_code, result.reason))
 
         except BaseException as err:
-            raise ArtifactException(err)
+            print(err)
+            return None
             
         return result.text
 

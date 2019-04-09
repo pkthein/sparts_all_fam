@@ -52,16 +52,25 @@ class PartBatch:
 ################################################################################
 #                            PUBLIC FUNCTIONS                                  #
 ################################################################################    
-    def create(self, pt_id, pt_name, checksum, version, alias, licensing, label,
-                description, private_key, public_key):
+    def create_part(self, pt_id, pt_name, checksum, version, alias, licensing,
+                label, description, private_key, public_key):
+        address = self._get_address(pt_id)
+    
+        response_bytes = self._send_request(
+                        "state/{}".format(address), pt_id=pt_id, creation=True
+                    )
+        
+        if response_bytes != None:
+            return None
+        
         cur = self._get_block_num()
         return self.create_part_transaction(pt_id, pt_name, checksum, version, 
                     alias, licensing, label, description, "create", private_key,
                     public_key, [], [], [], "0", cur, 
                     str(datetime.datetime.utcnow()))
   
-    def amend(self, pt_id, pt_name, checksum, version, alias, licensing, label,
-                description, private_key, public_key):
+    def amend_part(self, pt_id, pt_name, checksum, version, alias, licensing,
+                label, description, private_key, public_key):
         response_bytes = self.retrieve_part(pt_id)
         
         if response_bytes != None:
@@ -90,7 +99,7 @@ class PartBatch:
                 jresponse["licensing"]   == licensing    and
                 jresponse["label"]       == label        and
                 jresponse["description"]    == description):
-                return None
+                return [None]
             else:
                 cur = self._get_block_num()
                 return self.create_part_transaction(pt_id, pt_name, checksum, 
@@ -309,7 +318,8 @@ class PartBatch:
             encoded_entries = yaml.safe_load(result)["data"]
 
             return [
-                base64.b64decode(entry["data"]) for entry in encoded_entries
+                json.loads(base64.b64decode(entry["data"]).decode()) for entry \
+                    in encoded_entries
             ]
 
         except BaseException:
@@ -327,11 +337,9 @@ class PartBatch:
                 curTime = int(response["timestamp"].split()[0].replace("-", ""))
                 if (curTime <= int(range_flag[1]) and 
                         curTime >= int(range_flag[0])):
-                    jresponse = json.dumps(response)
-                    retVal.append(jresponse)
+                    retVal.append(response)
             else:
-                jresponse = json.dumps(response)
-                retVal.append(jresponse)
+                retVal.append(response)
             
             while str(response["prev_block"]) != "0":
                 
@@ -342,25 +350,22 @@ class PartBatch:
                 
                 del response["action"]
                 
-                jresponse = json.dumps(response)
-                
                 if range_flag != None:
                     curTime = int(timestamp.split()[0].replace("-", ""))
                     if curTime < int(range_flag[0]):
                         break
                     elif curTime <= int(range_flag[1]):
-                        retVal.append(jresponse)
+                        retVal.append(response)
                 else:
-                    retVal.append(jresponse)
-                
-            retVal = str(retVal).replace("'", '')
+                    retVal.append(response)
             
-            return json.dumps(retVal)
+            return retVal
         else:
             address = self._get_address(pt_id)
     
-            result = self._send_request("state/{}".format(address), pt_id=pt_id
-                                        )
+            result = self._send_request(
+                            "state/{}".format(address), pt_id=pt_id
+                        )
             try:
                 return base64.b64decode(yaml.safe_load(result)["data"])
     
@@ -370,11 +375,11 @@ class PartBatch:
 #                            PRIVATE FUNCTIONS                                 #
 ################################################################################
     def _get_prefix(self):
-        return _sha512('pt'.encode('utf-8'))[0:6]
+        return _sha512("pt".encode("utf-8"))[0:6]
     
     def _get_address(self, pt_id):
         part_prefix = self._get_prefix()
-        address = _sha512(pt_id.encode('utf-8'))[0:64]
+        address = _sha512(pt_id.encode("utf-8"))[0:64]
         return part_prefix + address
     
     def _get_block_num(self):
@@ -405,8 +410,8 @@ class PartBatch:
         return None
     
     def _validate_artifact_id(self, artifact_id):
-        artifact_prefix = _sha512('artifact'.encode('utf-8'))[0:6]
-        address = _sha512(artifact_id.encode('utf-8'))[0:64]
+        artifact_prefix = _sha512("artifact".encode("utf-8"))[0:6]
+        address = _sha512(artifact_id.encode("utf-8"))[0:64]
         address = artifact_prefix + address
         self._send_request("state/{}".format(address))
     
@@ -422,9 +427,8 @@ class PartBatch:
         address = category_prefix + address
         self._send_request("state/{}".format(address))
     
-    def _send_request(
-            self, suffix, data=None,
-            content_type=None, pt_id=None):
+    def _send_request(self, suffix, data=None, content_type=None,
+                        pt_id=None, creation=False):
         if self._base_url.startswith("http://"):
             url = "{}/{}".format(self._base_url, suffix)
         else:
@@ -432,7 +436,7 @@ class PartBatch:
 
         headers = {}
         if content_type is not None:
-            headers['Content-Type'] = content_type
+            headers["Content-Type"] = content_type
 
         try:
             if data is not None:
@@ -441,6 +445,8 @@ class PartBatch:
                 result = requests.get(url, headers=headers)
 
             if result.status_code == 404:
+                if creation:
+                    return None
                 raise PartException("No part found: {}".format(pt_id))
 
             elif not result.ok:
@@ -448,7 +454,8 @@ class PartBatch:
                     result.status_code, result.reason))
 
         except BaseException as err:
-            raise PartException(err)
+            print(err)
+            return None
 
         return result.text
    
@@ -494,7 +501,7 @@ class PartBatch:
             nonce = time.time().hex().encode()
         ).SerializeToString()
         
-        signature = CryptoFactory(create_context('secp256k1')) \
+        signature = CryptoFactory(create_context("secp256k1")) \
             .new_signer(Secp256k1PrivateKey.from_hex(self._private_key)) \
             .sign(header)
 
@@ -508,7 +515,7 @@ class PartBatch:
         
         return self._send_request(
             "batches", batch_list.SerializeToString(),
-            'application/octet-stream'
+            "application/octet-stream"
         )
 
     def _create_batch_list(self, transactions):
@@ -519,7 +526,7 @@ class PartBatch:
             transaction_ids=transaction_signatures
         ).SerializeToString()
 
-        signature = CryptoFactory(create_context('secp256k1')) \
+        signature = CryptoFactory(create_context("secp256k1")) \
             .new_signer(Secp256k1PrivateKey.from_hex(self._private_key)) \
             .sign(header)
 
