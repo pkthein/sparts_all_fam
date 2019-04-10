@@ -50,9 +50,9 @@ class ArtifactBatch:
 ################################################################################
 #                            PUBLIC FUNCTIONS                                  #
 ################################################################################
-    def create(self, private_key, public_key, artifact_id, artifact_alias, 
-                artifact_name, artifact_type, artifact_checksum, artifact_label, 
-                artifact_openchain):
+    def create_artifact(self, private_key, public_key, artifact_id,
+            artifact_alias, artifact_name, artifact_type, artifact_checksum,
+            artifact_label, artifact_openchain):
         address = self._get_address(artifact_id)
     
         response_bytes = self._send_request("state/{}".format(address),
@@ -68,9 +68,9 @@ class ArtifactBatch:
                     artifact_checksum, artifact_label, artifact_openchain, 
                     "0", cur, str(datetime.datetime.utcnow()), "create", "", "")
     
-    def amend(self, private_key, public_key, artifact_id, artifact_alias, 
-                artifact_name, artifact_type, artifact_checksum, artifact_label, 
-                artifact_openchain):
+    def amend_artifact(self, private_key, public_key, artifact_id,
+            artifact_alias, artifact_name, artifact_type, artifact_checksum,
+            artifact_label, artifact_openchain):
         response_bytes = self.retrieve_artifact(artifact_id)
         
         if response_bytes != None:

@@ -27,37 +27,37 @@ def get_ping_result():
     output = ret_msg("success", "OK", "EmptyRecord", "Artifact")
     return output 
 
-# # CREATE
-# @app.route("/tp/artifact", methods=["POST"])
-# def create_artifact():
-#     config = configparser.ConfigParser()
-#     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+# CREATE
+@app.route("/tp/artifact", methods=["POST"])
+def create_artifact():
+    config = configparser.ConfigParser()
+    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
-#     try:
-#         if not request.json:
-#             return "Expecting JSON Object."
+    try:
+        if not request.json:
+            return "Expecting JSON Object."
             
-#         output = artifact_cli.api_do_create_artifact(request.json, config)  
+        output = artifact_cli.api_do_create_artifact(request.json, config)  
         
-#         return output
-#     except Exception as e:
-#         return e
+        return output
+    except Exception as e:
+        return e
 
-# # AMEND
-# @app.route("/tp/artifact/amend", methods=["POST"])
-# def amend_artifact():
-#     config = configparser.ConfigParser()
-#     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+# AMEND
+@app.route("/tp/artifact/amend", methods=["POST"])
+def amend_artifact():
+    config = configparser.ConfigParser()
+    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
-#     try:
-#         if not request.json:
-#             return "Expecting JSON Object."
+    try:
+        if not request.json:
+            return "Expecting JSON Object."
         
-#         output = artifact_cli.api_do_amend_artifact(request.json, config)    
+        output = artifact_cli.api_do_amend_artifact(request.json, config)    
         
-#         return output
-#     except Exception as e:
-#         return e
+        return output
+    except Exception as e:
+        return e
 
 # LIST
 @app.route("/tp/artifact", methods=["GET"])

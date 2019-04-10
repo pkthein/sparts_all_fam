@@ -33,15 +33,15 @@ class ArtifactTransactionHandler:
 
     @property
     def family_name(self):
-        return 'artifact'
+        return "artifact"
 
     @property
     def family_versions(self):
-        return ['1.0']
+        return ["1.0"]
 
     @property
     def encodings(self):
-        return ['csv-utf8']
+        return ["csv-utf8"]
 
     @property
     def namespaces(self):
@@ -140,17 +140,17 @@ def create_artifact(artifact_id, artifact_alias, artifact_name, artifact_type,
 
 def validate_transaction( artifact_id, action):
     if not artifact_id:
-        raise InvalidTransaction('Artifact ID is required')
+        raise InvalidTransaction("Artifact ID is required")
     
     if not action:
-        raise InvalidTransaction('Action is required')
+        raise InvalidTransaction("Action is required")
 
     if action not in ("AddArtifact", "create", "AddURI", "amend"):
-        raise InvalidTransaction('Invalid action: {}'.format(action))
+        raise InvalidTransaction("Invalid action: {}".format(action))
 
 def make_artifact_address(namespace_prefix, artifact_id):
     return namespace_prefix + \
-        hashlib.sha512(artifact_id.encode('utf-8')).hexdigest()[:64]
+        hashlib.sha512(artifact_id.encode("utf-8")).hexdigest()[:64]
 
 def _display(msg):
     n = msg.count("\n")

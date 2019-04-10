@@ -41,7 +41,7 @@ from sawtooth_artifact.artifact_batch import ArtifactBatch
 from sawtooth_artifact.exceptions import ArtifactException
 
 
-DISTRIBUTION_NAME = 'sawtooth-artifact'
+DISTRIBUTION_NAME = "sawtooth-artifact"
 ################################################################################
 def create_console_handler(verbose_level):
     clog = logging.StreamHandler()
@@ -51,11 +51,11 @@ def create_console_handler(verbose_level):
         datefmt="%H:%M:%S",
         reset=True,
         log_colors={
-            'DEBUG': 'cyan',
-            'INFO': 'green',
-            'WARNING': 'yellow',
-            'ERROR': 'red',
-            'CRITICAL': 'red',
+            "DEBUG": "cyan",
+            "INFO": "green",
+            "WARNING": "yellow",
+            "ERROR": "red",
+            "CRITICAL": "red",
         })
 
     clog.setFormatter(formatter)
@@ -77,69 +77,69 @@ def setup_loggers(verbose_level):
 #                                   OBJ                                        #
 ################################################################################
 def add_create_parser(subparsers, parent_parser):
-    parser = subparsers.add_parser('create', parents=[parent_parser])
+    parser = subparsers.add_parser("create", parents=[parent_parser])
 
     parser.add_argument(
-        'artifact_id',
+        "artifact_id",
         type=str,
-        help='an identifier for the artifact')
+        help="an identifier for the artifact")
     
     parser.add_argument(
-        'alias',
+        "alias",
         type=str,
-        help='an short identifier for the artifact')
+        help="an short identifier for the artifact")
     
     parser.add_argument(
-        'artifact_name',
+        "artifact_name",
         type=str,
-        help='Provide artifact name')
+        help="Provide artifact name")
     
     parser.add_argument(
-        'artifact_type',
+        "artifact_type",
         type=str,
-        help='provide artifact type')
+        help="provide artifact type")
     
     parser.add_argument(
-        'artifact_checksum',
+        "artifact_checksum",
         type=str,
-        help='provide artifact checksum')
+        help="provide artifact checksum")
         
     parser.add_argument(
-        'label',
+        "label",
         type=str,
-        help='provide artifact label')
+        help="provide artifact label")
     
     parser.add_argument(
-        'openchain',
+        "openchain",
         type=str,
-        help='provide artifact Open Chain status')
+        help="provide artifact Open Chain status")
     
     parser.add_argument(
-        'private_key',
+        "private_key",
         type=str,
-        help='Provide User Private Key')
+        help="Provide User Private Key")
     
     parser.add_argument(
-        'public_key',
+        "public_key",
         type=str,
-        help='Provide User Public Key')
+        help="Provide User Public Key")
     
     parser.add_argument(
-        '--disable-client-validation',
-        action='store_true',
+        "--disable-client-validation",
+        action="store_true",
         default=False,
-        help='disable client validation')
+        help="disable client validation")
 
 def add_list_artifact_parser(subparsers, parent_parser):
-    subparsers.add_parser('list-artifact', parents=[parent_parser])
+    subparsers.add_parser("list-artifact", parents=[parent_parser])
 
 def add_retrieve_artifact_parser(subparsers, parent_parser):
-    parser = subparsers.add_parser('retrieve', parents=[parent_parser])
+    parser = subparsers.add_parser("retrieve", parents=[parent_parser])
 
     parser.add_argument(
-        'artifact_id',
+        "artifact_id",
         type=str,
-        help='the identifier for the artifact')
+        help="the identifier for the artifact")
     
     parser.add_argument(
         "-a", "--all",
@@ -155,86 +155,86 @@ def add_retrieve_artifact_parser(subparsers, parent_parser):
         help="show history of uuid within the range; FORMAT : yyyymmdd")
 
 def add_amend_parser(subparsers, parent_parser):
-    parser = subparsers.add_parser('amend', parents=[parent_parser])
+    parser = subparsers.add_parser("amend", parents=[parent_parser])
 
     parser.add_argument(
-        'artifact_id',
+        "artifact_id",
         type=str,
-        help='an identifier for the artifact')
+        help="an identifier for the artifact")
     
     parser.add_argument(
-        'alias',
+        "alias",
         type=str,
-        help='an short identifier for the artifact')
+        help="an short identifier for the artifact")
     
     parser.add_argument(
-        'artifact_name',
+        "artifact_name",
         type=str,
-        help='Provide artifact name')
+        help="Provide artifact name")
     
     parser.add_argument(
-        'artifact_type',
+        "artifact_type",
         type=str,
-        help='provide artifact type')
+        help="provide artifact type")
     
     parser.add_argument(
-        'artifact_checksum',
+        "artifact_checksum",
         type=str,
-        help='provide artifact checksum')
+        help="provide artifact checksum")
         
     parser.add_argument(
-        'label',
+        "label",
         type=str,
-        help='provide artifact label')
+        help="provide artifact label")
     
     parser.add_argument(
-        'openchain',
+        "openchain",
         type=str,
-        help='provide artifact Open Chain status')
+        help="provide artifact Open Chain status")
     
     parser.add_argument(
-        'private_key',
+        "private_key",
         type=str,
-        help='Provide User Private Key')
+        help="Provide User Private Key")
     
     parser.add_argument(
-        'public_key',
+        "public_key",
         type=str,
-        help='Provide User Public Key')
+        help="Provide User Public Key")
     
     parser.add_argument(
-        '--disable-client-validation',
-        action='store_true',
+        "--disable-client-validation",
+        action="store_true",
         default=False,
-        help='disable client validation')
+        help="disable client validation")
     
 def add_artifact_parser(subparsers, parent_parser):
-    parser = subparsers.add_parser('AddArtifact', parents=[parent_parser])
+    parser = subparsers.add_parser("AddArtifact", parents=[parent_parser])
     
     parser.add_argument(
-        'artifact_id',
+        "artifact_id",
         type=str,
-        help='the identifier for the artifact')
+        help="the identifier for the artifact")
 
     parser.add_argument(
-        'sub_artifact_id',
+        "sub_artifact_id",
         type=str,
-        help='the UUID identifier for sub artifact')
+        help="the UUID identifier for sub artifact")
     
     parser.add_argument(
-        'path',
+        "path",
         type=str,
-        help='path of the artifact')
+        help="path of the artifact")
     
     parser.add_argument(
-        'private_key',
+        "private_key",
         type=str,
-        help='Provide User Private Key')
+        help="Provide User Private Key")
     
     parser.add_argument(
-        'public_key',
+        "public_key",
         type=str,
-        help='Provide User Public Key')
+        help="Provide User Public Key")
         
     parser.add_argument(
         "-D", "--delete",
@@ -243,52 +243,52 @@ def add_artifact_parser(subparsers, parent_parser):
         help="removes the sub artifact")
     
 def add_uri_to_artifact_parser(subparsers, parent_parser):
-    parser = subparsers.add_parser('AddURI', parents=[parent_parser])
+    parser = subparsers.add_parser("AddURI", parents=[parent_parser])
     
     parser.add_argument(
-        'artifact_id',
+        "artifact_id",
         type=str,
-        help='Provide identifier for the artifact')
+        help="Provide identifier for the artifact")
 
     parser.add_argument(
-        'version',
+        "version",
         type=str,
-        help='Provide version')
+        help="Provide version")
     
     parser.add_argument(
-        'checksum',
+        "checksum",
         type=str,
-        help='Provide Artifact Checksum')
+        help="Provide Artifact Checksum")
      
     parser.add_argument(
-        'content_type',
+        "content_type",
         type=str,
-        help='Provide type')
+        help="Provide type")
       
     parser.add_argument(
-        'size',
+        "size",
         type=str,
-        help='Provide Artifact size')
+        help="Provide Artifact size")
     
     parser.add_argument(
-        'uri_type',
+        "uri_type",
         type=str,
-        help='Provide URI type')
+        help="Provide URI type")
     
     parser.add_argument(
-        'location',
+        "location",
         type=str,
-        help='Provide link/path for the artifact')
+        help="Provide link/path for the artifact")
     
     parser.add_argument(
-        'private_key',
+        "private_key",
         type=str,
-        help='Provide User Private Key')
+        help="Provide User Private Key")
     
     parser.add_argument(
-        'public_key',
+        "public_key",
         type=str,
-        help='Provide User Public Key')
+        help="Provide User Public Key")
         
     parser.add_argument(
         "-D", "--delete",
@@ -301,21 +301,21 @@ def add_uri_to_artifact_parser(subparsers, parent_parser):
 def create_parent_parser(prog_name):
     parent_parser = argparse.ArgumentParser(prog=prog_name, add_help=False)
     parent_parser.add_argument(
-        '-v', '--verbose',
-        action='count',
-        help='enable more verbose output')
+        "-v", "--verbose",
+        action="count",
+        help="enable more verbose output")
 
     try:
         version = pkg_resources.get_distribution(DISTRIBUTION_NAME).version
     except pkg_resources.DistributionNotFound:
-        version = 'UNKNOWN'
+        version = "UNKNOWN"
 
     parent_parser.add_argument(
-        '-V', '--version',
-        action='version',
-        version=(DISTRIBUTION_NAME + ' (Hyperledger Sawtooth) version {}')
+        "-V", "--version",
+        action="version",
+        version=(DISTRIBUTION_NAME + " (Hyperledger Sawtooth) version {}")
         .format(version),
-        help='print version information')
+        help="print version information")
 
     return parent_parser
 
@@ -326,7 +326,7 @@ def create_parser(prog_name):
         parents=[parent_parser],
         formatter_class=argparse.RawDescriptionHelpFormatter)
 
-    subparsers = parser.add_subparsers(title='subcommands', dest='command')
+    subparsers = parser.add_subparsers(title="subcommands", dest="command")
 
     add_create_parser(subparsers, parent_parser)
     add_list_artifact_parser(subparsers, parent_parser)
@@ -358,25 +358,28 @@ def do_create_artifact(args, config):
     key["allowedrole"] = [{"role" : "admin"}, {"role" : "member"}]
     payload = json.dumps(key)
    
-    headers = {'content-type': 'application/json'}
+    headers = {"content-type": "application/json"}
     response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth", 
                     data=json.dumps(key), headers=headers)
     output = response.content.decode("utf-8").strip()
     statusinfo = json.loads(output)
        
-    if statusinfo.get('status')and statusinfo.get('message'):
+    if statusinfo.get("status")and statusinfo.get("message"):
             
-        status = statusinfo['status']
-        message = statusinfo['message']
+        status = statusinfo["status"]
+        message = statusinfo["message"]
             
-        if status == 'success' and message == 'authorized':
-            b_url = config.get('DEFAULT', 'url')
+        if status == "success" and message == "authorized":
+            b_url = config.get("DEFAULT", "url")
             client = ArtifactBatch(base_url=b_url)
-            response = client.create(private_key, public_key, artifact_id, 
-                                artifact_alias, artifact_name, artifact_type, 
-                                artifact_checksum, artifact_label, 
-                                artifact_openchain)
-            print_msg(response)
+            response = client.create_artifact(
+                            private_key, public_key, artifact_id,
+                            artifact_alias, artifact_name, artifact_type, 
+                            artifact_checksum, artifact_label,
+                            artifact_openchain
+                        )
+                        
+            print_msg(response, "create")
         else:
             print(output)
     else:
@@ -400,32 +403,35 @@ def do_amend_artifact(args, config):
     key["allowedrole"] = [{"role" : "admin"}, {"role" : "member"}]
     payload = json.dumps(key)
    
-    headers = {'content-type': 'application/json'}
+    headers = {"content-type": "application/json"}
     response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth", 
                     data=json.dumps(key), headers=headers)
     output = response.content.decode("utf-8").strip()
     statusinfo = json.loads(output)
        
-    if statusinfo.get('status')and statusinfo.get('message'):
+    if statusinfo.get("status")and statusinfo.get("message"):
             
-        status = statusinfo['status']
-        message = statusinfo['message']
+        status = statusinfo["status"]
+        message = statusinfo["message"]
             
-        if status == 'success' and message == 'authorized':
-            b_url = config.get('DEFAULT', 'url')
+        if status == "success" and message == "authorized":
+            b_url = config.get("DEFAULT", "url")
             client = ArtifactBatch(base_url=b_url)
-            response = client.amend(private_key, public_key, artifact_id, 
-                                artifact_alias, artifact_name, artifact_type, 
-                                artifact_checksum, artifact_label, 
-                                artifact_openchain)
-            print_msg(response)
+            response = client.amend_artifact(
+                            private_key, public_key, artifact_id, 
+                            artifact_alias, artifact_name, artifact_type, 
+                            artifact_checksum, artifact_label, 
+                            artifact_openchain
+                        )
+                        
+            print_msg(response, "amend")
         else:
             print(output)
     else:
         print(output)
 
 def do_list_artifact(args, config):
-    b_url = config.get('DEFAULT', 'url')
+    b_url = config.get("DEFAULT", "url")
     client = ArtifactBatch(base_url=b_url)
     result = client.list_artifact()
     
@@ -448,7 +454,7 @@ def do_retrieve_artifact(args, config):
     if range_flag != None:
         all_flag = True
     
-    b_url = config.get('DEFAULT', 'url')
+    b_url = config.get("DEFAULT", "url")
     client = ArtifactBatch(base_url=b_url)
     data = client.retrieve_artifact(artifact_id, all_flag, range_flag)
 
@@ -479,19 +485,19 @@ def do_add_sub_artifact(args, config):
     key["allowedrole"] = [{"role" : "admin"}, {"role" : "member"}]
     payload = json.dumps(key)
        
-    headers = {'content-type': 'application/json'}
+    headers = {"content-type": "application/json"}
     response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth", 
                     data=json.dumps(key), headers=headers)
     output = response.content.decode("utf-8").strip()
     statusinfo = json.loads(output)
        
-    if statusinfo.get('status')and statusinfo.get('message'):
+    if statusinfo.get("status")and statusinfo.get("message"):
             
-        status = statusinfo['status']
-        message = statusinfo['message']
+        status = statusinfo["status"]
+        message = statusinfo["message"]
             
-        if status == 'success' and message == 'authorized':
-            b_url = config.get('DEFAULT', 'url')
+        if status == "success" and message == "authorized":
+            b_url = config.get("DEFAULT", "url")
             client = ArtifactBatch(base_url=b_url)
             response = client.add_artifact(private_key, public_key, artifact_id,
                             sub_artifact_id, path, deleteSub)
@@ -521,19 +527,19 @@ def do_add_uri_to_artifact(args, config):
     key["allowedrole"] = [{"role" : "admin"}, {"role" : "member"}]
     payload = json.dumps(key)
        
-    headers = {'content-type': 'application/json'}
+    headers = {"content-type": "application/json"}
     response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth", 
                     data=json.dumps(key),headers=headers)
     output = response.content.decode("utf-8").strip()
     statusinfo = json.loads(output)
        
-    if statusinfo.get('status')and statusinfo.get('message'):
+    if statusinfo.get("status")and statusinfo.get("message"):
             
-        status = statusinfo['status']
-        message = statusinfo['message']
+        status = statusinfo["status"]
+        message = statusinfo["message"]
             
-        if status == 'success' and message == 'authorized':
-            b_url = config.get('DEFAULT', 'url')
+        if status == "success" and message == "authorized":
+            b_url = config.get("DEFAULT", "url")
             client = ArtifactBatch(base_url=b_url)
             response = client.add_uri(private_key, public_key, artifact_id, 
                                 version, checksum, content_type, size, uri_type,
@@ -548,7 +554,7 @@ def do_add_uri_to_artifact(args, config):
 ################################################################################
 def load_config():
     config = configparser.ConfigParser()
-    config.set('DEFAULT', 'url', 'http://127.0.0.1:8008')
+    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     return config
 
 def print_msg(response, cmd=None):
@@ -610,17 +616,17 @@ def main(prog_name=os.path.basename(sys.argv[0]), args=None):
 
     config = load_config()
 
-    if args.command == 'create':
+    if args.command == "create":
         do_create_artifact(args, config) 
-    elif args.command == 'list-artifact':
+    elif args.command == "list-artifact":
         do_list_artifact(args, config)
-    elif args.command == 'retrieve':
+    elif args.command == "retrieve":
         do_retrieve_artifact(args, config)
-    elif args.command == 'amend':
+    elif args.command == "amend":
         do_amend_artifact(args, config)    
-    elif args.command == 'AddArtifact':
+    elif args.command == "AddArtifact":
         do_add_sub_artifact(args, config)  
-    elif args.command == 'AddURI':
+    elif args.command == "AddURI":
         do_add_uri_to_artifact(args,config)
     else:    
         raise ArtifactException("invalid command {}".format(args.command))
@@ -630,7 +636,7 @@ def main_wrapper():
         main()
     except ArtifactException as err:
         errmsg = str(err)
-        if '404' in errmsg:
+        if "404" in errmsg:
             exp = ret_msg("failed","404 Not Found","EmptyRecord","{}")
             print(ArtifactException(exp))
            
@@ -648,8 +654,106 @@ def main_wrapper():
 ################################################################################
 #                                 API                                          #
 ################################################################################
+def api_do_create_artifact(args, config):
+    param_check = _payload_check_(args, creation=True)
+    
+    if param_check[0]:
+        return ret_msg("failed", param_check[1], "EmptyRecord", "{}")
+    
+    artifact_id         = args["artifact"]["uuid"]
+    artifact_alias      = args["artifact"]["alias"]
+    artifact_name       = args["artifact"]["name"]
+    artifact_type       = args["artifact"]["content_type"]
+    artifact_checksum   = args["artifact"]["checksum"]
+    artifact_label      = args["artifact"]["label"]
+    artifact_openchain  = args["artifact"]["openchain"]
+    private_key         = args["private_key"]
+    public_key          = args["public_key"] 
+
+    payload = "{}"
+    key = json.loads(payload)
+    key["publickey"] = public_key
+    key["privatekey"] = private_key
+    key["allowedrole"] = [{"role" : "admin"}, {"role" : "member"}]
+    payload = json.dumps(key)
+   
+    headers = {"content-type": "application/json"}
+    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth", 
+                    data=json.dumps(key), headers=headers)
+    output = response.content.decode("utf-8").strip()
+    statusinfo = json.loads(output)
+       
+    if statusinfo.get("status")and statusinfo.get("message"):
+            
+        status = statusinfo["status"]
+        message = statusinfo["message"]
+            
+        if status == "success" and message == "authorized":
+            b_url = config.get("DEFAULT", "url")
+            client = ArtifactBatch(base_url=b_url)
+            response = client.create_artifact(private_key, public_key, artifact_id, 
+                                artifact_alias, artifact_name, artifact_type, 
+                                artifact_checksum, artifact_label, 
+                                artifact_openchain)
+            
+            return print_msg(response, "create")
+        else:
+            return output
+    else:
+        return output
+
+def api_do_amend_artifact(args, config):
+    param_check = _payload_check_(args)
+    
+    if param_check[0]:
+        return ret_msg("failed", param_check[1], "EmptyRecord", "{}")
+    
+    artifact_id         = args["artifact"]["uuid"]
+    
+    artifact_alias      = _null_cast(args["artifact"], "alias")
+    artifact_name       = _null_cast(args["artifact"], "name")
+    artifact_type       = _null_cast(args["artifact"], "content_type")
+    artifact_checksum   = _null_cast(args["artifact"], "checksum")
+    artifact_label      = _null_cast(args["artifact"], "label")
+    artifact_openchain  = _null_cast(args["artifact"], "openchain")
+    
+    private_key         = args["private_key"]
+    public_key          = args["public_key"] 
+
+    payload = "{}"
+    key = json.loads(payload)
+    key["publickey"] = public_key
+    key["privatekey"] = private_key
+    key["allowedrole"] = [{"role" : "admin"}, {"role" : "member"}]
+    payload = json.dumps(key)
+   
+    headers = {"content-type": "application/json"}
+    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth", 
+                    data=json.dumps(key), headers=headers)
+    output = response.content.decode("utf-8").strip()
+    statusinfo = json.loads(output)
+       
+    if statusinfo.get("status")and statusinfo.get("message"):
+            
+        status = statusinfo["status"]
+        message = statusinfo["message"]
+            
+        if status == "success" and message == "authorized":
+            b_url = config.get("DEFAULT", "url")
+            client = ArtifactBatch(base_url=b_url)
+            response = client.amend_artifact(private_key, public_key, artifact_id, 
+                                artifact_alias, artifact_name, artifact_type, 
+                                artifact_checksum, artifact_label, 
+                                artifact_openchain)
+            
+            return print_msg(response, "amend")
+        else:
+            return output
+    else:
+        return output
+
 def api_do_list_artifact(config):
-    b_url = config.get('DEFAULT', 'url')
+    b_url = config.get("DEFAULT", "url")
     client = ArtifactBatch(base_url=b_url)
     artifact_list = client.list_artifact()
     
@@ -674,7 +778,7 @@ def api_do_retrieve_artifact(
     if range_flag != None:
         all_flag = True
     
-    b_url = config.get('DEFAULT', 'url')
+    b_url = config.get("DEFAULT", "url")
     client = ArtifactBatch(base_url=b_url)
     data = client.retrieve_artifact(artifact_id, all_flag, range_flag)
 
@@ -708,8 +812,16 @@ def _payload_check_(args, creation=False):
             return [True, "UUID missing."]
         elif "name" not in args["artifact"]:
             return [True, "Name missing."]
-        elif "description" not in args["artifact"]:
-            return [True, "Description missing."]
+        elif "checksum" not in args["artifact"]:
+            return [True, "Checksum missing."]
+        elif "alias" not in args["artifact"]:
+            return [True, "Alias missing."]
+        elif "label" not in args["artifact"]:
+            return [True, "Label missing."]
+        elif "openchain" not in args["artifact"]:
+            return [True, "Openchain missing."]
+        elif "content_type" not in args["artifact"]:
+            return [True, "Content_type missing."]    
         else:
             return [False]
     else:

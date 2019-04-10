@@ -44,21 +44,21 @@ def create_part():
     except Exception as e:
         return e
 
-# # AMEND
-# @app.route("/tp/part/amend", methods=["POST"])
-# def amend_part():
-#     config = configparser.ConfigParser()
-#     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+# AMEND
+@app.route("/tp/part/amend", methods=["POST"])
+def amend_part():
+    config = configparser.ConfigParser()
+    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
-#     try:
-#         if not request.json:
-#             return "Expecting JSON Object."
+    try:
+        if not request.json:
+            return "Expecting JSON Object."
         
-#         output = part_cli.api_do_amend_part(request.json, config)    
+        output = part_cli.api_do_amend_part(request.json, config)    
         
-#         return output
-#     except Exception as e:
-#         return e
+        return output
+    except Exception as e:
+        return e
 
 # LIST
 @app.route("/tp/part", methods=["GET"])

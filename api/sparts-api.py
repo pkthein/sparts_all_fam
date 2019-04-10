@@ -1056,25 +1056,25 @@ def nullCast(dic, key):
 ################################################################################
 #                            API to API ARTIFACT                               #
 ################################################################################
-# # API : ARTIFACT CREATE 
-# @app.route("/phyo/api/create/artifact", methods=["POST"])
-# def api_create_artifact():
-#     headers = {"content-type": "application/json"}
-#     response = requests.post("http://127.0.0.1:853/tp/artifact", 
-#                     data=json.dumps(request.json), headers=headers)
-#     output = response.content.decode("utf-8")
+# API : ARTIFACT CREATE 
+@app.route("/phyo/api/create/artifact", methods=["POST"])
+def api_create_artifact():
+    headers = {"content-type": "application/json"}
+    response = requests.post("http://127.0.0.1:853/tp/artifact", 
+                    data=json.dumps(request.json), headers=headers)
+    output = response.content.decode("utf-8")
     
-#     return output
+    return output
 
-# # API : ARTIFACT AMEND
-# @app.route("/phyo/api/amend/artifact", methods=["POST"])
-# def api_amend_artifact():
-#     headers = {"content-type": "application/json"}
-#     response = requests.post("http://127.0.0.1:853/tp/artifact/amend", 
-#                     data=json.dumps(request.json), headers=headers)
-#     output = response.content.decode("utf-8")
+# API : ARTIFACT AMEND
+@app.route("/phyo/api/amend/artifact", methods=["POST"])
+def api_amend_artifact():
+    headers = {"content-type": "application/json"}
+    response = requests.post("http://127.0.0.1:853/tp/artifact/amend", 
+                    data=json.dumps(request.json), headers=headers)
+    output = response.content.decode("utf-8")
     
-#     return output
+    return output
 
 # API : ARTIFACT LIST ARTIFACT
 @app.route("/phyo/api/list/artifact", methods=["GET"])
