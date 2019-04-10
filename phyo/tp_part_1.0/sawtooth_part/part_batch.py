@@ -107,15 +107,15 @@ class PartBatch:
                             "amend", private_key, public_key, 
                             jresponse["artifact_list"], 
                             jresponse["category_list"],
-                            jresponse["supplier_list"], 
+                            jresponse["organization_list"], 
                             jresponse["cur_block"], cur, 
                             str(datetime.datetime.utcnow()))
         
         return None
     
     def add_artifact(self, pt_id, artifact_id, private_key, public_key, 
-                        deleteArt=False):
-        if deleteArt:
+                        del_flag=False):
+        if del_flag:
             response_bytes = self.retrieve_part(pt_id)
             
             if response_bytes != None:
@@ -142,7 +142,7 @@ class PartBatch:
                             "AddArtifact", private_key, public_key, 
                             jresponse["artifact_list"],
                             jresponse["category_list"], 
-                            jresponse["supplier_list"],
+                            jresponse["organization_list"],
                             jresponse["cur_block"], cur, 
                             str(datetime.datetime.utcnow()))
             
@@ -171,15 +171,15 @@ class PartBatch:
                             "AddArtifact", private_key, public_key, 
                             jresponse["artifact_list"],
                             jresponse["category_list"], 
-                            jresponse["supplier_list"],
+                            jresponse["organization_list"],
                             jresponse["cur_block"], cur, 
                             str(datetime.datetime.utcnow()))
             
             return None
         
     def add_category(self, pt_id, category_id, private_key, public_key,
-                        deleteCat=False):
-        if deleteCat:
+                        del_flag=False):
+        if del_flag:
             response_bytes = self.retrieve_part(pt_id)
             
             if response_bytes != None:
@@ -206,7 +206,7 @@ class PartBatch:
                             "AddCategory", private_key, public_key, 
                             jresponse["artifact_list"],
                             jresponse["category_list"], 
-                            jresponse["supplier_list"],
+                            jresponse["organization_list"],
                             jresponse["cur_block"], cur, 
                             str(datetime.datetime.utcnow()))
             
@@ -235,44 +235,46 @@ class PartBatch:
                             "AddCategory", private_key, public_key, 
                             jresponse["artifact_list"],
                             jresponse["category_list"], 
-                            jresponse["supplier_list"],
+                            jresponse["organization_list"],
                             jresponse["cur_block"], cur, 
                             str(datetime.datetime.utcnow()))
             
             return None
    
-    def add_supplier(self, pt_id, supplier_id, private_key, public_key,
-                        deleteSup=False):
-        if deleteSup:
+    def add_organization(self, pt_id, organization_id, private_key, public_key,
+                        del_flag=False):
+        if del_flag:
             response_bytes = self.retrieve_part(pt_id)
-            
-            self._validate_supplier_id(supplier_id)
             
             if response_bytes != None:
                 
                 jresponse = json.loads(response_bytes.decode())
                 
-                if len(jresponse["supplier_list"]) == 0:
-                    raise PartException("No {} to remove from this {}." \
-                                .format("Supplier", "Part")
-                        )
+                if len(jresponse["organization_list"]) == 0:
+                    return  [
+                                None, 
+                                "No {} to remove from this {}." \
+                                    .format("Organization", "Part")
+                            ]
                 
-                if supplier_id not in jresponse["supplier_list"]:
-                    raise PartException("No such {} in this {}." \
-                                .format("Supplier", "Part")
-                        )   
+                if organization_id not in jresponse["organization_list"]:
+                    return  [
+                                None,
+                                "No such {} in this {}." \
+                                    .format("Organization", "Part")
+                            ]   
                 
-                jresponse["supplier_list"].remove(supplier_id)
+                jresponse["organization_list"].remove(organization_id)
                 
                 cur = self._get_block_num()
                 return self.create_part_transaction(pt_id, jresponse["name"], 
                             jresponse["checksum"], jresponse["version"], 
                             jresponse["alias"], jresponse["licensing"], 
                             jresponse["label"], jresponse["description"], 
-                            "AddSupplier", private_key, public_key, 
+                            "AddOrganization", private_key, public_key, 
                             jresponse["artifact_list"],
                             jresponse["category_list"], 
-                            jresponse["supplier_list"],
+                            jresponse["organization_list"],
                             jresponse["cur_block"], cur, 
                             str(datetime.datetime.utcnow()))
             
@@ -280,28 +282,33 @@ class PartBatch:
         else:
             response_bytes = self.retrieve_part(pt_id)
             
-            self._validate_supplier_id(supplier_id)
-            
             if response_bytes != None:
+                
+                if self._validate_organization_id(organization_id) == None:
+                    return  [
+                                None,
+                                "OrganizationException : UUID does not exist."
+                            ]
                 
                 jresponse = json.loads(response_bytes.decode())
                 
-                if supplier_id not in jresponse["supplier_list"]:
-                    jresponse["supplier_list"].append(supplier_id)
+                if organization_id not in jresponse["organization_list"]:
+                    jresponse["organization_list"].append(organization_id)
                 else:
-                    raise PartException(
-                            "Category already exists for this Part."
-                        )
+                    return  [
+                                None,
+                                "Duplicate Organization UUID in the Part."
+                            ]
                 
                 cur = self._get_block_num()
                 return self.create_part_transaction(pt_id, jresponse["name"], 
                             jresponse["checksum"], jresponse["version"], 
                             jresponse["alias"], jresponse["licensing"], 
                             jresponse["label"], jresponse["description"], 
-                            "AddSupplier", private_key, public_key, 
+                            "AddOrganization", private_key, public_key, 
                             jresponse["artifact_list"],
                             jresponse["category_list"], 
-                            jresponse["supplier_list"],
+                            jresponse["organization_list"],
                             jresponse["cur_block"], cur, 
                             str(datetime.datetime.utcnow()))
             
@@ -421,11 +428,11 @@ class PartBatch:
         address = category_prefix + address
         self._send_request("state/{}".format(address))
     
-    def _validate_supplier_id(self, supplier_id):
+    def _validate_organization_id(self, organization_id):
         category_prefix = _sha512("organization".encode("utf-8"))[0:6]
-        address = _sha512(supplier_id.encode("utf-8"))[0:64]
+        address = _sha512(organization_id.encode("utf-8"))[0:64]
         address = category_prefix + address
-        self._send_request("state/{}".format(address))
+        return self._send_request("state/{}".format(address))
     
     def _send_request(self, suffix, data=None, content_type=None,
                         pt_id=None, creation=False):
@@ -460,29 +467,29 @@ class PartBatch:
         return result.text
    
     def create_part_transaction(self, pt_id, pt_name, checksum, version, alias, 
-                            licensing, label, description, action, private_key, 
-                            public_key, artifact_id, category_id, supplier_id,
-                            prev, cur, timestamp):
+                        licensing, label, description, action, private_key, 
+                        public_key, artifact_id, category_id, organization_id,
+                        prev, cur, timestamp):
         
         self._public_key = public_key
         self._private_key = private_key
         
         payload = {
-            "uuid"          : str(pt_id),
-            "name"          : str(pt_name),
-            "checksum"      : str(checksum),
-            "version"       : str(version),
-            "alias"         : str(alias),
-            "licensing"     : str(licensing),
-            "label"         : str(label),
-            "description"   : str(description),
-            "action"        : str(action),
-            "prev_block"    : str(prev),
-            "cur_block"     : str(cur),
-            "timestamp"     : str(timestamp),
-            "artifact_list" : artifact_id,
-            "category_list" : category_id,
-            "supplier_list" : supplier_id
+            "uuid"              : str(pt_id),
+            "name"              : str(pt_name),
+            "checksum"          : str(checksum),
+            "version"           : str(version),
+            "alias"             : str(alias),
+            "licensing"         : str(licensing),
+            "label"             : str(label),
+            "description"       : str(description),
+            "action"            : str(action),
+            "prev_block"        : str(prev),
+            "cur_block"         :   str(cur),
+            "timestamp"         : str(timestamp),
+            "artifact_list"     : artifact_id,
+            "category_list"     : category_id,
+            "organization_list" : organization_id
         }
         payload = json.dumps(payload).encode()
         

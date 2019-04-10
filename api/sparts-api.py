@@ -775,8 +775,8 @@ def add_organization_to_part():
         organization_uuid = request.json["relation"]["organization_uuid"]
         public_key = request.json["public_key"]
         private_key = request.json["private_key"]
-        # cmd = "pt AddSupplier " + uuid + " " + organization_uuid + " "+ private_key + " "+ public_key
-        cmd = "pt AddSupplier {} {} {} {}".format(
+        
+        cmd = "pt AddOrganization {} {} {} {}".format(
                     uuid, organization_uuid, private_key, public_key
                 )
         cmd = shlex.split(cmd)
@@ -1062,7 +1062,7 @@ def api_create_artifact():
     headers = {"content-type": "application/json"}
     response = requests.post("http://127.0.0.1:853/tp/artifact", 
                     data=json.dumps(request.json), headers=headers)
-    output = response.content.decode("utf-8")
+    output = response.content.decode("utf-8").strip()
     
     return output
 
@@ -1072,7 +1072,7 @@ def api_amend_artifact():
     headers = {"content-type": "application/json"}
     response = requests.post("http://127.0.0.1:853/tp/artifact/amend", 
                     data=json.dumps(request.json), headers=headers)
-    output = response.content.decode("utf-8")
+    output = response.content.decode("utf-8").strip()
     
     return output
 
@@ -1130,7 +1130,7 @@ def api_create_category():
     headers = {"content-type" : "application/json"}
     response = requests.post("http://127.0.0.1:850/tp/category", 
                     data=json.dumps(request.json), headers=headers)
-    output = response.content.decode("utf-8")
+    output = response.content.decode("utf-8").strip()
     
     return output
 
@@ -1140,7 +1140,7 @@ def api_amend_category():
     headers = {"content-type" : "application/json"}
     response = requests.post("http://127.0.0.1:850/tp/category/amend", 
                     data=json.dumps(request.json), headers=headers)
-    output = response.content.decode("utf-8")
+    output = response.content.decode("utf-8").strip()
     
     return output
 
@@ -1198,7 +1198,7 @@ def api_create_organization():
     headers = {"content-type" : "application/json"}
     response = requests.post("http://127.0.0.1:851/tp/organization", 
                     data=json.dumps(request.json), headers=headers)
-    output = response.content.decode("utf-8")
+    output = response.content.decode("utf-8").strip()
     
     return output
 
@@ -1208,7 +1208,7 @@ def api_amend_organization():
     headers = {"content-type" : "application/json"}
     response = requests.post("http://127.0.0.1:851/tp/organization/amend", 
                     data=json.dumps(request.json), headers=headers)
-    output = response.content.decode("utf-8")
+    output = response.content.decode("utf-8").strip()
     
     return output
 
@@ -1267,7 +1267,7 @@ def api_create_part():
     headers = {"content-type": "application/json"}
     response = requests.post("http://127.0.0.1:852/tp/part", 
                     data=json.dumps(request.json), headers=headers)
-    output = response.content.decode("utf-8")
+    output = response.content.decode("utf-8").strip()
     
     return output
 
@@ -1277,7 +1277,7 @@ def api_amend_part():
     headers = {"content-type" : "application/json"}
     response = requests.post("http://127.0.0.1:852/tp/part/amend", 
                     data=json.dumps(request.json), headers=headers)
-    output = response.content.decode("utf-8")
+    output = response.content.decode("utf-8").strip()
     
     return output
 
@@ -1329,6 +1329,59 @@ def api_part_history_date(pt_id, START):
 ################################################################################
 #                            API to API RELATION                               #
 ################################################################################
+@app.route(
+    "/phyo/api/relate/part/org",
+    methods=["POST"]
+)
+def api_relation_part_org():
+    headers = {"content-type": "application/json"}
+
+    response = requests.post("http://127.0.0.1:852/tp/part/addorganization", 
+                    data=json.dumps(request.json), headers=headers)
+    output = response.content.decode("utf-8").strip()
+    output = json.loads(output)
+    
+    if "status" not in output:
+        return ret_msg(
+            "failed", "Status field not found", "RelationRecord", "{}"
+        )
+    elif output["status"] != "success":
+        return json.dumps(output)
+        
+    response = requests.post("http://127.0.0.1:851/tp/organization/addpart", 
+                    data=json.dumps(request.json), headers=headers)
+    output = response.content.decode("utf-8").strip()
+    
+    return output
+    
+@app.route(
+    "/phyo/api/relate/part/org/delete",
+    methods=["POST"]
+)
+def api_relation_part_org_delete():
+    headers = {"content-type": "application/json"}
+
+    response = requests.post(
+                    "http://127.0.0.1:852/tp/part/addorganization/delete", 
+                    data=json.dumps(request.json), headers=headers
+                )
+    output = response.content.decode("utf-8").strip()
+    output = json.loads(output)
+    
+    if "status" not in output:
+        return ret_msg(
+            "failed", "Status field not found", "RelationRecord", "{}"
+        )
+    elif output["status"] != "success":
+        return json.dumps(output)
+        
+    response = requests.post(
+                    "http://127.0.0.1:851/tp/organization/addpart/delete", 
+                    data=json.dumps(request.json), headers=headers
+                )
+    output = response.content.decode("utf-8").strip()
+    
+    return output
 ################################################################################
 #                                   TEST                                       #
 ################################################################################
@@ -1342,10 +1395,11 @@ def api_test_post():
 
 @app.route("/proto/api/test", methods=["GET"])
 def api_test_get():
-    response = requests.get("http://127.0.0.1:853/tp/artifact/8001/date/20190408")
+    response = requests.get("http://127.0.0.1:852/tp/part")
     output = response.content.decode("utf-8").strip()
+    output = json.loads(output)
     
-    return output
+    return json.dumps(output)
 ################################################################################
 #                                   MAIN                                       #
 ################################################################################

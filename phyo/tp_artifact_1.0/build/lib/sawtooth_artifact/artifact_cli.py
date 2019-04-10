@@ -340,6 +340,45 @@ def create_parser(prog_name):
 ################################################################################
 #                               FUNCTIONS                                      #
 ################################################################################
+def do_list_artifact(args, config):
+    b_url = config.get("DEFAULT", "url")
+    client = ArtifactBatch(base_url=b_url)
+    result = client.list_artifact()
+    
+    if result is not None:
+        result.sort(key=lambda x:x["timestamp"], reverse=True)
+        result = json.dumps(result)
+        
+        output = ret_msg("success", "OK", "ListOf:ArtifactRecord", result)
+        
+        print(output)
+    else:     
+        raise ArtifactException("Could not retrieve artifact listing.")
+
+def do_retrieve_artifact(args, config):
+    all_flag    = args.all
+    range_flag  = args.range
+    
+    artifact_id = args.artifact_id
+    
+    if range_flag != None:
+        all_flag = True
+    
+    b_url = config.get("DEFAULT", "url")
+    client = ArtifactBatch(base_url=b_url)
+    data = client.retrieve_artifact(artifact_id, all_flag, range_flag)
+
+    if data is not None:
+        
+        if all_flag == False:
+            output = ret_msg("success", "OK", "ArtifactRecord", data.decode())
+        else:
+            output = ret_msg("success", "OK", "ArtifactRecord", data)
+        
+        print(output)
+    else:
+        raise ArtifactException("Artifact not found {}".format(artifact_id))
+
 def do_create_artifact(args, config):
     artifact_id         = args.artifact_id
     artifact_alias      = args.alias
@@ -428,47 +467,8 @@ def do_amend_artifact(args, config):
         else:
             print(output)
     else:
-        print(output)
+        print(output)   
 
-def do_list_artifact(args, config):
-    b_url = config.get("DEFAULT", "url")
-    client = ArtifactBatch(base_url=b_url)
-    result = client.list_artifact()
-    
-    if result is not None:
-        result.sort(key=lambda x:x["timestamp"], reverse=True)
-        result = json.dumps(result)
-        
-        output = ret_msg("success", "OK", "ListOf:ArtifactRecord", result)
-        
-        print(output)
-    else:     
-        raise ArtifactException("Could not retrieve artifact listing.")
-
-def do_retrieve_artifact(args, config):
-    all_flag    = args.all
-    range_flag  = args.range
-    
-    artifact_id = args.artifact_id
-    
-    if range_flag != None:
-        all_flag = True
-    
-    b_url = config.get("DEFAULT", "url")
-    client = ArtifactBatch(base_url=b_url)
-    data = client.retrieve_artifact(artifact_id, all_flag, range_flag)
-
-    if data is not None:
-        
-        if all_flag == False:
-            output = ret_msg("success", "OK", "ArtifactRecord", data.decode())
-        else:
-            output = ret_msg("success", "OK", "ArtifactRecord", data)
-        
-        print(output)
-    else:
-        raise ArtifactException("Artifact not found {}".format(artifact_id))
-    
 def do_add_sub_artifact(args, config):
     deleteSub       = args.delete
     

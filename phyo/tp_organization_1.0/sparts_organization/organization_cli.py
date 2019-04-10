@@ -316,7 +316,7 @@ def do_retrieve(args, config):
     else:
         raise OrganizationException("Organization not found: {}".format(org_id))
 
-def do_create(args, config):
+def do_create_organization(args, config):
     org_id      = args.org_id
     org_alias   = args.alias
     org_name    = args.name
@@ -358,7 +358,7 @@ def do_create(args, config):
     else:
         print(output)
 
-def do_amend(args, config):
+def do_amend_organization(args, config):
     org_id      = args.org_id
     org_alias   = args.alias
     org_name    = args.name
@@ -432,7 +432,7 @@ def do_addpart(args, config):
             response = client.add_part(org_id, pt_id, private_key, 
                                 public_key, deletePart)
                                 
-            print_msg(response)
+            print_msg(response, "AddPart")
         else:
             print(output)
     else:
@@ -458,12 +458,7 @@ def print_msg(response, cmd=None):
                             "OrganizationException : Duplicate UUID."
                         )
                 
-            elif cmd == "amend":
-                raise OrganizationException(
-                            "OrganizationException : UUID does not exist."
-                        )
-            
-            elif cmd == "addpart":
+            elif cmd == "amend" or cmd == "AddPart":
                 raise OrganizationException(
                             "OrganizationException : UUID does not exist."
                         )
@@ -512,7 +507,7 @@ def main(prog_name=os.path.basename(sys.argv[0]), args=None):
     config = load_config()
 
     if args.command == "create":
-        do_create(args, config)
+        do_create_organization(args, config)
     elif args.command == "list-organization":
         do_list_organization(args, config)
     elif args.command == "retrieve":
@@ -520,7 +515,7 @@ def main(prog_name=os.path.basename(sys.argv[0]), args=None):
     elif args.command == "AddPart":
         do_addpart(args, config)
     elif args.command == "amend":
-        do_amend(args, config)
+        do_amend_organization(args, config)
     else:
         raise OrganizationException("invalid command: {}".format(args.command))
 
@@ -693,7 +688,7 @@ def api_do_retrieve_organization(org_id, config, all_flag=False,
                     "OrganizationRecord", "{}"
                 )
                 
-def api_do_addpart(args, config, deletePart=False):
+def api_do_addpart(args, config, del_flag=False):
     
     org_id      = args["relation"]["organization_uuid"]
     pt_id       = args["relation"]["part_uuid"]
@@ -713,7 +708,7 @@ def api_do_addpart(args, config, deletePart=False):
     output = response.content.decode("utf-8").strip()
     statusinfo = json.loads(output)
        
-    if statusinfo.get("status")and statusinfo.get("message"):
+    if statusinfo.get("status") and statusinfo.get("message"):
             
         status = statusinfo["status"]
         message = statusinfo["message"]
@@ -722,9 +717,9 @@ def api_do_addpart(args, config, deletePart=False):
             b_url = config.get("DEFAULT", "url")
             client = OrganizationBatch(base_url=b_url)
             response = client.add_part(org_id, pt_id, private_key, 
-                                public_key, deletePart)
+                                public_key, del_flag)
                                 
-            return print_msg(response, "addpart")
+            return print_msg(response, "AddPart")
         else:
             return output
     else:

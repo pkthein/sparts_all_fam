@@ -67,10 +67,10 @@ os.system(
 	'organization AddPart {} {} {} {} &&'.format('8000', '8002', pri_key, pub_key) +
 	'organization AddPart {} {} {} {} &&'.format('8001', '8003', pri_key, pub_key) +
 	
-	'pt AddSupplier {} {} {} {} &&'.format('8000', '8000', pri_key, pub_key) +
-	'pt AddSupplier {} {} {} {} &&'.format('8001', '8000', pri_key, pub_key) +
-	'pt AddSupplier {} {} {} {} &&'.format('8002', '8000', pri_key, pub_key) +
-	'pt AddSupplier {} {} {} {} &&'.format('8003', '8001', pri_key, pub_key) +
+	'pt AddOrganization {} {} {} {} &&'.format('8000', '8000', pri_key, pub_key) +
+	'pt AddOrganization {} {} {} {} &&'.format('8001', '8000', pri_key, pub_key) +
+	'pt AddOrganization {} {} {} {} &&'.format('8002', '8000', pri_key, pub_key) +
+	'pt AddOrganization {} {} {} {} &&'.format('8003', '8001', pri_key, pub_key) +
 	
 	'pt AddArtifact {} {} {} {} &&'.format('8000', '8000', pri_key, pub_key) +
 	'pt AddArtifact {} {} {} {} &&'.format('8001', '8000', pri_key, pub_key) +

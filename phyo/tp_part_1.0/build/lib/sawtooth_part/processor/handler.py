@@ -53,21 +53,21 @@ class PartTransactionHandler:
         try:
             # The payload is csv utf-8 encoded string
             payload = json.loads(transaction.payload.decode())
-            pt_id       = payload["uuid"]
-            pt_name     = payload["name"]
-            checksum    = payload["checksum"]
-            version     = payload["version"]
-            alias       = payload["alias"]
-            licensing   = payload["licensing"]
-            label       = payload["label"]
-            description = payload["description"]
-            action      = payload["action"]
-            prev        = payload["prev_block"]
-            cur         = payload["cur_block"]
-            timestamp   = payload["timestamp"]
-            artifact_id = payload["artifact_list"]
-            category_id = payload["category_list"] 
-            supplier_id = payload["supplier_list"]
+            pt_id           = payload["uuid"]
+            pt_name         = payload["name"]
+            checksum        = payload["checksum"]
+            version         = payload["version"]
+            alias           = payload["alias"]
+            licensing       = payload["licensing"]
+            label           = payload["label"]
+            description     = payload["description"]
+            action          = payload["action"]
+            prev            = payload["prev_block"]
+            cur             = payload["cur_block"]
+            timestamp       = payload["timestamp"]
+            artifact_id     = payload["artifact_list"]
+            category_id     = payload["category_list"] 
+            organization_id = payload["organization_list"]
             
         except ValueError:
             raise InvalidTransaction("Invalid payload serialization")
@@ -101,9 +101,9 @@ class PartTransactionHandler:
         elif action == "amend" and stored_pt_id is not None:
             pt = create_part(pt_id, pt_name, checksum, version, alias, 
                     licensing, label, description, prev, cur, timestamp, 
-                    artifact_id, category_id, supplier_id)
+                    artifact_id, category_id, organization_id)
             _display("Amended a part.")
-        elif (action == "AddArtifact" or action == "AddSupplier" 
+        elif (action == "AddArtifact" or action == "AddOrganization" 
                 or action == "AddCategory"):
             if stored_pt_id is None:
                 raise InvalidTransaction(
@@ -111,32 +111,32 @@ class PartTransactionHandler:
                 )
             pt = create_part(pt_id, pt_name, checksum, version, alias, 
                     licensing, label, description, prev, cur, timestamp, 
-                    artifact_id, category_id, supplier_id)
+                    artifact_id, category_id, organization_id)
             
         # 6. Put data back in state storage
         data = json.dumps(pt).encode()
-        addresses = context.set_state({data_address:data})
+        addresses = context.set_state({data_address : data})
 
         return addresses
 
 def create_part(pt_id, pt_name, checksum, version, alias, licensing, label, 
                 description, prev, cur, timestamp, artifact_id=[], 
-                category_id=[], supplier_id=[]):
+                category_id=[], organization_id=[]):
     return {
-                "uuid"          : pt_id,
-                "name"          : pt_name,
-                "checksum"      : checksum, 
-                "version"       : version, 
-                "alias"         : alias, 
-                "licensing"     : licensing, 
-                "label"         : label, 
-                "description"   : description,
-                "prev_block"    : prev,
-                "cur_block"     : cur,
-                "timestamp"     : timestamp,
-                "artifact_list" : artifact_id,
-                "category_list" : category_id,
-                "supplier_list" : supplier_id 
+                "uuid"              : pt_id,
+                "name"              : pt_name,
+                "checksum"          : checksum, 
+                "version"           : version, 
+                "alias"             : alias, 
+                "licensing"         : licensing, 
+                "label"             : label, 
+                "description"       : description,
+                "prev_block"        : prev,
+                "cur_block"         : cur,
+                "timestamp"         : timestamp,
+                "artifact_list"     : artifact_id,
+                "category_list"     : category_id,
+                "organization_list" : organization_id 
             }
 
 def validate_transaction(pt_id, action):
@@ -146,7 +146,7 @@ def validate_transaction(pt_id, action):
     if not action:
         raise InvalidTransaction('Action is required')
 
-    if action not in ("AddArtifact", "create", "AddCategory", "AddSupplier", 
+    if action not in ("AddArtifact", "create", "AddCategory", "AddOrganization", 
                         "list-part", "retrieve", "amend"):
         raise InvalidTransaction('Invalid action: {}'.format(action))
 

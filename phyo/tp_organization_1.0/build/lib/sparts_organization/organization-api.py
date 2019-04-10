@@ -121,7 +121,7 @@ def retrieve_organization_history_date(organization_id, START):
     except Exception as e:
         return e
    
-# ADDPART
+# ADD PART
 @app.route("/tp/organization/addpart", methods=["POST"])
 def add_part_organization():
     config = configparser.ConfigParser()
@@ -136,18 +136,28 @@ def add_part_organization():
         return output
     except Exception as e:
         return e
+        
+# ADD PART --DELETE
+@app.route("/tp/organization/addpart/delete", methods=["POST"])
+def add_part_organization_delete():
+    config = configparser.ConfigParser()
+    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+    
+    try:
+        if not request.json:
+            return "Expecting JSON Object."
+        
+        output = organization_cli.api_do_addpart(request.json, config, True)    
+        
+        return output
+    except Exception as e:
+        return e
 ################################################################################
 #                                   TEST                                       #
 ################################################################################
 @app.route("/tp/test", methods=["POST"])
 def testing_():
     try:
-        # if not request.json or "category" not in request.json:
-        #     return "Error"
-        # data = json.dumps(request.json["private_key"])
-        
-        # return json.loads(data)
-        # return (request.json["category"]["uuid"] + request.json["category"]["name"])
         return json.dumps(request.json)
     except Exception as e:
         return e
@@ -155,12 +165,6 @@ def testing_():
 @app.route("/tp/test", methods=["GET"])
 def testing_get():
     try:
-        # if not request.json or "category" not in request.json:
-        #     return "Error"
-        # data = json.dumps(request.json["private_key"])
-        
-        # return json.loads(data)
-        # return (request.json["category"]["uuid"] + request.json["category"]["name"])
         return "phyo test get was called successfully"
     except Exception as e:
         return e

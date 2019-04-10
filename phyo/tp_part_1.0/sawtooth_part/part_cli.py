@@ -262,7 +262,7 @@ def add_category_parser(subparsers, parent_parser):
     parser.add_argument(
         "category_id",
         type=str,
-        help="the identifier for Supplier")
+        help="the identifier for Category")
     
     parser.add_argument(
         "private_key",
@@ -280,9 +280,9 @@ def add_category_parser(subparsers, parent_parser):
         default=False,
         help="removes the category")
 
-# Provide the UUID of the parent artifact and the UUID of the supplier
-def add_supplier_parser(subparsers, parent_parser):
-    parser = subparsers.add_parser("AddSupplier", parents=[parent_parser])
+# Provide the UUID of the parent artifact and the UUID of the organization
+def add_organization_parser(subparsers, parent_parser):
+    parser = subparsers.add_parser("AddOrganization", parents=[parent_parser])
     
     parser.add_argument(
         "pt_id",
@@ -290,9 +290,9 @@ def add_supplier_parser(subparsers, parent_parser):
         help="the identifier for the part")
 
     parser.add_argument(
-        "supplier_id",
+        "organization_id",
         type=str,
-        help="the identifier for Supplier")
+        help="the identifier for Organization")
     
     parser.add_argument(
         "private_key",
@@ -308,7 +308,7 @@ def add_supplier_parser(subparsers, parent_parser):
         "-D", "--delete",
         action="store_true",
         default=False,
-        help="removes the supplier")
+        help="removes the organization")
 ################################################################################
 #                                   CREATE                                     #
 ################################################################################
@@ -349,7 +349,7 @@ def create_parser(prog_name):
     add_amend_parser(subparsers, parent_parser)
     
     add_artifact_parser(subparsers, parent_parser)
-    add_supplier_parser(subparsers,parent_parser)
+    add_organization_parser(subparsers,parent_parser)
     add_category_parser(subparsers,parent_parser)
     
     return parser
@@ -561,14 +561,14 @@ def do_add_category(args, config):
     else:
         print(output)      
 
-# add the relationship between parent artifact and supplier
-def do_add_supplier(args, config):
-    deleteSup   = args.delete
+# add the relationship between parent artifact and organization
+def do_add_organization(args, config):
+    del_flag   = args.delete
     
-    pt_id       = args.pt_id
-    supplier_id = args.supplier_id
-    private_key = args.private_key
-    public_key  = args.public_key
+    pt_id           = args.pt_id
+    organization_id = args.organization_id
+    private_key     = args.private_key
+    public_key      = args.public_key
    
     payload = "{}"
     key = json.loads(payload)
@@ -583,7 +583,7 @@ def do_add_supplier(args, config):
     output = response.content.decode("utf-8").strip()
     statusinfo = json.loads(output)
        
-    if statusinfo.get("status")and statusinfo.get("message"):
+    if statusinfo.get("status") and statusinfo.get("message"):
             
         status = statusinfo["status"]
         message = statusinfo["message"]
@@ -591,11 +591,12 @@ def do_add_supplier(args, config):
         if status == "success" and message == "authorized":
             b_url = config.get("DEFAULT", "url")
             client = PartBatch(base_url=b_url)
-            response = client.add_supplier(
-                                pt_id, supplier_id, private_key, public_key,
-                                deleteSup
+            response = client.add_organization(
+                                pt_id, organization_id, private_key, public_key,
+                                del_flag
                             )
-            print_msg(response)
+                            
+            print_msg(response, "AddOrganization")
         else:
             print(output)
     else:
@@ -611,6 +612,10 @@ def load_config():
 def print_msg(response, cmd=None):
     try:
         if type(response) is list and response[0] == None:
+            if len(response) > 1:
+                raise PartException(
+                        "PartException : {}".format(response[1])
+                    )
             raise PartException(
                         "PartException : No change."
                     )
@@ -619,7 +624,7 @@ def print_msg(response, cmd=None):
             if cmd == "create":
                 raise PartException("PartException : Duplicate UUID.")
                 
-            elif cmd == "amend":
+            elif cmd == "amend" or cmd == "AddOrganization":
                 raise PartException(
                             "PartException : UUID does not exist."
                         )
@@ -677,8 +682,8 @@ def main(prog_name=os.path.basename(sys.argv[0]), args=None):
         do_amend_part(args, config)
     elif args.command == "AddArtifact":
         do_add_artifact(args, config)     
-    elif args.command == "AddSupplier":
-        do_add_supplier(args, config)     
+    elif args.command == "AddOrganization":
+        do_add_organization(args, config)     
     elif args.command == "AddCategory":
         do_add_category(args, config)          
     else:
@@ -850,46 +855,124 @@ def api_do_retrieve_part(pt_id, config, all_flag=False, range_flag=None):
                     .format(pt_id),
                     "PartRecord", "{}"
                 )
+                
+def api_do_add_organization(args, config, del_flag=False):
+    param_check = _payload_check_(args, cmd="AddOrganization")
+    
+    if param_check[0]:
+        return ret_msg("failed", param_check[1], "EmptyRecord", "{}")
+    
+    pt_id           = args["relation"]["part_uuid"]
+    organization_id = args["relation"]["organization_uuid"]
+    private_key     = args["private_key"]
+    public_key      = args["public_key"]
+   
+    payload = "{}"
+    key = json.loads(payload)
+    key["publickey"] = public_key
+    key["privatekey"] = private_key
+    key["allowedrole"] = [{"role" : "admin"}, {"role" : "member"}]
+    payload = json.dumps(key)
+       
+    headers = {"content-type": "application/json"}
+    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth", 
+                    data=json.dumps(key), headers=headers)
+    output = response.content.decode("utf-8").strip()
+    statusinfo = json.loads(output)
+       
+    if statusinfo.get("status") and statusinfo.get("message"):
+            
+        status = statusinfo["status"]
+        message = statusinfo["message"]
+            
+        if status == "success" and message == "authorized":
+            b_url = config.get("DEFAULT", "url")
+            client = PartBatch(base_url=b_url)
+            response = client.add_organization(
+                                pt_id, organization_id, private_key, public_key,
+                                del_flag
+                            )
+            
+            return print_msg(response, "AddOrganization")
+        else:
+            return output
+    else:
+        return output
 ################################################################################
 #                           API PRIVATE FUNCTIONS                              #
 ################################################################################
-def _payload_check_(args, creation=False):
-    if creation:
-        if "part" not in args:
-            return [True, "Part missing."]
-        elif "private_key" not in args:
-            return [True, "Private-Key missing."]
-        elif "public_key" not in args:
-            return [True, "Public-Key missing."]
-        elif "uuid" not in args["part"]:
-            return [True, "UUID missing."]
-        elif "name" not in args["part"]:
-            return [True, "Name missing."]
-        elif "checksum" not in args["part"]:
-            return [True, "Checksum missing."]
-        elif "version" not in args["part"]:
-            return [True, "Version missing."]
-        elif "alias" not in args["part"]:
-            return [True, "Alias missing."]
-        elif "licensing" not in args["part"]:
-            return [True, "Licensing missing."]
-        elif "label" not in args["part"]:
-            return [True, "Label missing."]    
-        elif "description" not in args["part"]:
-            return [True, "Description missing."]
+def _payload_check_(args, creation=False, cmd=None):
+    if cmd != None:
+        if cmd == "AddOrganization":
+            if "relation" not in args:
+                return [True, "Relation missing."]
+            elif "private_key" not in args:
+                return [True, "Private-Key missing."]
+            elif "public_key" not in args:
+                return [True, "Public-Key missing."]
+            elif "part_uuid" not in args["relation"]:
+                return [True, "Part UUID missing."]
+            elif "organization_uuid" not in args["relation"]:
+                return [True, "Organization UUID missing."]
+            else:
+                return [False]
+        elif cmd == "AddCategory":
+            if "relation" not in args:
+                return [True, "Relation missing."]
+            elif "private_key" not in args:
+                return [True, "Private-Key missing."]
+            elif "public_key" not in args:
+                return [True, "Public-Key missing."]
+            else:
+                return [False]
+        elif cmd == "AddArtifact":
+            if "relation" not in args:
+                return [True, "Relation missing."]
+            elif "private_key" not in args:
+                return [True, "Private-Key missing."]
+            elif "public_key" not in args:
+                return [True, "Public-Key missing."]
+            else:
+                return [False]
         else:
-            return [False]
-    else:
-        if "part" not in args:
-            return [True, "Part missing."]
-        elif "private_key" not in args:
-            return [True, "Private-Key missing."]
-        elif "public_key" not in args:
-            return [True, "Public-Key missing."]
-        elif "uuid" not in args["part"]:
-            return [True, "UUID missing."]
+                return [False]
+    else:  
+        if creation:
+            if "part" not in args:
+                return [True, "Part missing."]
+            elif "private_key" not in args:
+                return [True, "Private-Key missing."]
+            elif "public_key" not in args:
+                return [True, "Public-Key missing."]
+            elif "uuid" not in args["part"]:
+                return [True, "UUID missing."]
+            elif "name" not in args["part"]:
+                return [True, "Name missing."]
+            elif "checksum" not in args["part"]:
+                return [True, "Checksum missing."]
+            elif "version" not in args["part"]:
+                return [True, "Version missing."]
+            elif "alias" not in args["part"]:
+                return [True, "Alias missing."]
+            elif "licensing" not in args["part"]:
+                return [True, "Licensing missing."]
+            elif "label" not in args["part"]:
+                return [True, "Label missing."]    
+            elif "description" not in args["part"]:
+                return [True, "Description missing."]
+            else:
+                return [False]
         else:
-            return [False]
+            if "part" not in args:
+                return [True, "Part missing."]
+            elif "private_key" not in args:
+                return [True, "Private-Key missing."]
+            elif "public_key" not in args:
+                return [True, "Public-Key missing."]
+            elif "uuid" not in args["part"]:
+                return [True, "UUID missing."]
+            else:
+                return [False]
 
 def _null_cast(dic, key):
     if key not in dic:

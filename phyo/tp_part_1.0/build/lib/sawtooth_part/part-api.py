@@ -44,21 +44,21 @@ def create_part():
     except Exception as e:
         return e
 
-# # AMEND
-# @app.route("/tp/part/amend", methods=["POST"])
-# def amend_part():
-#     config = configparser.ConfigParser()
-#     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+# AMEND
+@app.route("/tp/part/amend", methods=["POST"])
+def amend_part():
+    config = configparser.ConfigParser()
+    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
-#     try:
-#         if not request.json:
-#             return "Expecting JSON Object."
+    try:
+        if not request.json:
+            return "Expecting JSON Object."
         
-#         output = part_cli.api_do_amend_part(request.json, config)    
+        output = part_cli.api_do_amend_part(request.json, config)    
         
-#         return output
-#     except Exception as e:
-#         return e
+        return output
+    except Exception as e:
+        return e
 
 # LIST
 @app.route("/tp/part", methods=["GET"])
@@ -119,33 +119,43 @@ def retrieve_part_history_date(part_id, START):
     except Exception as e:
         return e
    
-# # ADDPART
-# @app.route("/tp/part/addpart", methods=["POST"])
-# def add_part_part():
-#     config = configparser.ConfigParser()
-#     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+# ADD ORGANIZATION
+@app.route("/tp/part/addorganization", methods=["POST"])
+def add_part_part():
+    config = configparser.ConfigParser()
+    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
-#     try:
-#         if not request.json:
-#             return "Expecting JSON Object."
+    try:
+        if not request.json:
+            return "Expecting JSON Object."
         
-#         output = part_cli.api_do_addpart(request.json, config)    
+        output = part_cli.api_do_add_organization(request.json, config)    
         
-#         return output
-#     except Exception as e:
-#         return e
+        return output
+    except Exception as e:
+        return e
+
+# ADD ORGANIZATION --DELETE
+@app.route("/tp/part/addorganization/delete", methods=["POST"])
+def add_part_part_delete():
+    config = configparser.ConfigParser()
+    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+    
+    try:
+        if not request.json:
+            return "Expecting JSON Object."
+        
+        output = part_cli.api_do_add_organization(request.json, config, True)    
+        
+        return output
+    except Exception as e:
+        return e
 ################################################################################
 #                                   TEST                                       #
 ################################################################################
 @app.route("/tp/test", methods=["POST"])
 def testing_():
     try:
-        # if not request.json or "category" not in request.json:
-        #     return "Error"
-        # data = json.dumps(request.json["private_key"])
-        
-        # return json.loads(data)
-        # return (request.json["category"]["uuid"] + request.json["category"]["name"])
         return json.dumps(request.json)
     except Exception as e:
         return e
@@ -153,12 +163,6 @@ def testing_():
 @app.route("/tp/test", methods=["GET"])
 def testing_get():
     try:
-        # if not request.json or "category" not in request.json:
-        #     return "Error"
-        # data = json.dumps(request.json["private_key"])
-        
-        # return json.loads(data)
-        # return (request.json["category"]["uuid"] + request.json["category"]["name"])
         return "phyo test get was called successfully"
     except Exception as e:
         return e
@@ -174,10 +178,6 @@ def ret_msg(status, message, result_type, result):
     key["result"] = result
     msgJSON = json.dumps(key)
     return msgJSON
-    
-# @app.errorhandler(500)
-# def custom500(message):
-#     return "yolo"
 ################################################################################
 #                                   MAIN                                       #
 ################################################################################
