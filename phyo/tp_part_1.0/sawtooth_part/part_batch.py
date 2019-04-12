@@ -123,14 +123,18 @@ class PartBatch:
                 jresponse = json.loads(response_bytes.decode())
                 
                 if len(jresponse["artifact_list"]) == 0:
-                    raise PartException("No {} to remove from this {}." \
-                                .format("Artifact", "Part")
-                        )
+                    return  [
+                                None,
+                                "No {} to remove from this {}." \
+                                    .format("Artifact", "Part")
+                            ]
                         
                 if artifact_id not in jresponse["artifact_list"]:
-                    raise PartException("No such {} in this {}." \
-                                .format("Artifact", "Part")
-                        )
+                    return  [
+                                None,
+                                "No such {} in this {}." \
+                                    .format("Artifact", "Part")
+                            ]
                         
                 jresponse["artifact_list"].remove(artifact_id)
                 
@@ -150,18 +154,25 @@ class PartBatch:
         else:
             response_bytes = self.retrieve_part(pt_id)
             
-            self._validate_artifact_id(artifact_id)
+            
             
             if response_bytes != None:
+                
+                if self._validate_artifact_id(artifact_id) == None:
+                    return  [
+                                None,
+                                "ArtifactException : UUID does not exist."
+                            ]
                 
                 jresponse = json.loads(response_bytes.decode())
                 
                 if artifact_id not in jresponse["artifact_list"]:
                     jresponse["artifact_list"].append(artifact_id)
                 else:
-                    raise PartException(
-                            "Artifact already exists for this Part."
-                        )
+                    return  [
+                                None,
+                                "Duplicate Artifact UUID in the Part."
+                            ]
                 
                 cur = self._get_block_num()
                 return self.create_part_transaction(pt_id, jresponse["name"], 
@@ -187,14 +198,18 @@ class PartBatch:
                 jresponse = json.loads(response_bytes.decode())
                 
                 if len(jresponse["category_list"]) == 0:
-                    raise PartException("No {} to remove from this {}." \
-                                .format("Category", "Part")
-                        )
+                    return  [
+                                None,
+                                "No {} to remove from this {}." \
+                                    .format("Category", "Part")
+                            ]
                 
                 if category_id not in jresponse["category_list"]:
-                    raise PartException("No such {} in this {}." \
-                                .format("Category", "Part")
-                        )
+                    return  [
+                                None,
+                                "No such {} in this {}." \
+                                    .format("Category", "Part")
+                            ]
                         
                 jresponse["category_list"].remove(category_id)
                 
@@ -214,18 +229,23 @@ class PartBatch:
         else:
             response_bytes = self.retrieve_part(pt_id)
             
-            self._validate_category_id(category_id)
-            
             if response_bytes != None:
+                
+                if self._validate_category_id(category_id) == None:
+                    return  [
+                                None,
+                                "CategoryException : UUID does not exist."
+                            ]
                 
                 jresponse = json.loads(response_bytes.decode())
                 
                 if category_id not in jresponse["category_list"]:
                     jresponse["category_list"].append(category_id)
                 else:
-                    raise PartException(
-                            "Category already exists for this Part."
-                        )
+                    return  [
+                                None,
+                                "Duplicate Category UUID in the Part."
+                            ]
                 
                 cur = self._get_block_num()
                 return self.create_part_transaction(pt_id, jresponse["name"], 
@@ -420,13 +440,13 @@ class PartBatch:
         artifact_prefix = _sha512("artifact".encode("utf-8"))[0:6]
         address = _sha512(artifact_id.encode("utf-8"))[0:64]
         address = artifact_prefix + address
-        self._send_request("state/{}".format(address))
+        return self._send_request("state/{}".format(address))
     
     def _validate_category_id(self, category_id):
         category_prefix = _sha512("category".encode("utf-8"))[0:6]
         address = _sha512(category_id.encode("utf-8"))[0:64]
         address = category_prefix + address
-        self._send_request("state/{}".format(address))
+        return self._send_request("state/{}".format(address))
     
     def _validate_organization_id(self, organization_id):
         category_prefix = _sha512("organization".encode("utf-8"))[0:6]

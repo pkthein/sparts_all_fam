@@ -1,5 +1,4 @@
-
-# copyright 2017 Wind River Systems
+# Copyright 2017 Wind River Systems
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -745,7 +744,6 @@ def add_artifact_to_part():
         public_key = request.json["public_key"]
         private_key = request.json["private_key"]
         
-        # cmd = "pt AddArtifact " + uuid + sp + envelope_uuid + sp + private_key + sp + public_key
         cmd = "pt AddArtifact {} {} {} {}".format(
                     uuid, envelope_uuid, private_key, public_key
                 )
@@ -809,7 +807,6 @@ def add_category_to_part():
         public_key = request.json["public_key"]
         private_key = request.json["private_key"]
         
-        # cmd = "pt AddCategory " + uuid + " " + category_uuid + " " + private_key + " "+ public_key
         cmd = "pt AddCategory {} {} {} {}".format(
                     uuid, category_uuid, private_key, public_key
                 )
@@ -1379,6 +1376,54 @@ def api_relation_part_org_delete():
                     "http://127.0.0.1:851/tp/organization/addpart/delete", 
                     data=json.dumps(request.json), headers=headers
                 )
+    output = response.content.decode("utf-8").strip()
+    
+    return output
+    
+@app.route(
+    "/phyo/api/relate/part/cat",
+    methods=["POST"]
+)
+def api_relation_part_cat():
+    headers = {"content-type": "application/json"}
+    response = requests.post("http://127.0.0.1:852/tp/part/addcategory", 
+                    data=json.dumps(request.json), headers=headers)
+    output = response.content.decode("utf-8").strip()
+    
+    return output
+    
+@app.route(
+    "/phyo/api/relate/part/cat/delete",
+    methods=["POST"]
+)
+def api_relation_part_cat_delete():
+    headers = {"content-type": "application/json"}
+    response = requests.post("http://127.0.0.1:852/tp/part/addcategory/delete", 
+                    data=json.dumps(request.json), headers=headers)
+    output = response.content.decode("utf-8").strip()
+    
+    return output
+    
+@app.route(
+    "/phyo/api/relate/part/art",
+    methods=["POST"]
+)
+def api_relation_part_art():
+    headers = {"content-type": "application/json"}
+    response = requests.post("http://127.0.0.1:852/tp/part/addartifact", 
+                    data=json.dumps(request.json), headers=headers)
+    output = response.content.decode("utf-8").strip()
+    
+    return output
+    
+@app.route(
+    "/phyo/api/relate/part/art/delete",
+    methods=["POST"]
+)
+def api_relation_part_art_delete():
+    headers = {"content-type": "application/json"}
+    response = requests.post("http://127.0.0.1:852/tp/part/addartifact/delete", 
+                    data=json.dumps(request.json), headers=headers)
     output = response.content.decode("utf-8").strip()
     
     return output

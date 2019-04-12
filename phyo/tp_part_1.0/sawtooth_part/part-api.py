@@ -121,7 +121,7 @@ def retrieve_part_history_date(part_id, START):
    
 # ADD ORGANIZATION
 @app.route("/tp/part/addorganization", methods=["POST"])
-def add_part_part():
+def add_part_organization():
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
@@ -137,7 +137,7 @@ def add_part_part():
 
 # ADD ORGANIZATION --DELETE
 @app.route("/tp/part/addorganization/delete", methods=["POST"])
-def add_part_part_delete():
+def add_part_organization_delete():
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
@@ -146,6 +146,70 @@ def add_part_part_delete():
             return "Expecting JSON Object."
         
         output = part_cli.api_do_add_organization(request.json, config, True)    
+        
+        return output
+    except Exception as e:
+        return e
+        
+# ADD CATEGORY
+@app.route("/tp/part/addcategory", methods=["POST"])
+def add_part_category():
+    config = configparser.ConfigParser()
+    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+    
+    try:
+        if not request.json:
+            return "Expecting JSON Object."
+        
+        output = part_cli.api_do_add_category(request.json, config)    
+        
+        return output
+    except Exception as e:
+        return e
+        
+# ADD CATEGORY --DELETE
+@app.route("/tp/part/addcategory/delete", methods=["POST"])
+def add_part_category_delete():
+    config = configparser.ConfigParser()
+    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+    
+    try:
+        if not request.json:
+            return "Expecting JSON Object."
+        
+        output = part_cli.api_do_add_category(request.json, config, True)    
+        
+        return output
+    except Exception as e:
+        return e
+        
+# ADD ARTIFACT
+@app.route("/tp/part/addartifact", methods=["POST"])
+def add_part_artifact():
+    config = configparser.ConfigParser()
+    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+    
+    try:
+        if not request.json:
+            return "Expecting JSON Object."
+        
+        output = part_cli.api_do_add_artifact(request.json, config)    
+        
+        return output
+    except Exception as e:
+        return e
+        
+# ADD ARTIFACT --DELETE
+@app.route("/tp/part/addartifact/delete", methods=["POST"])
+def add_part_artifact_delete():
+    config = configparser.ConfigParser()
+    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+    
+    try:
+        if not request.json:
+            return "Expecting JSON Object."
+        
+        output = part_cli.api_do_add_artifact(request.json, config, True)    
         
         return output
     except Exception as e:

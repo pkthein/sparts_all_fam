@@ -504,7 +504,7 @@ def do_add_artifact(args, config):
     
     output = response.content.decode("utf-8").strip()
     statusinfo = json.loads(output)
-    if statusinfo.get("status")and statusinfo.get("message"):
+    if statusinfo.get("status") and statusinfo.get("message"):
             
         status = statusinfo["status"]
         message = statusinfo["message"]
@@ -516,7 +516,8 @@ def do_add_artifact(args, config):
                                 pt_id, artifact_id, private_key, public_key,
                                 deleteArt
                             )
-            print_msg(response)
+                            
+            print_msg(response, "AddArtifact")
         else:
             print(output)
     else:
@@ -555,7 +556,8 @@ def do_add_category(args, config):
                                 pt_id, category_id, private_key, public_key,
                                 deleteCat
                             )
-            print_msg(response)
+                            
+            print_msg(response, "AddCategory")
         else:
             print(output)
     else:
@@ -624,7 +626,8 @@ def print_msg(response, cmd=None):
             if cmd == "create":
                 raise PartException("PartException : Duplicate UUID.")
                 
-            elif cmd == "amend" or cmd == "AddOrganization":
+            elif (cmd == "amend" or cmd == "AddOrganization" or 
+                    cmd == "AddArtifact" or cmd == "AddCategory"):
                 raise PartException(
                             "PartException : UUID does not exist."
                         )
@@ -898,6 +901,92 @@ def api_do_add_organization(args, config, del_flag=False):
             return output
     else:
         return output
+        
+def api_do_add_category(args, config, del_flag=False):
+    param_check = _payload_check_(args, cmd="AddCategory")
+    
+    if param_check[0]:
+        return ret_msg("failed", param_check[1], "EmptyRecord", "{}")
+    
+    pt_id       = args["relation"]["part_uuid"]
+    category_id = args["relation"]["category_uuid"]
+    private_key = args["private_key"]
+    public_key  = args["public_key"]
+   
+    payload = "{}"
+    key = json.loads(payload)
+    key["publickey"] = public_key
+    key["privatekey"] = private_key
+    key["allowedrole"] = [{"role" : "admin"}, {"role" : "member"}]
+    payload = json.dumps(key)
+       
+    headers = {"content-type": "application/json"}
+    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth", 
+                    data=json.dumps(key),headers=headers)
+    output = response.content.decode("utf-8").strip()
+    statusinfo = json.loads(output)
+       
+    if statusinfo.get("status") and statusinfo.get("message"):
+            
+        status = statusinfo["status"]
+        message = statusinfo["message"]
+            
+        if status == "success" and message == "authorized":
+            b_url = config.get("DEFAULT", "url")
+            client = PartBatch(base_url=b_url)
+            response = client.add_category(
+                                pt_id, category_id, private_key, public_key,
+                                del_flag
+                            )
+                            
+            return print_msg(response, "AddCategory")
+        else:
+            return output
+    else:
+        return output
+        
+def api_do_add_artifact(args, config, del_flag=False):
+    param_check = _payload_check_(args, cmd="AddArtifact")
+    
+    if param_check[0]:
+        return ret_msg("failed", param_check[1], "EmptyRecord", "{}")
+    
+    pt_id       = args["relation"]["part_uuid"]
+    artifact_id = args["relation"]["artifact_uuid"]
+    private_key = args["private_key"]
+    public_key  = args["public_key"]
+   
+    payload = "{}"
+    key = json.loads(payload)
+    key["publickey"] = public_key
+    key["privatekey"] = private_key
+    key["allowedrole"] = [{"role" : "admin"}, {"role" : "member"}]
+    payload = json.dumps(key)
+       
+    headers = {"content-type" : "application/json"}
+    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth", 
+                    data=json.dumps(key), headers=headers)
+    
+    output = response.content.decode("utf-8").strip()
+    statusinfo = json.loads(output)
+    if statusinfo.get("status") and statusinfo.get("message"):
+            
+        status = statusinfo["status"]
+        message = statusinfo["message"]
+            
+        if status == "success" and message == "authorized":
+            b_url = config.get("DEFAULT", "url")
+            client = PartBatch(base_url=b_url)
+            response = client.add_artifact(
+                                pt_id, artifact_id, private_key, public_key,
+                                del_flag
+                            )
+                            
+            return print_msg(response, "AddArtifact")
+        else:
+            return output
+    else:
+        return output
 ################################################################################
 #                           API PRIVATE FUNCTIONS                              #
 ################################################################################
@@ -923,6 +1012,10 @@ def _payload_check_(args, creation=False, cmd=None):
                 return [True, "Private-Key missing."]
             elif "public_key" not in args:
                 return [True, "Public-Key missing."]
+            elif "part_uuid" not in args["relation"]:
+                return [True, "Part UUID missing."]
+            elif "category_uuid" not in args["relation"]:
+                return [True, "Category UUID missing."]
             else:
                 return [False]
         elif cmd == "AddArtifact":
@@ -932,6 +1025,10 @@ def _payload_check_(args, creation=False, cmd=None):
                 return [True, "Private-Key missing."]
             elif "public_key" not in args:
                 return [True, "Public-Key missing."]
+            elif "part_uuid" not in args["relation"]:
+                return [True, "Part UUID missing."]
+            elif "artifact_uuid" not in args["relation"]:
+                return [True, "Artifact UUID missing."]
             else:
                 return [False]
         else:
