@@ -161,7 +161,6 @@ class ArtifactBatch:
                     retVal.append(response)
             
             return retVal
-            
         else:
             address = self._get_address(artifact_id)
     
@@ -174,8 +173,8 @@ class ArtifactBatch:
                 return None
     
     def add_artifact(self, private_key, public_key, artifact_id, 
-                sub_artifact_id, path, deleteSub=False):
-        if deleteSub:
+                sub_artifact_id, path, del_flag=False):
+        if del_flag:
             response_bytes = self.retrieve_artifact(artifact_id)
             
             if response_bytes != None:
@@ -183,19 +182,23 @@ class ArtifactBatch:
                 jresponse = json.loads(response_bytes.decode())
                 
                 if len(jresponse["artifact_list"]) == 0:
-                    raise ArtifactException("No {} to remove from this {}." \
-                                .format("Sub-Artifact", "Artifact")
-                        )
+                    return  [
+                                None,
+                                "No {} to remove from this {}." \
+                                    .format("Sub-Artifact", "Artifact")
+                            ]
                         
                 art_dict = {
-                    "uuid"   : sub_artifact_id,
+                    "uuid" : sub_artifact_id,
                     "path" : path
                 }
                 
                 if art_dict not in jresponse["artifact_list"]:
-                    raise ArtifactException("No such {} in this {}." \
-                                .format("Sub-Artifact", "Artifact")
-                        )
+                    return  [
+                                None, 
+                                "No such {} in this {}." \
+                                    .format("Sub-Artifact", "Artifact")
+                            ]
                         
                 jresponse["artifact_list"].remove(art_dict)
                 
@@ -215,35 +218,33 @@ class ArtifactBatch:
         else:
             response_bytes = self.retrieve_artifact(artifact_id)
             
-            self._validate_sub_artifact_id(sub_artifact_id)
-            
             if response_bytes != None:
+                
+                if self._validate_sub_artifact_id(sub_artifact_id) == None:
+                    return  [
+                                None,
+                                "ArtifactException : UUID does not exist."
+                            ]
+                
                 
                 jresponse = json.loads(response_bytes.decode())
                 
                 art_dict = {
-                    "uuid"   : sub_artifact_id,
+                    "uuid" : sub_artifact_id,
                     "path" : path
                 }
                 
                 if len(jresponse["artifact_list"]) != 0:
                     
-                    # no dup art_id allowed in art_list
-                    # for eachDictionary in jresponse["artifact_list"]:
-                    #     if eachDictionary["uuid"] == sub_artifact_id:
-                    #         raise ArtifactException(
-                    #                 "{} already exists for this {}.".format(
-                    #                         "Sub-Artifact", "Artifact"
-                    #                     )
-                    #             )
-                    
                     # no dup art_dict allowed in art_list
                     if art_dict in jresponse["artifact_list"]:
-                        raise ArtifactException(
-                                "{} already exists for this {}.".format(
+                        return  [
+                                    None,
+                                    "{} already exists for this {}.".format(
                                         "Artifact-Dictionary", "Artifact"
                                     )
-                            )        
+                                ]
+                                    
                 jresponse["artifact_list"].append(art_dict)
                     
                 cur = self._get_block_num()
@@ -261,8 +262,8 @@ class ArtifactBatch:
             return None
     
     def add_uri(self, private_key, public_key, artifact_id, version, checksum, 
-                content_type, size, uri_type, location, deleteURI=False):
-        if deleteURI:
+                content_type, size, uri_type, location, del_flag=False):
+        if del_flag:
             response_bytes = self.retrieve_artifact(artifact_id)
             
             if response_bytes != None:
@@ -270,12 +271,15 @@ class ArtifactBatch:
                 jresponse = json.loads(response_bytes.decode())
                 
                 if len(jresponse["uri_list"]) == 0:
-                    raise ArtifactException("No {} to remove from this {}." \
-                                .format("URI", "Artifact")
-                        )
+                    return  [
+                                None, 
+                                "No {} to remove from this {}." \
+                                    .format("URI", "Artifact")
+                            ]
                 
                 uri_dict = {
                     "version"       : version,
+                    "checksum"      : checksum,
                     "content_type"  : content_type,
                     "size"          : size,
                     "uri_type"      : uri_type,
@@ -283,9 +287,11 @@ class ArtifactBatch:
                 }
                 
                 if uri_dict not in jresponse["uri_list"]:
-                    raise ArtifactException("No such {} in this {}." \
-                                .format("URI", "Artifact")
-                        )
+                    return  [
+                                None,
+                                "No such {} in this {}." \
+                                    .format("URI", "Artifact")
+                            ]
                         
                 jresponse["uri_list"].remove(uri_dict)
                 
@@ -298,14 +304,12 @@ class ArtifactBatch:
                             jresponse["label"],
                             jresponse["openchain"],
                             jresponse["cur_block"], cur,
-                            str(datetime.datetime.utcnow()), "AddArtifact", 
+                            str(datetime.datetime.utcnow()), "AddURI", 
                             jresponse["artifact_list"], jresponse["uri_list"])
                 
             return None
         else:
             response_bytes = self.retrieve_artifact(artifact_id)
-            
-            # self._validate_URI() # how???
             
             if response_bytes != None:
                 
@@ -313,6 +317,7 @@ class ArtifactBatch:
                 
                 uri_dict = {
                     "version"       : version,
+                    "checksum"      : checksum,
                     "content_type"  : content_type,
                     "size"          : size,
                     "uri_type"      : uri_type,
@@ -321,11 +326,13 @@ class ArtifactBatch:
                 
                 if len(jresponse["uri_list"]) != 0:
                     if uri_dict in jresponse["uri_list"]:
-                        raise ArtifactException(
-                                "{} already exists for this {}.".format(
-                                        "URI-Dictionary", "Artifact"
-                                    )
-                            )
+                        return  [
+                                    None, 
+                                    "{} already exists for this {}.".format(
+                                            "URI-Dictionary", "Artifact"
+                                        )
+                                ]
+                                
                 jresponse["uri_list"].append(uri_dict)
                 
                 cur = self._get_block_num()
@@ -345,11 +352,11 @@ class ArtifactBatch:
 #                            PRIVATE FUNCTIONS                                 #
 ################################################################################   
     def _get_prefix(self):
-        return _sha512('artifact'.encode('utf-8'))[0:6]
+        return _sha512("artifact".encode("utf-8"))[0:6]
 
     def _get_address(self, artifact_id):
         artifact_prefix = self._get_prefix()
-        address = _sha512(artifact_id.encode('utf-8'))[0:64]
+        address = _sha512(artifact_id.encode("utf-8"))[0:64]
         return artifact_prefix + address
     
     def _get_block_num(self):
@@ -380,10 +387,10 @@ class ArtifactBatch:
         return None
     
     def _validate_sub_artifact_id(self, sub_artifact_id):
-        artifact_prefix = _sha512('artifact'.encode('utf-8'))[0:6]
-        address = _sha512(sub_artifact_id.encode('utf-8'))[0:64]
+        artifact_prefix = _sha512("artifact".encode("utf-8"))[0:6]
+        address = _sha512(sub_artifact_id.encode("utf-8"))[0:64]
         address = artifact_prefix + address
-        self._send_request("state/{}".format(address))
+        return self._send_request("state/{}".format(address))
     
     def _send_request(
             self, suffix, data=None, content_type=None,
@@ -397,7 +404,7 @@ class ArtifactBatch:
         headers = {} 
 
         if content_type is not None:
-            headers['Content-Type'] = content_type
+            headers["Content-Type"] = content_type
 
         try:
             if data is not None:
@@ -463,7 +470,7 @@ class ArtifactBatch:
         ).SerializeToString()
 
         # signature = signing.sign(header, self._private_key)
-        signature = CryptoFactory(create_context('secp256k1')) \
+        signature = CryptoFactory(create_context("secp256k1")) \
             .new_signer(Secp256k1PrivateKey.from_hex(self._private_key)).sign(header)
 
         transaction = Transaction(
@@ -476,7 +483,7 @@ class ArtifactBatch:
         
         return self._send_request(
             "batches", batch_list.SerializeToString(),
-            'application/octet-stream'
+            "application/octet-stream"
         )
 
     def _create_batch_list(self, transactions):
@@ -488,7 +495,7 @@ class ArtifactBatch:
         ).SerializeToString()
 
         # signature = signing.sign(header, self._private_key)
-        signature = CryptoFactory(create_context('secp256k1')) \
+        signature = CryptoFactory(create_context("secp256k1")) \
             .new_signer(Secp256k1PrivateKey.from_hex(self._private_key)) \
             .sign(header)
 

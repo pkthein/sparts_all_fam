@@ -499,9 +499,12 @@ def do_add_sub_artifact(args, config):
         if status == "success" and message == "authorized":
             b_url = config.get("DEFAULT", "url")
             client = ArtifactBatch(base_url=b_url)
-            response = client.add_artifact(private_key, public_key, artifact_id,
-                            sub_artifact_id, path, deleteSub)
-            print_msg(response)
+            response = client.add_artifact(
+                            private_key, public_key, artifact_id,
+                            sub_artifact_id, path, deleteSub
+                        )
+                            
+            print_msg(response, "AddArtifact")
         else:
             print(output)
     else:
@@ -544,7 +547,8 @@ def do_add_uri_to_artifact(args, config):
             response = client.add_uri(private_key, public_key, artifact_id, 
                                 version, checksum, content_type, size, uri_type,
                                 location, deleteURI)
-            print_msg(response)
+                                
+            print_msg(response, "AddURI")
         else:
             print(output)
     else:
@@ -560,6 +564,10 @@ def load_config():
 def print_msg(response, cmd=None):
     try:
         if type(response) is list and response[0] == None:
+            if len(response) > 1:
+                raise ArtifactException(
+                        "ArtifactException : {}".format(response[1])
+                    )
             raise ArtifactException(
                         "ArtifactException : No change."
                     )
@@ -568,7 +576,7 @@ def print_msg(response, cmd=None):
             if cmd == "create":
                 raise ArtifactException("ArtifactException : Duplicate UUID.")
                 
-            elif cmd == "amend":
+            elif cmd == "amend" or cmd == "AddArtifact" or cmd == "AddURI":
                 raise ArtifactException(
                             "ArtifactException : UUID does not exist."
                         )
@@ -797,44 +805,179 @@ def api_do_retrieve_artifact(
                     .format(artifact_id), 
                     "ArtifactRecord", "{}"
                 )
+                
+def api_do_add_sub_artifact(args, config, del_flag=False):
+    param_check = _payload_check_(args, cmd="AddArtifact")
+    
+    if param_check[0]:
+        return ret_msg("failed", param_check[1], "EmptyRecord", "{}")
+    
+    artifact_id     = args["relation"]["artifact_uuid"]
+    sub_artifact_id = args["relation"]["sub_artifact_uuid"]
+    path            = args["relation"]["path"]
+    private_key     = args["private_key"]
+    public_key      = args["public_key"] 
+   
+    payload = "{}"
+    key = json.loads(payload)
+    key["publickey"] = public_key
+    key["privatekey"] = private_key
+    key["allowedrole"] = [{"role" : "admin"}, {"role" : "member"}]
+    payload = json.dumps(key)
+       
+    headers = {"content-type": "application/json"}
+    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth", 
+                    data=json.dumps(key), headers=headers)
+    output = response.content.decode("utf-8").strip()
+    statusinfo = json.loads(output)
+       
+    if statusinfo.get("status")and statusinfo.get("message"):
+            
+        status = statusinfo["status"]
+        message = statusinfo["message"]
+            
+        if status == "success" and message == "authorized":
+            b_url = config.get("DEFAULT", "url")
+            client = ArtifactBatch(base_url=b_url)
+            response = client.add_artifact(
+                            private_key, public_key, artifact_id,
+                            sub_artifact_id, path, del_flag
+                        )
+                            
+            return print_msg(response, "AddArtifact")
+        else:
+            return output
+    else:
+        return output
+        
+def api_do_add_uri_to_artifact(args, config, del_flag=False):
+    param_check = _payload_check_(args, cmd="AddURI")
+    
+    if param_check[0]:
+        return ret_msg("failed", param_check[1], "EmptyRecord", "{}")
+    
+    artifact_id     = args["uuid"]
+    
+    version         = args["uri"]["version"]
+    checksum        = args["uri"]["checksum"]
+    content_type    = args["uri"]["content_type"]
+    size            = args["uri"]["size"]
+    uri_type        = args["uri"]["uri_type"]
+    location        = args["uri"]["location"]
+    
+    private_key     = args["private_key"]
+    public_key      = args["public_key"] 
+
+    payload = "{}"
+    key = json.loads(payload)
+    key["publickey"] = public_key
+    key["privatekey"] = private_key
+    key["allowedrole"] = [{"role" : "admin"}, {"role" : "member"}]
+    payload = json.dumps(key)
+       
+    headers = {"content-type": "application/json"}
+    response = requests.post("http://127.0.0.1:818/api/sparts/ledger/auth", 
+                    data=json.dumps(key),headers=headers)
+    output = response.content.decode("utf-8").strip()
+    statusinfo = json.loads(output)
+       
+    if statusinfo.get("status") and statusinfo.get("message"):
+            
+        status = statusinfo["status"]
+        message = statusinfo["message"]
+            
+        if status == "success" and message == "authorized":
+            b_url = config.get("DEFAULT", "url")
+            client = ArtifactBatch(base_url=b_url)
+            response = client.add_uri(
+                            private_key, public_key, artifact_id, version,
+                            checksum, content_type, size, uri_type, location,
+                            del_flag
+                        )
+                                
+            return print_msg(response, "AddURI")
+        else:
+            return output
+    else:
+        return output
 ################################################################################
 #                           API PRIVATE FUNCTIONS                              #
 ################################################################################
-def _payload_check_(args, creation=False):
-    if creation:
-        if "artifact" not in args:
-            return [True, "Artifact missing."]
-        elif "private_key" not in args:
-            return [True, "Private-Key missing."]
-        elif "public_key" not in args:
-            return [True, "Public-Key missing."]
-        elif "uuid" not in args["artifact"]:
-            return [True, "UUID missing."]
-        elif "name" not in args["artifact"]:
-            return [True, "Name missing."]
-        elif "checksum" not in args["artifact"]:
-            return [True, "Checksum missing."]
-        elif "alias" not in args["artifact"]:
-            return [True, "Alias missing."]
-        elif "label" not in args["artifact"]:
-            return [True, "Label missing."]
-        elif "openchain" not in args["artifact"]:
-            return [True, "Openchain missing."]
-        elif "content_type" not in args["artifact"]:
-            return [True, "Content_type missing."]    
+def _payload_check_(args, creation=False, cmd=None):
+    if cmd != None:
+        if cmd == "AddArtifact":
+            if "relation" not in args:
+                return [True, "Relation missing."]
+            elif "private_key" not in args:
+                return [True, "Private-Key missing."]
+            elif "public_key" not in args:
+                return [True, "Public-Key missing."]
+            elif "artifact_uuid" not in args["relation"]:
+                return [True, "Artifact UUID missing."]
+            elif "sub_artifact_uuid" not in args["relation"]:
+                return [True, "Sub-Artifact UUID missing."]
+            else:
+                return [False]
+        elif cmd == "AddURI":
+            if "uuid" not in args:
+                return [True, "UUID missing."]
+            elif "private_key" not in args:
+                return [True, "Private-Key missing."]
+            elif "public_key" not in args:
+                return [True, "Public-Key missing."]
+            elif "uri" not in args:
+                return [True, "URI missing."]
+            elif "version" not in args["uri"]:
+                return [True, "URI : Version missing."]
+            elif "checksum" not in args["uri"]:
+                return [True, "URI : Checksum missing."]
+            elif "size" not in args["uri"]:
+                return [True, "URI : Size missing."]
+            elif "content_type" not in args["uri"]:
+                return [True, "URI : Content-type missing."]
+            elif "uri_type" not in args["uri"]:
+                return [True, "URI : URI-type missing."]
+            elif "location" not in args["uri"]:
+                return [True, "URI : Location missing."]
+            else:
+                return [False]
         else:
             return [False]
     else:
-        if "artifact" not in args:
-            return [True, "Artifact missing."]
-        elif "private_key" not in args:
-            return [True, "Private-Key missing."]
-        elif "public_key" not in args:
-            return [True, "Public-Key missing."]
-        elif "uuid" not in args["artifact"]:
-            return [True, "UUID missing."]
+        if creation:
+            if "artifact" not in args:
+                return [True, "Artifact missing."]
+            elif "private_key" not in args:
+                return [True, "Private-Key missing."]
+            elif "public_key" not in args:
+                return [True, "Public-Key missing."]
+            elif "uuid" not in args["artifact"]:
+                return [True, "UUID missing."]
+            elif "name" not in args["artifact"]:
+                return [True, "Name missing."]
+            elif "checksum" not in args["artifact"]:
+                return [True, "Checksum missing."]
+            elif "alias" not in args["artifact"]:
+                return [True, "Alias missing."]
+            elif "label" not in args["artifact"]:
+                return [True, "Label missing."]
+            elif "openchain" not in args["artifact"]:
+                return [True, "Openchain missing."]
+            elif "content_type" not in args["artifact"]:
+                return [True, "Content_type missing."]    
+            else:
+                return [False]
         else:
-            return [False]
+            if "artifact" not in args:
+                return [True, "Artifact missing."]
+            elif "private_key" not in args:
+                return [True, "Private-Key missing."]
+            elif "public_key" not in args:
+                return [True, "Public-Key missing."]
+            elif "uuid" not in args["artifact"]:
+                return [True, "UUID missing."]
+            else:
+                return [False]
 
 def _null_cast(dic, key):
     if key not in dic:

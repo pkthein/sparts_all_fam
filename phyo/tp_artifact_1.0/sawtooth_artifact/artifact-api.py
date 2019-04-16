@@ -115,6 +115,74 @@ def retrieve_artifact_history_date(artifact_id, START):
         return output
     except Exception as e:
         return e
+        
+# ADD ARTIFACT
+@app.route("/tp/artifact/addartifact", methods=["POST"])
+def add_artifact_artifact():
+    config = configparser.ConfigParser()
+    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+    
+    try:
+        if not request.json:
+            return "Expecting JSON Object."
+        
+        output = artifact_cli.api_do_add_sub_artifact(request.json, config)    
+        
+        return output
+    except Exception as e:
+        return e
+        
+# ADD ARTIFACT --DELETE
+@app.route("/tp/artifact/addartifact/delete", methods=["POST"])
+def add_artifact_artifact_delete():
+    config = configparser.ConfigParser()
+    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+    
+    try:
+        if not request.json:
+            return "Expecting JSON Object."
+        
+        output = artifact_cli.api_do_add_sub_artifact(
+                        request.json, config, True
+                    )    
+        
+        return output
+    except Exception as e:
+        return e
+        
+# ADD URI
+@app.route("/tp/artifact/adduri", methods=["POST"])
+def add_artifact_uri():
+    config = configparser.ConfigParser()
+    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+    
+    try:
+        if not request.json:
+            return "Expecting JSON Object."
+        
+        output = artifact_cli.api_do_add_uri_to_artifact(request.json, config)    
+        
+        return output
+    except Exception as e:
+        return e
+        
+# ADD URI --DELETE
+@app.route("/tp/artifact/adduri/delete", methods=["POST"])
+def add_artifact_uri_delete():
+    config = configparser.ConfigParser()
+    config.set("DEFAULT", "url", "http://127.0.0.1:8008")
+    
+    try:
+        if not request.json:
+            return "Expecting JSON Object."
+        
+        output = artifact_cli.api_do_add_uri_to_artifact(
+                        request.json, config, True
+                    )    
+        
+        return output
+    except Exception as e:
+        return e
 ################################################################################
 #                                   TEST                                       #
 ################################################################################
@@ -143,10 +211,6 @@ def ret_msg(status, message, result_type, result):
     key["result"] = result
     msgJSON = json.dumps(key)
     return msgJSON
-    
-# @app.errorhandler(500)
-# def custom500(message):
-#     return "yolo"
 ################################################################################
 #                                   MAIN                                       #
 ################################################################################

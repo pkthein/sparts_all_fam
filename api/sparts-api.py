@@ -1326,6 +1326,7 @@ def api_part_history_date(pt_id, START):
 ################################################################################
 #                            API to API RELATION                               #
 ################################################################################
+# API : RELATE PART TO ORGANIZATION AND ORGANIZATION TO PART
 @app.route(
     "/phyo/api/relate/part/org",
     methods=["POST"]
@@ -1350,7 +1351,8 @@ def api_relation_part_org():
     output = response.content.decode("utf-8").strip()
     
     return output
-    
+
+# API : SEVER PART TO ORGANIZATION AND ORGANIZATION TO PART
 @app.route(
     "/phyo/api/relate/part/org/delete",
     methods=["POST"]
@@ -1379,7 +1381,8 @@ def api_relation_part_org_delete():
     output = response.content.decode("utf-8").strip()
     
     return output
-    
+
+# API : RELATE PART TO CATEGORY
 @app.route(
     "/phyo/api/relate/part/cat",
     methods=["POST"]
@@ -1392,6 +1395,7 @@ def api_relation_part_cat():
     
     return output
     
+# API : SEVER PART TO CATEGORY
 @app.route(
     "/phyo/api/relate/part/cat/delete",
     methods=["POST"]
@@ -1403,7 +1407,8 @@ def api_relation_part_cat_delete():
     output = response.content.decode("utf-8").strip()
     
     return output
-    
+
+# API : RELATE PART TO ARTIFACT    
 @app.route(
     "/phyo/api/relate/part/art",
     methods=["POST"]
@@ -1416,6 +1421,7 @@ def api_relation_part_art():
     
     return output
     
+# API : SEVER PART TO ARTIFACT
 @app.route(
     "/phyo/api/relate/part/art/delete",
     methods=["POST"]
@@ -1424,6 +1430,66 @@ def api_relation_part_art_delete():
     headers = {"content-type": "application/json"}
     response = requests.post("http://127.0.0.1:852/tp/part/addartifact/delete", 
                     data=json.dumps(request.json), headers=headers)
+    output = response.content.decode("utf-8").strip()
+    
+    return output
+    
+# API : RELATE ARTIFACT TO ARTIFACT    
+@app.route(
+    "/phyo/api/relate/art/art",
+    methods=["POST"]
+)
+def api_relation_art_art():
+    headers = {"content-type": "application/json"}
+    response = requests.post(
+                    "http://127.0.0.1:853/tp/artifact/addartifact", 
+                    data=json.dumps(request.json), headers=headers
+                )
+    output = response.content.decode("utf-8").strip()
+    
+    return output
+    
+# API : SEVER ARTIFACT TO ARTIFACT    
+@app.route(
+    "/phyo/api/relate/art/art/delete",
+    methods=["POST"]
+)
+def api_relation_art_art_delete():
+    headers = {"content-type": "application/json"}
+    response = requests.post(
+                    "http://127.0.0.1:853/tp/artifact/addartifact/delete", 
+                    data=json.dumps(request.json), headers=headers
+                )
+    output = response.content.decode("utf-8").strip()
+    
+    return output
+    
+# API : RELATE ARTIFACT TO URI    
+@app.route(
+    "/phyo/api/relate/art/uri",
+    methods=["POST"]
+)
+def api_relation_art_uri():
+    headers = {"content-type": "application/json"}
+    response = requests.post(
+                    "http://127.0.0.1:853/tp/artifact/adduri", 
+                    data=json.dumps(request.json), headers=headers
+                )
+    output = response.content.decode("utf-8").strip()
+    
+    return output
+    
+# API : SEVER ARTIFACT TO URI    
+@app.route(
+    "/phyo/api/relate/art/uri/delete",
+    methods=["POST"]
+)
+def api_relation_art_uri_delete():
+    headers = {"content-type": "application/json"}
+    response = requests.post(
+                    "http://127.0.0.1:853/tp/artifact/adduri/delete", 
+                    data=json.dumps(request.json), headers=headers
+                )
     output = response.content.decode("utf-8").strip()
     
     return output
