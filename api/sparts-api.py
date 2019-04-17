@@ -151,15 +151,15 @@ def get_artifact(artifact_id):
         exp = ret_exception_msg(e)
         return exp
 
-def add_artifact_to_envelope_cmd(envelope_uuid, artifact_uuid, private_key,
+def add_artifact_to_artifact_cmd(artifact_uuid, sub_artifact_uuid, private_key,
                                     public_key, path):
     return "artifact AddArtifact {} {} {} {} {}".format(
-                str_qt(envelope_uuid), str_qt(artifact_uuid), str_qt(path),
+                str_qt(artifact_uuid), str_qt(sub_artifact_uuid), str_qt(path),
                 str_qt(private_key), str_qt(public_key)
             )
 
-@app.route("/ledger/api/v1/envelope/artifact", methods=["POST"])
-def add_artifact_to_envelope():
+@app.route("/ledger/api/v1/artifact/artifact", methods=["POST"])
+def add_artifact_to_artifact():
     try:
         if (not request.json or
             "private_key" not in request.json or
@@ -172,10 +172,10 @@ def add_artifact_to_envelope():
         private_key = request.json["private_key"]
          
         artifact_uuid = request.json["relation"]["artifact_uuid"]
-        envelope_uuid = request.json["relation"]["envelope_uuid"]
+        sub_artifact_uuid = request.json["relation"]["sub_artifact_uuid"]
         path = request.json["relation"]["path"]
         
-        cmd = add_artifact_to_envelope_cmd(envelope_uuid, artifact_uuid,
+        cmd = add_artifact_to_artifact_cmd(artifact_uuid, sub_artifact_uuid,
                                             private_key, public_key, path)
         cmd = shlex.split(cmd)
         
@@ -728,7 +728,7 @@ def get_uuid_part_day(part_id, START):
         exp = ret_exception_msg(e)
         return exp
 
-# Establishes relationship between envelopes and part
+# Establishes relationship between artifacts and part
 @app.route("/ledger/api/v1/artifacts/part", methods=["POST"])
 def add_artifact_to_part():
     try:
@@ -740,12 +740,12 @@ def add_artifact_to_part():
         output = ""
         
         uuid = request.json["relation"]["part_uuid"]
-        envelope_uuid = request.json["relation"]["artifact_uuid"]
+        artifact_uuid = request.json["relation"]["artifact_uuid"]
         public_key = request.json["public_key"]
         private_key = request.json["private_key"]
         
         cmd = "pt AddArtifact {} {} {} {}".format(
-                    uuid, envelope_uuid, private_key, public_key
+                    uuid, artifact_uuid, private_key, public_key
                 )
         cmd = shlex.split(cmd)
         
@@ -822,53 +822,53 @@ def add_category_to_part():
         exp = ret_exception_msg(e) 
         return exp
 
-@app.route(
-    "/api/sparts/ledger/envelopes/searchbychecksum/<string:checksum_id>",
-    methods=["GET"]
-)
-def artifact_verify_checksum(checksum_id):
-    try:
-        artifactlist = get_envelopes()
-        jdata = json.loads(artifactlist)
+# @app.route(
+#     "/api/sparts/ledger/envelopes/searchbychecksum/<string:checksum_id>",
+#     methods=["GET"]
+# )
+# def artifact_verify_checksum(checksum_id):
+#     try:
+#         artifactlist = get_envelopes()
+#         jdata = json.loads(artifactlist)
     
-        output = ""
-        for i in jdata:
-            if i["checksum"] == checksum_id:
-                output = json.dumps(i) 
-        return output
-    except Exception as e:
-        exp = ret_exception_msg(e)
-        return exp
+#         output = ""
+#         for i in jdata:
+#             if i["checksum"] == checksum_id:
+#                 output = json.dumps(i) 
+#         return output
+#     except Exception as e:
+#         exp = ret_exception_msg(e)
+#         return exp
 
-@app.route(
-    "/api/sparts/ledger/parts/artifact/<string:part_id>",
-    methods=["GET"]
-)
-def get_part_artifact(part_id):
-    try:
-        cmd = "pt retrieve " + part_id
-        process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
-        process.wait()
-        partsOut = ""
-        output = ""
-        for line in process.stdout:
-            partsOut += line.decode("utf-8").strip()
-            partsOut = refine_output(partsOut)
+# @app.route(
+#     "/api/sparts/ledger/parts/artifact/<string:part_id>",
+#     methods=["GET"]
+# )
+# def get_part_artifact(part_id):
+#     try:
+#         cmd = "pt retrieve " + part_id
+#         process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
+#         process.wait()
+#         partsOut = ""
+#         output = ""
+#         for line in process.stdout:
+#             partsOut += line.decode("utf-8").strip()
+#             partsOut = refine_output(partsOut)
     
-        artifactListJSON = "[]"
-        jArtifactsData = json.loads(artifactListJSON)
-        data = json.loads(partsOut)
-        for element in data["envelopes"]:
-            artifactD = get_envelope(element["envelope_id"])
-            artJSONObj = json.loads(artifactD)
-            del artJSONObj["sub_artifact"]
-            jArtifactsData.append(artJSONObj)
+#         artifactListJSON = "[]"
+#         jArtifactsData = json.loads(artifactListJSON)
+#         data = json.loads(partsOut)
+#         for element in data["envelopes"]:
+#             artifactD = get_envelope(element["envelope_id"])
+#             artJSONObj = json.loads(artifactD)
+#             del artJSONObj["sub_artifact"]
+#             jArtifactsData.append(artJSONObj)
                 
-        output = json.dumps(jArtifactsData)
-        return output
-    except Exception as e:
-        exp = ret_exception_msg(e)
-        return exp
+#         output = json.dumps(jArtifactsData)
+#         return output
+#     except Exception as e:
+#         exp = ret_exception_msg(e)
+#         return exp
 ################################################################################
 #                             SAWTOOTH VERSION                                 #
 ################################################################################
