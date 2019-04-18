@@ -20,28 +20,16 @@ from __future__ import print_function
 
 import argparse
 import configparser
-import getpass
 import logging
 import os
 import traceback
 import sys
-import shutil
 import pkg_resources
 import json
-import re
 import requests
-
 from colorlog import ColoredFormatter
-
-import binascii
-from sawtooth_signing import create_context
-from sawtooth_signing import CryptoFactory
-from sawtooth_signing import ParseError
-from sawtooth_signing.secp256k1 import Secp256k1PrivateKey
-
 from sawtooth_part.part_batch import PartBatch
 from sawtooth_part.exceptions import PartException
-
 
 DISTRIBUTION_NAME = "sawtooth-part"
 ################################################################################

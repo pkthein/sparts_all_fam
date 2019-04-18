@@ -1,6 +1,5 @@
 # Copyright 2016 Intel Corporation
 # Copyright 2017 Wind River
-
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -18,42 +17,83 @@
 ################################################################################
 import hashlib
 import base64
-from base64 import b64encode
 import time
 import requests
 import yaml
 import datetime
 import json
-
 from sawtooth_signing import create_context
 from sawtooth_signing import CryptoFactory
-from sawtooth_signing import ParseError
 from sawtooth_signing.secp256k1 import Secp256k1PrivateKey
-
 from sawtooth_sdk.protobuf.transaction_pb2 import TransactionHeader
 from sawtooth_sdk.protobuf.transaction_pb2 import Transaction
 from sawtooth_sdk.protobuf.batch_pb2 import BatchList
 from sawtooth_sdk.protobuf.batch_pb2 import BatchHeader
 from sawtooth_sdk.protobuf.batch_pb2 import Batch
-
 from sawtooth_part.exceptions import PartException
 ################################################################################
 #                            GLOBAL FUNCTIONS                                  #
 ################################################################################
 def _sha512(data):
+    """
+    Creates the string of sha512 hashed to the passed in data.
+    
+    Args:
+        data (bytes): The data to be hashed
+    
+    Returns:
+        type: str
+        The sha512 hashed data in string of hex values.
+        
+    """
     return hashlib.sha512(data).hexdigest()
 ################################################################################
 #                                  CLASS                                       #
 ################################################################################
 class PartBatch:
+    """
+    Class for creating batch of the Transaction Family : Part
+    
+    Attributes:
+        base_url (str): The base url of the transaction family
+    
+    """
     
     def __init__(self, base_url):
+        """
+        Constructs the PartBatch object.
+        
+        Args:
+            base_url (str): The base url of the transaction family
+        
+        """
         self._base_url = base_url
 ################################################################################
 #                            PUBLIC FUNCTIONS                                  #
 ################################################################################    
     def create_part(self, pt_id, pt_name, checksum, version, alias, licensing,
                 label, description, private_key, public_key):
+        """
+        Constructs the batch payload for the "create" command.
+        
+        Args:
+            pt_id (str): The uuid of the part
+            pt_name (str): The name of the part
+            checksum (str): The checksum of the part
+            version (str): The version of the part
+            alias (str): The alias of the part
+            licensing (str): The licensing of the part
+            label (str): The label of the part
+            description (str): The description of the part
+            private_key (str): The private key of the user
+            public_key (str): The public key of the user
+        
+        Returns:
+            type: Batch
+            The batch object which pertains all the data associating with the 
+            "create" command.
+        
+        """
         address = self._get_address(pt_id)
     
         response_bytes = self._send_request(

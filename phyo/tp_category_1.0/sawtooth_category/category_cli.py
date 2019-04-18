@@ -20,26 +20,16 @@ from __future__ import print_function
 
 import argparse
 import configparser
-import getpass
 import logging
 import os
 import traceback
 import sys
-import shutil
 import pkg_resources
 import requests
 import json
-
 from colorlog import ColoredFormatter
-
-from sawtooth_signing import create_context
-from sawtooth_signing import CryptoFactory
-from sawtooth_signing import ParseError
-from sawtooth_signing.secp256k1 import Secp256k1PrivateKey
-
 from sawtooth_category.category_batch import CategoryBatch
 from sawtooth_category.exceptions import CategoryException
-
 
 DISTRIBUTION_NAME = "sawtooth-category"
 ################################################################################
