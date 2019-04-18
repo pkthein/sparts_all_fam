@@ -34,6 +34,9 @@ from sawtooth_part.exceptions import PartException
 DISTRIBUTION_NAME = "sawtooth-part"
 ################################################################################
 def create_console_handler(verbose_level):
+    """
+    """
+    
     clog = logging.StreamHandler()
     formatter = ColoredFormatter(
         "%(log_color)s[%(asctime)s %(levelname)-8s%(module)s]%(reset)s "
@@ -60,6 +63,9 @@ def create_console_handler(verbose_level):
     return clog
 
 def setup_loggers(verbose_level):
+    """
+    """
+    
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     logger.addHandler(create_console_handler(verbose_level))
@@ -67,6 +73,9 @@ def setup_loggers(verbose_level):
 #                                   OBJ                                        #
 ################################################################################
 def add_create_parser(subparsers, parent_parser):
+    """
+    """
+    
     parser = subparsers.add_parser("create", parents=[parent_parser])
 
     parser.add_argument(
@@ -127,9 +136,14 @@ def add_create_parser(subparsers, parent_parser):
         help="disable client validation")
 
 def add_list_part_parser(subparsers, parent_parser):
+    """
+    """
+    
     subparsers.add_parser("list-part", parents=[parent_parser])
 
 def add_retrieve_parser(subparsers, parent_parser):
+    """
+    """
     parser = subparsers.add_parser("retrieve", parents=[parent_parser])
 
     parser.add_argument(
@@ -151,6 +165,9 @@ def add_retrieve_parser(subparsers, parent_parser):
         help="show history of uuid within the range; FORMAT : yyyymmdd")
 
 def add_amend_parser(subparsers, parent_parser):
+    """
+    """
+    
     parser = subparsers.add_parser("amend", parents=[parent_parser])
 
     parser.add_argument(
@@ -211,6 +228,9 @@ def add_amend_parser(subparsers, parent_parser):
         help="disable client validation")
    
 def add_artifact_parser(subparsers, parent_parser):
+    """
+    """
+    
     parser = subparsers.add_parser("AddArtifact", parents=[parent_parser])
     
     parser.add_argument(
@@ -240,6 +260,9 @@ def add_artifact_parser(subparsers, parent_parser):
         help="removes the artifact")
 
 def add_category_parser(subparsers, parent_parser):
+    """
+    """
+    
     parser = subparsers.add_parser("AddCategory", parents=[parent_parser])
     
     parser.add_argument(
@@ -270,6 +293,9 @@ def add_category_parser(subparsers, parent_parser):
 
 # Provide the UUID of the parent artifact and the UUID of the organization
 def add_organization_parser(subparsers, parent_parser):
+    """
+    """
+    
     parser = subparsers.add_parser("AddOrganization", parents=[parent_parser])
     
     parser.add_argument(
@@ -301,6 +327,9 @@ def add_organization_parser(subparsers, parent_parser):
 #                                   CREATE                                     #
 ################################################################################
 def create_parent_parser(prog_name):
+    """
+    """
+    
     parent_parser = argparse.ArgumentParser(prog=prog_name, add_help=False)
     parent_parser.add_argument(
         "-v", "--verbose",
@@ -322,6 +351,9 @@ def create_parent_parser(prog_name):
     return parent_parser
 
 def create_parser(prog_name):
+    """
+    """
+    
     parent_parser = create_parent_parser(prog_name)
 
     parser = argparse.ArgumentParser(
@@ -345,6 +377,9 @@ def create_parser(prog_name):
 #                               FUNCTIONS                                      #
 ################################################################################    
 def do_list_part(args, config):
+    """
+    """
+    
     b_url = config.get("DEFAULT", "url")
     client = PartBatch(base_url=b_url)
     result = client.list_part()
@@ -360,6 +395,9 @@ def do_list_part(args, config):
         raise PartException("Could not retrieve part listing.")
 
 def do_retrieve(args, config):
+    """
+    """
+    
     all_flag = args.all
     range_flag = args.range
     
@@ -383,7 +421,10 @@ def do_retrieve(args, config):
     else:
         raise PartException("Part not found: {}".format(pt_id))
 
-def do_create_part(args, config): 
+def do_create_part(args, config):
+    """
+    """
+    
     pt_id       = args.pt_id
     pt_name     = args.pt_name
     checksum    = args.checksum
@@ -428,6 +469,9 @@ def do_create_part(args, config):
         print(output)
 
 def do_amend_part(args, config):
+    """
+    """
+    
     pt_id       = args.pt_id
     pt_name     = args.pt_name
     checksum    = args.checksum
@@ -472,6 +516,9 @@ def do_amend_part(args, config):
         print(output)
    
 def do_add_artifact(args, config):
+    """
+    """
+    
     deleteArt   = args.delete
     
     pt_id       = args.pt_id
@@ -512,6 +559,9 @@ def do_add_artifact(args, config):
         print(output)
         
 def do_add_category(args, config):
+    """
+    """
+    
     deleteCat   = args.delete
     
     pt_id       = args.pt_id
@@ -553,6 +603,9 @@ def do_add_category(args, config):
 
 # add the relationship between parent artifact and organization
 def do_add_organization(args, config):
+    """
+    """
+    
     del_flag   = args.delete
     
     pt_id           = args.pt_id
@@ -595,11 +648,17 @@ def do_add_organization(args, config):
 #                                  PRINT                                       #
 ################################################################################ 
 def load_config():
+    """
+    """
+    
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     return config
 
 def print_msg(response, cmd=None):
+    """
+    """
+    
     try:
         if type(response) is list and response[0] == None:
             if len(response) > 1:
@@ -636,6 +695,9 @@ def print_msg(response, cmd=None):
         return output
         
 def ret_msg(status, message, result_type, result):
+    """
+    """
+    
     msgJSON = "{}"
     key = json.loads(msgJSON)
     key["status"] = status
@@ -649,6 +711,9 @@ def ret_msg(status, message, result_type, result):
 #                                   MAIN                                       #
 ################################################################################
 def main(prog_name=os.path.basename(sys.argv[0]), args=None):
+    """
+    """
+    
     if args is None:
         args = sys.argv[1:]
     parser = create_parser(prog_name)
@@ -681,6 +746,9 @@ def main(prog_name=os.path.basename(sys.argv[0]), args=None):
         raise PartException("invalid command: {}".format(args.command))
 
 def main_wrapper():
+    """
+    """
+    
     try:
         main()
     except PartException as err:
@@ -704,6 +772,9 @@ def main_wrapper():
 #                                 API                                          #
 ################################################################################
 def api_do_create_part(args, config):
+    """
+    """
+    
     param_check = _payload_check_(args, creation=True)
     
     if param_check[0]:
@@ -753,6 +824,9 @@ def api_do_create_part(args, config):
         return output
         
 def api_do_amend_part(args, config):
+    """
+    """
+    
     param_check = _payload_check_(args)
     
     if param_check[0]:
@@ -804,6 +878,9 @@ def api_do_amend_part(args, config):
         return output
         
 def api_do_list_part(config):
+    """
+    """
+    
     b_url = config.get("DEFAULT", "url")
     client = PartBatch(base_url=b_url)
     result = client.list_part()
@@ -823,6 +900,8 @@ def api_do_list_part(config):
                 )
 
 def api_do_retrieve_part(pt_id, config, all_flag=False, range_flag=None):
+    """
+    """
     
     if range_flag != None:
         all_flag = True
@@ -848,6 +927,9 @@ def api_do_retrieve_part(pt_id, config, all_flag=False, range_flag=None):
                 )
                 
 def api_do_add_organization(args, config, del_flag=False):
+    """
+    """
+    
     param_check = _payload_check_(args, cmd="AddOrganization")
     
     if param_check[0]:
@@ -891,6 +973,9 @@ def api_do_add_organization(args, config, del_flag=False):
         return output
         
 def api_do_add_category(args, config, del_flag=False):
+    """
+    """
+    
     param_check = _payload_check_(args, cmd="AddCategory")
     
     if param_check[0]:
@@ -934,6 +1019,9 @@ def api_do_add_category(args, config, del_flag=False):
         return output
         
 def api_do_add_artifact(args, config, del_flag=False):
+    """
+    """
+    
     param_check = _payload_check_(args, cmd="AddArtifact")
     
     if param_check[0]:
@@ -979,6 +1067,9 @@ def api_do_add_artifact(args, config, del_flag=False):
 #                           API PRIVATE FUNCTIONS                              #
 ################################################################################
 def _payload_check_(args, creation=False, cmd=None):
+    """
+    """
+    
     if cmd != None:
         if cmd == "AddOrganization":
             if "relation" not in args:
@@ -1060,6 +1151,9 @@ def _payload_check_(args, creation=False, cmd=None):
                 return [False]
 
 def _null_cast(dic, key):
+    """
+    """
+    
     if key not in dic:
         return "null"
     return dic[key]

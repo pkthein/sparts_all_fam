@@ -98,8 +98,15 @@ class PartTransactionHandler:
             transaction, is returned to be stored on the state storage.
         
         Raises:
-            InvalidTransaction: If any of the validation fails
-        
+            InvalidTransaction:
+                * If deserialization for payload from transaction failed
+                * If "create" was called on non-unique uuid
+                * If "amend" was called on non-existing uuid
+                * If "Add..." were called on non-existing uuid
+                * If invalid operation was called
+            InternalError:
+                * If deserialization of State.data failed
+            
         """
         
         # Parsing required fields from transaction payload
@@ -251,7 +258,7 @@ def validate_transaction(pt_id, action):
 
 def make_part_address(namespace_prefix, part_id):
     """
-    Create a part address which will be used as to recover if the part already
+    Creates a part address which will be used as to recover if the part already
     exists in the state storage or used as a key to store the new data into the
     state storage.
     

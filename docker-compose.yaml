@@ -26,10 +26,10 @@ services:
             - '0808:853'
             # - '80:80'
         tty: true
-        # volumes:
-        #     - ./phyo:/project/src
-        #     - ./api/sparts-api.py:/project/sparts-api.py
-        #     - ./start_ledger/sparts_ledger.sh:/project/ledger-startup-scripts/sparts_ledger.sh
+        volumes:
+            - ./phyo:/project/src
+            - ./api/sparts-api.py:/project/sparts-api.py
+            - ./start_ledger/sparts_ledger.sh:/project/ledger-startup-scripts/sparts_ledger.sh
         # entrypoint: "bash -c \"\
         #     cd /project/src/tp_artifact_1.0 && \
         #     python3 setup.py install && \

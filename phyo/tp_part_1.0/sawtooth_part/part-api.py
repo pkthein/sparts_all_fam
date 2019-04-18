@@ -1,5 +1,4 @@
-
-# copyright 2017 Wind River Systems
+# Copyright 2017 Wind River Systems
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -12,18 +11,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ------------------------------------------------------------------------------
-
+################################################################################
+#                               LIBS & DEPS                                    #
+################################################################################
 from flask import Flask, jsonify, make_response, request, json
 import part_cli
 import configparser
 ################################################################################
-#                               LIBS & DEPS                                    #
+#                                FLASK APP                                     #
 ################################################################################
 app = Flask(__name__)
 
 # PING
 @app.route("/tp/part/ping", methods=["GET"])
 def get_ping_result():
+    """
+    
+    Returns:
+        type: 
+        
+        
+    """
     
     output = ret_msg("success","OK","EmptyRecord","Part")
     return output 
@@ -31,6 +39,14 @@ def get_ping_result():
 # CREATE
 @app.route("/tp/part", methods=["POST"])
 def create_part():
+    """
+    
+    Returns:
+        type: 
+        
+        
+    """
+    
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
@@ -47,6 +63,9 @@ def create_part():
 # AMEND
 @app.route("/tp/part/amend", methods=["POST"])
 def amend_part():
+    """
+    """
+    
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
@@ -63,6 +82,9 @@ def amend_part():
 # LIST
 @app.route("/tp/part", methods=["GET"])
 def list_part():
+    """
+    """
+    
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
@@ -76,6 +98,9 @@ def list_part():
 # RETRIEVE MOST RECENT BY UUID
 @app.route("/tp/part/<string:part_id>", methods=["GET"])
 def retrieve_part(part_id):
+    """
+    """
+    
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
@@ -91,6 +116,9 @@ def retrieve_part(part_id):
 # RETRIEVE HISTORY OF UUID
 @app.route("/tp/part/history/<string:part_id>", methods=["GET"])
 def retrieve_part_history(part_id):
+    """
+    """
+    
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
@@ -108,6 +136,9 @@ def retrieve_part_history(part_id):
     methods=["GET"]
 )
 def retrieve_part_history_date(part_id, START):
+    """
+    """
+    
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
@@ -122,6 +153,9 @@ def retrieve_part_history_date(part_id, START):
 # ADD ORGANIZATION
 @app.route("/tp/part/addorganization", methods=["POST"])
 def add_part_organization():
+    """
+    """
+    
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
@@ -138,6 +172,9 @@ def add_part_organization():
 # ADD ORGANIZATION --DELETE
 @app.route("/tp/part/addorganization/delete", methods=["POST"])
 def add_part_organization_delete():
+    """
+    """
+    
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
@@ -154,6 +191,9 @@ def add_part_organization_delete():
 # ADD CATEGORY
 @app.route("/tp/part/addcategory", methods=["POST"])
 def add_part_category():
+    """
+    """
+    
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
@@ -170,6 +210,9 @@ def add_part_category():
 # ADD CATEGORY --DELETE
 @app.route("/tp/part/addcategory/delete", methods=["POST"])
 def add_part_category_delete():
+    """
+    """
+    
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
@@ -186,6 +229,9 @@ def add_part_category_delete():
 # ADD ARTIFACT
 @app.route("/tp/part/addartifact", methods=["POST"])
 def add_part_artifact():
+    """
+    """
+    
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
@@ -202,6 +248,9 @@ def add_part_artifact():
 # ADD ARTIFACT --DELETE
 @app.route("/tp/part/addartifact/delete", methods=["POST"])
 def add_part_artifact_delete():
+    """
+    """
+    
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
@@ -234,6 +283,9 @@ def testing_get():
 #                                  PRINT                                       #
 ################################################################################
 def ret_msg(status, message, result_type, result):
+    """
+    """
+    
     msgJSON = "{}"
     key = json.loads(msgJSON)
     key["status"] = status

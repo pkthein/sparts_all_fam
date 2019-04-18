@@ -11,7 +11,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ------------------------------------------------------------------------------
-
+################################################################################
+#                                FLASK APP                                     #
+################################################################################
 #!flask/bin/python
 import os
 import subprocess, shlex, re
@@ -28,6 +30,9 @@ import base64
 
 import uuid
 from random import randint
+################################################################################
+#                                FLASK APP                                     #
+################################################################################
 app = Flask(__name__)
 
 @app.route("/ledger/api/v1/ping", methods=["GET"])
