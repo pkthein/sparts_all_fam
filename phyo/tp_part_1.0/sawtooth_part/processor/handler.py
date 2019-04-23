@@ -86,7 +86,7 @@ class PartTransactionHandler:
 ################################################################################
     def apply(self, transaction, context):
         """
-        Applys the payload from trasaction onto the state storage.
+        Applys the payload from transaction onto the state storage.
         
         Args:
             transaction (Transaction): The transaction pertaining the payload
@@ -258,9 +258,9 @@ def validate_transaction(pt_id, action):
 
 def make_part_address(namespace_prefix, part_id):
     """
-    Creates a part address which will be used as to recover if the part already
-    exists in the state storage or used as a key to store the new data into the
-    state storage.
+    Creates a part address which will be used to recover the associated UUID
+    if the part already exists in the state storage; or, used as a key to store
+    the new data into the state storage.
     
     Args:
         namespace_prefix (str):

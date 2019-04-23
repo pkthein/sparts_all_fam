@@ -19,31 +19,28 @@ from __future__ import print_function
 
 import argparse
 import configparser
-import getpass
 import logging
 import os
 import traceback
 import sys
-import shutil
 import pkg_resources
 import json
-import re
 import requests
-
 from colorlog import ColoredFormatter
-
-from sawtooth_signing import create_context
-from sawtooth_signing import CryptoFactory
-from sawtooth_signing import ParseError
-from sawtooth_signing.secp256k1 import Secp256k1PrivateKey
-
 from sawtooth_artifact.artifact_batch import ArtifactBatch
 from sawtooth_artifact.exceptions import ArtifactException
-
 
 DISTRIBUTION_NAME = "sawtooth-artifact"
 ################################################################################
 def create_console_handler(verbose_level):
+    """
+    Helpes create a console handler for the Transaction Family : Artifact.
+    
+    Returns:
+        type: logging
+        Logging object which contains the console handler config.
+    
+    """
     clog = logging.StreamHandler()
     formatter = ColoredFormatter(
         "%(log_color)s[%(asctime)s %(levelname)-8s%(module)s]%(reset)s "
@@ -70,6 +67,13 @@ def create_console_handler(verbose_level):
     return clog
 
 def setup_loggers(verbose_level):
+    """
+    Sets up logger for the Transaction Family : Artifact
+    
+    Args:
+        verbose_level (int): Verbose level of the logged message
+        
+    """
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     logger.addHandler(create_console_handler(verbose_level))
@@ -77,6 +81,15 @@ def setup_loggers(verbose_level):
 #                                   OBJ                                        #
 ################################################################################
 def add_create_parser(subparsers, parent_parser):
+    """
+    Bash "create" subcommand handler for the Transaction Family : Artifact
+    
+    Args:
+        subparsers (ArgumentParser): Subcommand parser
+        parent_parser (ArgumentParser):
+            ArgumentParser object containing all the parameters
+    
+    """
     parser = subparsers.add_parser("create", parents=[parent_parser])
 
     parser.add_argument(
@@ -131,9 +144,27 @@ def add_create_parser(subparsers, parent_parser):
         help="disable client validation")
 
 def add_list_artifact_parser(subparsers, parent_parser):
+    """
+    Bash "list" subcommand handler for the Transaction Family : Artifact
+    
+    Args:
+        subparsers (ArgumentParser): Subcommand parser
+        parent_parser (ArgumentParser):
+            ArgumentParser object containing all the parameters
+    
+    """
     subparsers.add_parser("list-artifact", parents=[parent_parser])
 
 def add_retrieve_artifact_parser(subparsers, parent_parser):
+    """
+    Bash "retrieve" subcommand handler for the Transaction Family : Artifact
+    
+    Args:
+        subparsers (ArgumentParser): Subcommand parser
+        parent_parser (ArgumentParser):
+            ArgumentParser object containing all the parameters
+    
+    """
     parser = subparsers.add_parser("retrieve", parents=[parent_parser])
 
     parser.add_argument(
