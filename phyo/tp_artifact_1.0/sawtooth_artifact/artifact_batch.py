@@ -694,7 +694,7 @@ class ArtifactBatch:
             "create" command.
             
         Raises:
-            PartException:
+            ArtifactException:
                 * If "404" was raised for the request
                 * If status was "sucessful"
             

@@ -361,7 +361,7 @@ def do_list_organization(args, config):
         the call was either a success or a failure.
     
     Raises:
-        PartException:
+        OrganizationException:
             * If failed to retrieve the list
             
     """
@@ -395,7 +395,7 @@ def do_retrieve_organization(args, config):
         the call was either a success or a failure.
     
     Raises:
-        PartException:
+        OrganizationException:
             * If failed to retrieve the uuid
     
     """
@@ -621,7 +621,7 @@ def print_msg(response, cmd=None):
         the call was either a success or a failure. 
     
     Raises:
-        PartException:
+        OrganizationException:
             * If response is None
             * If response is unknown
             * If response is a list with None
