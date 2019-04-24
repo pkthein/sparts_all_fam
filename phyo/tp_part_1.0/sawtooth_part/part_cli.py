@@ -195,7 +195,7 @@ def add_amend_parser(subparsers, parent_parser):
     Bash "amend" subcommand handler for the Transaction Family : Part
     
     Args:
-        subparsers (ArgumentParser): subcommand parser
+        subparsers (ArgumentParser): Subcommand parser
         parent_parser (ArgumentParser):
             ArgumentParser object containing all the parameters
             
@@ -263,7 +263,7 @@ def add_artifact_parser(subparsers, parent_parser):
     Bash "AddArtifact" subcommand handler for the Transaction Family : Part
     
     Args:
-        subparsers (ArgumentParser): subcommand parser
+        subparsers (ArgumentParser): Subcommand parser
         parent_parser (ArgumentParser):
             ArgumentParser object containing all the parameters
     
@@ -301,7 +301,7 @@ def add_category_parser(subparsers, parent_parser):
     Bash "AddCategory" subcommand handler for the Transaction Family : Part
     
     Args:
-        subparsers (ArgumentParser): subcommand parser
+        subparsers (ArgumentParser): Subcommand parser
         parent_parser (ArgumentParser):
             ArgumentParser object containing all the parameters
     
@@ -339,7 +339,7 @@ def add_organization_parser(subparsers, parent_parser):
     Bash "AddOrganization" subcommand handler for the Transaction Family : Part
     
     Args:
-        subparsers (ArgumentParser): subcommand parser
+        subparsers (ArgumentParser): Subcommand parser
         parent_parser (ArgumentParser):
             ArgumentParser object containing all the parameters
             
@@ -379,7 +379,7 @@ def create_parent_parser(prog_name):
     Instantiates the ArgumentParser for the program.
     
     Args:
-        prog_name (str): name of the Transaction Family
+        prog_name (str): Name of the Transaction Family
     
     Returns:
         type: ArgumentParser
@@ -414,7 +414,7 @@ def create_parser(prog_name):
     Transaction Family : Part
     
     Args:
-        prog_name (str): name of the Transaction Family
+        prog_name (str): Name of the Transaction Family
         
     Returns:
         type: ArgumentParser
@@ -446,7 +446,7 @@ def create_parser(prog_name):
 ################################################################################    
 def do_list_part(config):
     """
-    Lists out all the state associating with the uuids in the
+    Lists out all the state associating with the UUIDs in the
     Transaction Family : Part
     
     Args:
@@ -476,9 +476,9 @@ def do_list_part(config):
     else:
         raise PartException("Could not retrieve part listing.")
 
-def do_retrieve(args, config):
+def do_retrieve_part(args, config):
     """
-    Retrieves the state associating with the uuid in the
+    Retrieves the state associating with the UUID in the
     Transaction Family : Part
     
     Args:
@@ -521,7 +521,7 @@ def do_retrieve(args, config):
 
 def do_create_part(args, config):
     """
-    Creates the state associating with the uuid in the Transaction Family : Part
+    Creates the state associating with the UUID in the Transaction Family : Part
     
     Args:
         args (ArgumentParser):
@@ -579,7 +579,7 @@ def do_create_part(args, config):
 
 def do_amend_part(args, config):
     """
-    Amends the state associating with the uuid in the Transaction Family : Part
+    Amends the state associating with the UUID in the Transaction Family : Part
     
     Args:
         args (ArgumentParser):
@@ -638,7 +638,7 @@ def do_amend_part(args, config):
 def do_add_artifact(args, config):
     """
     Establishes relationship between Part and Artifact in the state associating
-    with the uuid of the Transaction Family : Part
+    with the UUID of the Transaction Family : Part
     
     Args:
         args (ArgumentParser):
@@ -693,7 +693,7 @@ def do_add_artifact(args, config):
 def do_add_category(args, config):
     """
     Establishes relationship between Part and Category in the state associating
-    with the uuid of the Transaction Family : Part
+    with the UUID of the Transaction Family : Part
     
     Args:
         args (ArgumentParser):
@@ -748,7 +748,7 @@ def do_add_category(args, config):
 def do_add_organization(args, config):
     """
     Establishes relationship between Part and Organization in the state
-    associating with the uuid of the Transaction Family : Part
+    associating with the UUID of the Transaction Family : Part
     
     Args:
         args (ArgumentParser):
@@ -822,8 +822,8 @@ def print_msg(response, cmd=None):
     
     Args:
         response (None or list containing None and str):
-            contains the data for the function to construct return message
-        cmd (None or str): the subcommand which was performed
+            Contains the data for the function to construct return message
+        cmd (None or str): The subcommand which was performed
     
     Returns:
         type: str
@@ -914,7 +914,7 @@ def main(prog_name=os.path.basename(sys.argv[0]), args=None):
     elif args.command == "list-part":
         do_list_part(config)
     elif args.command == "retrieve":
-        do_retrieve(args, config)
+        do_retrieve_part(args, config)
     elif args.command == "amend":
         do_amend_part(args, config)
     elif args.command == "AddArtifact":
@@ -1079,7 +1079,7 @@ def api_do_list_part(config):
 
 def api_do_retrieve_part(pt_id, config, all_flag=False, range_flag=None):
     """
-    API version of  "do_retrieve_part" function.
+    API version of "do_retrieve_part" function.
     """
     if range_flag != None:
         all_flag = True
@@ -1246,11 +1246,11 @@ def api_do_add_artifact(args, config, del_flag=False):
 ################################################################################
 def _payload_check_(args, creation=False, cmd=None):
     """
-    Checks payload 
+    Checks payload for correct JSON format for a given command.
     
     Args:
-        args (dict): pass in payload
-        creation (bool): true if "create", false otherwise
+        args (dict): Pass in payload
+        creation (bool): True if "create", false otherwise
         cmd (None or str): str if "Add...", None otherwise
     
     Returns:
@@ -1345,12 +1345,12 @@ def _null_cast(dic, key):
     is not found, return "null".
     
     Args:
-        dic (dict): dictionary in look for (key, value) pair
-        key (str): key to look search in the dictionary
+        dic (dict): Dictionary in look for (key, value) pair
+        key (str): Key to look search in the dictionary
         
     Returns:
         type: str
-        
+        Either "null" string or previous data stored in the field.
     
     """
     if key not in dic:

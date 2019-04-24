@@ -53,7 +53,7 @@ class PartTransactionHandler:
         Returns the family name of the handler object.
         
         """
-        return 'pt'
+        return "pt"
 
     @property
     def family_versions(self):
@@ -62,7 +62,7 @@ class PartTransactionHandler:
         Returns the family version of the handler object.
         
         """
-        return ['1.0']
+        return ["1.0"]
 
     @property
     def encodings(self):
@@ -71,7 +71,7 @@ class PartTransactionHandler:
         Returns the encoding scheme used for the data for the handler object.
         
         """
-        return ['csv-utf8']
+        return ["csv-utf8"]
 
     @property
     def namespaces(self):
@@ -180,7 +180,6 @@ class PartTransactionHandler:
         addresses = context.set_state({data_address : data})
 
         return addresses
-
 ################################################################################
 #                             HELPER FUNCTIONS                                 #
 ################################################################################
@@ -202,11 +201,11 @@ def create_part(pt_id, pt_name, checksum, version, alias, licensing, label,
         prev (str): The previous block id of the transaction (default "0")
         cur (str): the current block id of the transaction
         timestamp (str): The UTC time for when the transaction was submitted
-        artifact_id (list of dict):
+        artifact_id (list of str):
             The list of the artifact uuid associated with the part (default [])
-        category_id (list of dict):
+        category_id (list of str):
             The list of the category uuid associated with the part (default [])
-        organization_id (list dict):
+        organization_id (list str):
             The list of the organization uuid associated with the part
             (default [])
         
@@ -249,12 +248,12 @@ def validate_transaction(pt_id, action):
     
     """
     if not pt_id:
-        raise InvalidTransaction('Part ID is required')
+        raise InvalidTransaction("Part ID is required")
     if not action:
-        raise InvalidTransaction('Action is required')
+        raise InvalidTransaction("Action is required")
     if action not in ("AddArtifact", "create", "AddCategory", "AddOrganization", 
                         "list-part", "retrieve", "amend"):
-        raise InvalidTransaction('Invalid action: {}'.format(action))
+        raise InvalidTransaction("Invalid action: {}".format(action))
 
 def make_part_address(namespace_prefix, part_id):
     """
@@ -273,7 +272,7 @@ def make_part_address(namespace_prefix, part_id):
     
     """
     return namespace_prefix + \
-        hashlib.sha512(part_id.encode('utf-8')).hexdigest()[:64]
+        hashlib.sha512(part_id.encode("utf-8")).hexdigest()[:64]
 
 def _display(msg):
     """

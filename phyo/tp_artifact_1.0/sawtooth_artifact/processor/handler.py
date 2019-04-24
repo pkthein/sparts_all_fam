@@ -179,7 +179,9 @@ class ArtifactTransactionHandler:
         addresses = context.set_state({data_address:data})
        
         return addresses
-
+################################################################################
+#                             HELPER FUNCTIONS                                 #
+################################################################################
 def create_artifact(artifact_id, artifact_alias, artifact_name, artifact_type, 
                     artifact_checksum, artifact_label, artifact_openchain, 
                     prev, cur, timestamp, artifact_list=[], uri_list=[]):
