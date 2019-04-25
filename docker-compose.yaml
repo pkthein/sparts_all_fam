@@ -5,7 +5,7 @@ services:
         build:
             context: .
             dockerfile: sParts.Dockerfile
-        image: phyohtut/sparts-test:test
+        image: phyohtut/sparts-test:1.1
         environment:
             - NAME_=phyo
             - EMAIL_=phyo.htut@windriver.com
@@ -13,17 +13,17 @@ services:
         container_name: phyo
         expose:
             - '818' # sParts api
-            - '850' # category api
-            - '851' # organization api
-            - '852' # part api
-            - '853' # artifact api
+            # - '850' # category api
+            # - '851' # organization api
+            # - '852' # part api
+            # - '853' # artifact api
             # - '80'
         ports:
-            - '8080:818'
-            - '8800:850'
-            - '8880:851'
-            - '8888:852'
-            - '0808:853'
+            - '818:818'
+            # - '8800:850'
+            # - '8880:851'
+            # - '8888:852'
+            # - '0808:853'
             # - '80:80'
         tty: true
         # volumes:
