@@ -1,6 +1,5 @@
 # Copyright 2017 Intel Corporation
 # Copyright 2017 Wind River
-
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -14,38 +13,34 @@
 # limitations under the License.
 # ------------------------------------------------------------------------------
 ################################################################################
-#                               LIBS & DEPS                                    #
+#                         LIBRARIES & DEPENDENCIES                             #
 ################################################################################
 from __future__ import print_function
 
 import argparse
 import configparser
-import getpass
 import logging
 import os
 import traceback
 import sys
-import shutil
 import pkg_resources
 import json
-import re
 import requests
-
 from colorlog import ColoredFormatter
-
-import binascii
-from sawtooth_signing import create_context
-from sawtooth_signing import CryptoFactory
-from sawtooth_signing import ParseError
-from sawtooth_signing.secp256k1 import Secp256k1PrivateKey
-
 from sawtooth_part.part_batch import PartBatch
 from sawtooth_part.exceptions import PartException
-
 
 DISTRIBUTION_NAME = "sawtooth-part"
 ################################################################################
 def create_console_handler(verbose_level):
+    """
+    Helpes create a console handler for the Transaction Family : Part.
+    
+    Returns:
+        type: logging
+        Logging object which contains the console handler config.
+    
+    """
     clog = logging.StreamHandler()
     formatter = ColoredFormatter(
         "%(log_color)s[%(asctime)s %(levelname)-8s%(module)s]%(reset)s "
@@ -72,6 +67,13 @@ def create_console_handler(verbose_level):
     return clog
 
 def setup_loggers(verbose_level):
+    """
+    Sets up logger for the Transaction Family : Part
+    
+    Args:
+        verbose_level (int): Verbose level of the logged message
+        
+    """
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     logger.addHandler(create_console_handler(verbose_level))
@@ -79,6 +81,15 @@ def setup_loggers(verbose_level):
 #                                   OBJ                                        #
 ################################################################################
 def add_create_parser(subparsers, parent_parser):
+    """
+    Bash "create" subcommand handler for the Transaction Family : Part
+    
+    Args:
+        subparsers (ArgumentParser): Subcommand parser
+        parent_parser (ArgumentParser):
+            ArgumentParser object containing all the parameters
+    
+    """
     parser = subparsers.add_parser("create", parents=[parent_parser])
 
     parser.add_argument(
@@ -131,7 +142,6 @@ def add_create_parser(subparsers, parent_parser):
         type=str,
         help="Provide User Public Key")
 
-
     parser.add_argument(
         "--disable-client-validation",
         action="store_true",
@@ -139,9 +149,27 @@ def add_create_parser(subparsers, parent_parser):
         help="disable client validation")
 
 def add_list_part_parser(subparsers, parent_parser):
+    """
+    Bash "list" subcommand handler for the Transaction Family : Part
+    
+    Args:
+        subparsers (ArgumentParser): Subcommand parser
+        parent_parser (ArgumentParser):
+            ArgumentParser object containing all the parameters
+    
+    """
     subparsers.add_parser("list-part", parents=[parent_parser])
 
 def add_retrieve_parser(subparsers, parent_parser):
+    """
+    Bash "retrieve" subcommand handler for the Transaction Family : Part
+    
+    Args:
+        subparsers (ArgumentParser): Subcommand parser
+        parent_parser (ArgumentParser):
+            ArgumentParser object containing all the parameters
+    
+    """
     parser = subparsers.add_parser("retrieve", parents=[parent_parser])
 
     parser.add_argument(
@@ -163,6 +191,15 @@ def add_retrieve_parser(subparsers, parent_parser):
         help="show history of uuid within the range; FORMAT : yyyymmdd")
 
 def add_amend_parser(subparsers, parent_parser):
+    """
+    Bash "amend" subcommand handler for the Transaction Family : Part
+    
+    Args:
+        subparsers (ArgumentParser): Subcommand parser
+        parent_parser (ArgumentParser):
+            ArgumentParser object containing all the parameters
+            
+    """
     parser = subparsers.add_parser("amend", parents=[parent_parser])
 
     parser.add_argument(
@@ -215,7 +252,6 @@ def add_amend_parser(subparsers, parent_parser):
         type=str,
         help="Provide User Public Key")
 
-
     parser.add_argument(
         "--disable-client-validation",
         action="store_true",
@@ -223,6 +259,15 @@ def add_amend_parser(subparsers, parent_parser):
         help="disable client validation")
    
 def add_artifact_parser(subparsers, parent_parser):
+    """
+    Bash "AddArtifact" subcommand handler for the Transaction Family : Part
+    
+    Args:
+        subparsers (ArgumentParser): Subcommand parser
+        parent_parser (ArgumentParser):
+            ArgumentParser object containing all the parameters
+    
+    """
     parser = subparsers.add_parser("AddArtifact", parents=[parent_parser])
     
     parser.add_argument(
@@ -252,6 +297,15 @@ def add_artifact_parser(subparsers, parent_parser):
         help="removes the artifact")
 
 def add_category_parser(subparsers, parent_parser):
+    """
+    Bash "AddCategory" subcommand handler for the Transaction Family : Part
+    
+    Args:
+        subparsers (ArgumentParser): Subcommand parser
+        parent_parser (ArgumentParser):
+            ArgumentParser object containing all the parameters
+    
+    """
     parser = subparsers.add_parser("AddCategory", parents=[parent_parser])
     
     parser.add_argument(
@@ -280,8 +334,16 @@ def add_category_parser(subparsers, parent_parser):
         default=False,
         help="removes the category")
 
-# Provide the UUID of the parent artifact and the UUID of the organization
 def add_organization_parser(subparsers, parent_parser):
+    """
+    Bash "AddOrganization" subcommand handler for the Transaction Family : Part
+    
+    Args:
+        subparsers (ArgumentParser): Subcommand parser
+        parent_parser (ArgumentParser):
+            ArgumentParser object containing all the parameters
+            
+    """
     parser = subparsers.add_parser("AddOrganization", parents=[parent_parser])
     
     parser.add_argument(
@@ -313,6 +375,18 @@ def add_organization_parser(subparsers, parent_parser):
 #                                   CREATE                                     #
 ################################################################################
 def create_parent_parser(prog_name):
+    """
+    Instantiates the ArgumentParser for the program.
+    
+    Args:
+        prog_name (str): Name of the Transaction Family
+    
+    Returns:
+        type: ArgumentParser
+        ArgumentParser object with the basic configurations to perform a method
+        for the program.
+    
+    """
     parent_parser = argparse.ArgumentParser(prog=prog_name, add_help=False)
     parent_parser.add_argument(
         "-v", "--verbose",
@@ -334,6 +408,20 @@ def create_parent_parser(prog_name):
     return parent_parser
 
 def create_parser(prog_name):
+    """
+    Creates the ArgumentParser object which parses the bash input and stored
+    the required parameters to perfrom the command on the
+    Transaction Family : Part
+    
+    Args:
+        prog_name (str): Name of the Transaction Family
+        
+    Returns:
+        type: ArgumentParser
+        ArgumentParser object with all the required parameters stored to
+        perform a method for the program.
+    
+    """
     parent_parser = create_parent_parser(prog_name)
 
     parser = argparse.ArgumentParser(
@@ -343,10 +431,10 @@ def create_parser(prog_name):
     subparsers = parser.add_subparsers(title="subcommands", dest="command")
 
     add_create_parser(subparsers, parent_parser)
-   
+    add_amend_parser(subparsers, parent_parser)
+    
     add_list_part_parser(subparsers, parent_parser)
     add_retrieve_parser(subparsers, parent_parser)
-    add_amend_parser(subparsers, parent_parser)
     
     add_artifact_parser(subparsers, parent_parser)
     add_organization_parser(subparsers,parent_parser)
@@ -356,7 +444,24 @@ def create_parser(prog_name):
 ################################################################################
 #                               FUNCTIONS                                      #
 ################################################################################    
-def do_list_part(args, config):
+def do_list_part(config):
+    """
+    Lists out all the state associating with the UUIDs in the
+    Transaction Family : Part
+    
+    Args:
+        config (ConfigParser): ConfigParser which contains the default url
+    
+    Returns:
+        type: str
+        String representing JSON object which allows the client to know that
+        the call was either a success or a failure.
+    
+    Raises:
+        PartException:
+            * If failed to retrieve the list
+            
+    """
     b_url = config.get("DEFAULT", "url")
     client = PartBatch(base_url=b_url)
     result = client.list_part()
@@ -371,7 +476,26 @@ def do_list_part(args, config):
     else:
         raise PartException("Could not retrieve part listing.")
 
-def do_retrieve(args, config):
+def do_retrieve_part(args, config):
+    """
+    Retrieves the state associating with the UUID in the
+    Transaction Family : Part
+    
+    Args:
+        args (ArgumentParser):
+            ArgumentParser object containing required parameters
+        config (ConfigParser): ConfigParser which contains the default url
+        
+    Returns:
+        type: str
+        String representing JSON object which allows the client to know that
+        the call was either a success or a failure.
+    
+    Raises:
+        PartException:
+            * If failed to retrieve the uuid
+    
+    """
     all_flag = args.all
     range_flag = args.range
     
@@ -395,7 +519,21 @@ def do_retrieve(args, config):
     else:
         raise PartException("Part not found: {}".format(pt_id))
 
-def do_create_part(args, config): 
+def do_create_part(args, config):
+    """
+    Creates the state associating with the UUID in the Transaction Family : Part
+    
+    Args:
+        args (ArgumentParser):
+            ArgumentParser object containing required parameters
+        config (ConfigParser): ConfigParser which contains the default url
+        
+    Returns:
+        type: str
+        String representing JSON object which allows the client to know that
+        the call was either a success or a failure.
+    
+    """
     pt_id       = args.pt_id
     pt_name     = args.pt_name
     checksum    = args.checksum
@@ -440,6 +578,20 @@ def do_create_part(args, config):
         print(output)
 
 def do_amend_part(args, config):
+    """
+    Amends the state associating with the UUID in the Transaction Family : Part
+    
+    Args:
+        args (ArgumentParser):
+            ArgumentParser object containing required parameters
+        config (ConfigParser): ConfigParser which contains the default url
+        
+    Returns:
+        type: str
+        String representing JSON object which allows the client to know that
+        the call was either a success or a failure.
+    
+    """
     pt_id       = args.pt_id
     pt_name     = args.pt_name
     checksum    = args.checksum
@@ -484,6 +636,21 @@ def do_amend_part(args, config):
         print(output)
    
 def do_add_artifact(args, config):
+    """
+    Establishes relationship between Part and Artifact in the state associating
+    with the UUID of the Transaction Family : Part
+    
+    Args:
+        args (ArgumentParser):
+            ArgumentParser object containing required parameters
+        config (ConfigParser): ConfigParser which contains the default url
+        
+    Returns:
+        type: str
+        String representing JSON object which allows the client to know that
+        the call was either a success or a failure.
+        
+    """
     deleteArt   = args.delete
     
     pt_id       = args.pt_id
@@ -524,6 +691,21 @@ def do_add_artifact(args, config):
         print(output)
         
 def do_add_category(args, config):
+    """
+    Establishes relationship between Part and Category in the state associating
+    with the UUID of the Transaction Family : Part
+    
+    Args:
+        args (ArgumentParser):
+            ArgumentParser object containing required parameters
+        config (ConfigParser): ConfigParser which contains the default url
+        
+    Returns:
+        type: str
+        String representing JSON object which allows the client to know that
+        the call was either a success or a failure.
+    
+    """
     deleteCat   = args.delete
     
     pt_id       = args.pt_id
@@ -563,8 +745,22 @@ def do_add_category(args, config):
     else:
         print(output)      
 
-# add the relationship between parent artifact and organization
 def do_add_organization(args, config):
+    """
+    Establishes relationship between Part and Organization in the state
+    associating with the UUID of the Transaction Family : Part
+    
+    Args:
+        args (ArgumentParser):
+            ArgumentParser object containing required parameters
+        config (ConfigParser): ConfigParser which contains the default url
+        
+    Returns:
+        type: str
+        String representing JSON object which allows the client to know that
+        the call was either a success or a failure.
+    
+    """
     del_flag   = args.delete
     
     pt_id           = args.pt_id
@@ -607,11 +803,40 @@ def do_add_organization(args, config):
 #                                  PRINT                                       #
 ################################################################################ 
 def load_config():
+    """
+    Helps construct ConfigParser object pertaining default url for
+    the sawtooth validator.
+    
+    Returns:
+        type: ConfigParser
+        ConfigParser object with default url.
+    
+    """
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     return config
 
 def print_msg(response, cmd=None):
+    """
+    Helps create the return message for the terminal or the web-browser.
+    
+    Args:
+        response (None or list containing None and str):
+            Contains the data for the function to construct return message
+        cmd (None or str): The subcommand which was performed
+    
+    Returns:
+        type: str
+        String representing JSON object which allows the client to know that
+        the call was either a success or a failure. 
+    
+    Raises:
+        PartException:
+            * If response is None
+            * If response is unknown
+            * If response is a list with None
+    
+    """
     try:
         if type(response) is list and response[0] == None:
             if len(response) > 1:
@@ -648,6 +873,15 @@ def print_msg(response, cmd=None):
         return output
         
 def ret_msg(status, message, result_type, result):
+    """
+    Helps create the message to be returned.
+    
+    Returns:
+        type: str
+        String representing JSON object which allows the client to know that
+        the call was either a success or a failure.
+    
+    """
     msgJSON = "{}"
     key = json.loads(msgJSON)
     key["status"] = status
@@ -678,9 +912,9 @@ def main(prog_name=os.path.basename(sys.argv[0]), args=None):
     if args.command == "create":
         do_create_part(args, config)
     elif args.command == "list-part":
-        do_list_part(args, config)
+        do_list_part(config)
     elif args.command == "retrieve":
-        do_retrieve(args, config)
+        do_retrieve_part(args, config)
     elif args.command == "amend":
         do_amend_part(args, config)
     elif args.command == "AddArtifact":
@@ -716,6 +950,9 @@ def main_wrapper():
 #                                 API                                          #
 ################################################################################
 def api_do_create_part(args, config):
+    """
+    API version of "do_create_part" function.
+    """
     param_check = _payload_check_(args, creation=True)
     
     if param_check[0]:
@@ -765,6 +1002,9 @@ def api_do_create_part(args, config):
         return output
         
 def api_do_amend_part(args, config):
+    """
+    API version of "do_amend_part" function.
+    """
     param_check = _payload_check_(args)
     
     if param_check[0]:
@@ -816,6 +1056,9 @@ def api_do_amend_part(args, config):
         return output
         
 def api_do_list_part(config):
+    """
+    API version of "do_list_part" function.
+    """
     b_url = config.get("DEFAULT", "url")
     client = PartBatch(base_url=b_url)
     result = client.list_part()
@@ -835,7 +1078,9 @@ def api_do_list_part(config):
                 )
 
 def api_do_retrieve_part(pt_id, config, all_flag=False, range_flag=None):
-    
+    """
+    API version of "do_retrieve_part" function.
+    """
     if range_flag != None:
         all_flag = True
     
@@ -848,7 +1093,15 @@ def api_do_retrieve_part(pt_id, config, all_flag=False, range_flag=None):
         if all_flag == False:
             output = ret_msg("success", "OK", "PartRecord", data.decode())
         else:
-            output = ret_msg("success", "OK", "PartRecord", data)
+            if range_flag == None:
+                output = ret_msg("success", "OK", "PartRecord", data)
+            else:
+                if len(data) != 0:
+                    output = ret_msg(
+                        "success", "OK", "PartRecord", json.dumps(data[0])
+                    )
+                else:
+                    output = ret_msg("success", "OK", "PartRecord", "{}")
             
         return output
     else:
@@ -860,6 +1113,9 @@ def api_do_retrieve_part(pt_id, config, all_flag=False, range_flag=None):
                 )
                 
 def api_do_add_organization(args, config, del_flag=False):
+    """
+    API version of "do_add_organization" function.
+    """
     param_check = _payload_check_(args, cmd="AddOrganization")
     
     if param_check[0]:
@@ -903,6 +1159,9 @@ def api_do_add_organization(args, config, del_flag=False):
         return output
         
 def api_do_add_category(args, config, del_flag=False):
+    """
+    API version of "do_add_category" function.
+    """
     param_check = _payload_check_(args, cmd="AddCategory")
     
     if param_check[0]:
@@ -946,6 +1205,9 @@ def api_do_add_category(args, config, del_flag=False):
         return output
         
 def api_do_add_artifact(args, config, del_flag=False):
+    """
+    API version of "do_add_artifact" function.
+    """
     param_check = _payload_check_(args, cmd="AddArtifact")
     
     if param_check[0]:
@@ -991,6 +1253,20 @@ def api_do_add_artifact(args, config, del_flag=False):
 #                           API PRIVATE FUNCTIONS                              #
 ################################################################################
 def _payload_check_(args, creation=False, cmd=None):
+    """
+    Checks payload for correct JSON format for a given command.
+    
+    Args:
+        args (dict): Pass in payload
+        creation (bool): True if "create", false otherwise
+        cmd (None or str): str if "Add...", None otherwise
+    
+    Returns:
+        type: list containing bool or bool and str
+        List with False or list with True and error message. False stands for
+        do not terminate the process.
+        
+    """
     if cmd != None:
         if cmd == "AddOrganization":
             if "relation" not in args:
@@ -1072,6 +1348,19 @@ def _payload_check_(args, creation=False, cmd=None):
                 return [False]
 
 def _null_cast(dic, key):
+    """
+    Allows the user to load value, given key from the dictionary. If the key
+    is not found, return "null".
+    
+    Args:
+        dic (dict): Dictionary in look for (key, value) pair
+        key (str): Key to look search in the dictionary
+        
+    Returns:
+        type: str
+        Either "null" string or previous data stored in the field.
+    
+    """
     if key not in dic:
         return "null"
     return dic[key]

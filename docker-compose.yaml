@@ -2,9 +2,9 @@ version: '2.1'
 
 services:
     shell:
-        build:
-            context: .
-            dockerfile: sParts.Dockerfile
+        # build:
+        #     context: .
+        #     dockerfile: sParts.Dockerfile
         image: phyohtut/sparts-test:1.1
         environment:
             - NAME_=phyo
@@ -26,31 +26,19 @@ services:
             # - '0808:853'
             # - '80:80'
         tty: true
-        # volumes:
-        #     - ./phyo:/project/src
-        #     - ./api/sparts-api.py:/project/sparts-api.py
-        #     - ./start_ledger/sparts_ledger.sh:/project/ledger-startup-scripts/sparts_ledger.sh
-        # entrypoint: "bash -c \"\
-        #     cd /project/src/tp_artifact_1.0 && \
-        #     python3 setup.py install && \
-        #     cd /project/src/tp_part_1.0 && \
-        #     python3 setup.py install && \
-        #     cd /project/src/tp_category_1.0 && \
-        #     python3 setup.py install && \
-        #     cd /project/src/tp_organization_1.0 && \
-        #     python3 setup.py install && \
-        #     cd /project/ledger-startup-scripts && \
-        #     ./sparts_ledger.sh && \
-        #     cd /project/src && \
-        #     curl http://127.0.0.1:818/ledger/api/v1/keys > keys.txt && echo '' >> keys.txt && \
-        #     echo '====================READY TO EXECUTE THE BASH====================' && \
-        #     echo 'docker exec -it phyo bash' && \
-        #     python3 lazy_user.py && \
-        #     rm -rf keys.txt && \
-        #     echo '====================READY TO EXECUTE THE BASH====================' && \
-        #     tail -f /dev/null \
-        #     \""
+        volumes:
+            - ./phyo:/project/src
+            - ./api/sparts-api.py:/project/sparts-api.py
+            - ./start_ledger/sparts_ledger.sh:/project/ledger-startup-scripts/sparts_ledger.sh
         entrypoint: "bash -c \"\
+            cd /project/src/tp_artifact_1.0 && \
+            python3 setup.py install && \
+            cd /project/src/tp_part_1.0 && \
+            python3 setup.py install && \
+            cd /project/src/tp_category_1.0 && \
+            python3 setup.py install && \
+            cd /project/src/tp_organization_1.0 && \
+            python3 setup.py install && \
             cd /project/ledger-startup-scripts && \
             ./sparts_ledger.sh && \
             cd /project/src && \
@@ -62,4 +50,16 @@ services:
             echo '====================READY TO EXECUTE THE BASH====================' && \
             tail -f /dev/null \
             \""
+        # entrypoint: "bash -c \"\
+        #     cd /project/ledger-startup-scripts && \
+        #     ./sparts_ledger.sh && \
+        #     cd /project/src && \
+        #     curl http://127.0.0.1:818/ledger/api/v1/keys > keys.txt && echo '' >> keys.txt && \
+        #     echo '====================READY TO EXECUTE THE BASH====================' && \
+        #     echo 'docker exec -it phyo bash' && \
+        #     python3 lazy_user.py && \
+        #     rm -rf keys.txt && \
+        #     echo '====================READY TO EXECUTE THE BASH====================' && \
+        #     tail -f /dev/null \
+        #     \""
             

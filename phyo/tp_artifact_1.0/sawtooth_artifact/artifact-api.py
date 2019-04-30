@@ -207,7 +207,7 @@ def retrieve_artifact_history_date(artifact_id, START):
     
     try:
         output = artifact_cli.api_do_retrieve_artifact(
-                        artifact_id, config, range_flag=[START, START]
+                        artifact_id, config, range_flag=["0", START]
                     )
         return output
     except Exception as e:

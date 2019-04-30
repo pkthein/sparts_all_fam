@@ -13,7 +13,7 @@
 # limitations under the License.
 # ------------------------------------------------------------------------------
 ################################################################################
-#                               LIBS & DEPS                                    #
+#                         LIBRARIES & DEPENDENCIES                             #
 ################################################################################
 import hashlib
 import logging
@@ -27,31 +27,91 @@ LOGGER = logging.getLogger(__name__)
 #                               HANDLER OBJ                                    #
 ################################################################################
 class PartTransactionHandler:
+    """
+    Class for handling the Transaction Family : Part
+    
+    Attributes:
+        namespace_prefix (str): The namespace prefix of the transaction family
+        
+    """
+    
     def __init__(self, namespace_prefix):
+        """
+        Constructs the PartTransactionHandler object.
+        
+        Args:
+            namespace_prefix (str):
+                The namepsace prefix of the transaction family
+                
+        """
         self._namespace_prefix = namespace_prefix
 
     @property
     def family_name(self):
-        return 'pt'
+        """
+        type: str
+        Returns the family name of the handler object.
+        
+        """
+        return "pt"
 
     @property
     def family_versions(self):
-        return ['1.0']
+        """
+        type: list of str
+        Returns the family version of the handler object.
+        
+        """
+        return ["1.0"]
 
     @property
     def encodings(self):
-        return ['csv-utf8']
+        """
+        type: list of str
+        Returns the encoding scheme used for the data for the handler object.
+        
+        """
+        return ["csv-utf8"]
 
     @property
     def namespaces(self):
+        """
+        type: list of str
+        Returns the namespaces associating with the handler object.
+        
+        """
         return [self._namespace_prefix]
 ################################################################################
 #                                 FUNCTIONS                                    #
 ################################################################################
     def apply(self, transaction, context):
+        """
+        Applys the payload from transaction onto the state storage.
         
+        Args:
+            transaction (Transaction): The transaction pertaining the payload
+            context (State): The current state of the ledger
+            
+        Returns:
+            type: State
+            The new state of the ledger, which includes the data from the
+            transaction, is returned to be stored on the state storage.
+        
+        Raises:
+            InvalidTransaction:
+                * If deserialization for payload from transaction failed
+                * If "create" was called on non-unique uuid
+                * If "amend" was called on non-existing uuid
+                * If "Add..." were called on non-existing uuid
+                * If invalid operation was called
+            InternalError:
+                * If deserialization of State.data failed
+            
+        """
+        
+        # Parsing required fields from transaction payload
         try:
-            # The payload is csv utf-8 encoded string
+        
             payload = json.loads(transaction.payload.decode())
             pt_id           = payload["uuid"]
             pt_name         = payload["name"]
@@ -72,12 +132,12 @@ class PartTransactionHandler:
         except ValueError:
             raise InvalidTransaction("Invalid payload serialization")
         
+        # Soft sanity check and loading required data
         validate_transaction(pt_id, action)  
-             
         data_address = make_part_address(self._namespace_prefix, pt_id)
-        
         state_entries = context.get_state([data_address])
      
+        # Hard sanity check before creating final payload for the state storage
         if len(state_entries) != 0:
             try:
 
@@ -86,14 +146,11 @@ class PartTransactionHandler:
                     
             except ValueError:
                 raise InternalError("Failed to deserialize data.")
-        
         else:
             stored_pt_id = stored_pt = None
-      
+            
         if action == "create" and stored_pt_id is not None:
             raise InvalidTransaction("Invalid part already exists.")
-
-        
         elif action == "create":
             pt = create_part(pt_id, pt_name, checksum, version, alias, 
                     licensing, label, description, prev, cur, timestamp)
@@ -112,16 +169,52 @@ class PartTransactionHandler:
             pt = create_part(pt_id, pt_name, checksum, version, alias, 
                     licensing, label, description, prev, cur, timestamp, 
                     artifact_id, category_id, organization_id)
-            
-        # 6. Put data back in state storage
+            _display("Established a relation for the part {}.".format(pt_id))
+        else:
+            raise InvalidTransaction(
+                "Invalid operation."
+            )
+        
+        # Adding the final payload to the state storage
         data = json.dumps(pt).encode()
         addresses = context.set_state({data_address : data})
 
         return addresses
-
+################################################################################
+#                             HELPER FUNCTIONS                                 #
+################################################################################
 def create_part(pt_id, pt_name, checksum, version, alias, licensing, label, 
                 description, prev, cur, timestamp, artifact_id=[], 
                 category_id=[], organization_id=[]):
+    """
+    Constructs the payload to be stored in the state storage.
+    
+    Args:
+        pt_id (str): The uuid of the part
+        pt_name (str): The name of the part
+        checksum (str): The checksum of the part
+        version (str): The version of the part
+        alias (str): The alias of the part
+        licensing (str): The licensing of the part
+        label (str): The label of the part
+        description (str): The description of the part
+        prev (str): The previous block id of the transaction (default "0")
+        cur (str): the current block id of the transaction
+        timestamp (str): The UTC time for when the transaction was submitted
+        artifact_id (list of str):
+            The list of the artifact uuid associated with the part (default [])
+        category_id (list of str):
+            The list of the category uuid associated with the part (default [])
+        organization_id (list str):
+            The list of the organization uuid associated with the part
+            (default [])
+        
+    Returns:
+        type: dict
+        The dictionary pertaining all the param is created and returned to
+        be stored on the state storage.
+    
+    """
     return {
                 "uuid"              : pt_id,
                 "name"              : pt_name,
@@ -140,21 +233,55 @@ def create_part(pt_id, pt_name, checksum, version, alias, licensing, label,
             }
 
 def validate_transaction(pt_id, action):
+    """
+    Performs soft sanity check in order to improve runtime by eliminating the
+    obvious exception errors.
+    
+    Args:
+        pt_id (str): The uuid of the part
+        action (str): The command to be performed
+    
+    Raises:
+        InvalidTransaction:
+            If the uuid or the action are not passed in or the 
+            action is not a valid action.
+    
+    """
     if not pt_id:
-        raise InvalidTransaction('Part ID is required')
- 
+        raise InvalidTransaction("Part ID is required")
     if not action:
-        raise InvalidTransaction('Action is required')
-
+        raise InvalidTransaction("Action is required")
     if action not in ("AddArtifact", "create", "AddCategory", "AddOrganization", 
                         "list-part", "retrieve", "amend"):
-        raise InvalidTransaction('Invalid action: {}'.format(action))
+        raise InvalidTransaction("Invalid action: {}".format(action))
 
 def make_part_address(namespace_prefix, part_id):
+    """
+    Creates a part address which will be used to recover the associated UUID
+    if the part already exists in the state storage; or, used as a key to store
+    the new data into the state storage.
+    
+    Args:
+        namespace_prefix (str):
+            The prefix associating with the transaction family
+        part_id (str): The uuid of the part
+        
+    Returns:
+        type: str
+        The address-to-be, which associates the uuid and the namespace prefix.
+    
+    """
     return namespace_prefix + \
-        hashlib.sha512(part_id.encode('utf-8')).hexdigest()[:64]
+        hashlib.sha512(part_id.encode("utf-8")).hexdigest()[:64]
 
 def _display(msg):
+    """
+    Logs the message to the debug logger.
+    
+    Args:
+        msg (str): The message that is to be logged into the debug logger
+    
+    """
     n = msg.count("\n")
 
     if n > 0:

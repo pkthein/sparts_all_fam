@@ -13,37 +13,34 @@
 # limitations under the License.
 # ------------------------------------------------------------------------------
 ################################################################################
-#                               LIBS & DEPS                                    #
+#                         LIBRARIES & DEPENDENCIES                             #
 ################################################################################
 from __future__ import print_function
 
 import argparse
 import configparser
-import getpass
 import logging
 import os
 import traceback
 import sys
-import shutil
 import pkg_resources
 import json
-import re
 import requests
-
 from colorlog import ColoredFormatter
-
-from sawtooth_signing import create_context
-from sawtooth_signing import CryptoFactory
-from sawtooth_signing import ParseError
-from sawtooth_signing.secp256k1 import Secp256k1PrivateKey
-
 from sawtooth_artifact.artifact_batch import ArtifactBatch
 from sawtooth_artifact.exceptions import ArtifactException
-
 
 DISTRIBUTION_NAME = "sawtooth-artifact"
 ################################################################################
 def create_console_handler(verbose_level):
+    """
+    Helpes create a console handler for the Transaction Family : Artifact.
+    
+    Returns:
+        type: logging
+        Logging object which contains the console handler config.
+    
+    """
     clog = logging.StreamHandler()
     formatter = ColoredFormatter(
         "%(log_color)s[%(asctime)s %(levelname)-8s%(module)s]%(reset)s "
@@ -70,6 +67,13 @@ def create_console_handler(verbose_level):
     return clog
 
 def setup_loggers(verbose_level):
+    """
+    Sets up logger for the Transaction Family : Artifact
+    
+    Args:
+        verbose_level (int): Verbose level of the logged message
+        
+    """
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     logger.addHandler(create_console_handler(verbose_level))
@@ -77,6 +81,15 @@ def setup_loggers(verbose_level):
 #                                   OBJ                                        #
 ################################################################################
 def add_create_parser(subparsers, parent_parser):
+    """
+    Bash "create" subcommand handler for the Transaction Family : Artifact
+    
+    Args:
+        subparsers (ArgumentParser): Subcommand parser
+        parent_parser (ArgumentParser):
+            ArgumentParser object containing all the parameters
+    
+    """
     parser = subparsers.add_parser("create", parents=[parent_parser])
 
     parser.add_argument(
@@ -131,9 +144,27 @@ def add_create_parser(subparsers, parent_parser):
         help="disable client validation")
 
 def add_list_artifact_parser(subparsers, parent_parser):
+    """
+    Bash "list" subcommand handler for the Transaction Family : Artifact
+    
+    Args:
+        subparsers (ArgumentParser): Subcommand parser
+        parent_parser (ArgumentParser):
+            ArgumentParser object containing all the parameters
+    
+    """
     subparsers.add_parser("list-artifact", parents=[parent_parser])
 
 def add_retrieve_artifact_parser(subparsers, parent_parser):
+    """
+    Bash "retrieve" subcommand handler for the Transaction Family : Artifact
+    
+    Args:
+        subparsers (ArgumentParser): Subcommand parser
+        parent_parser (ArgumentParser):
+            ArgumentParser object containing all the parameters
+    
+    """
     parser = subparsers.add_parser("retrieve", parents=[parent_parser])
 
     parser.add_argument(
@@ -155,6 +186,15 @@ def add_retrieve_artifact_parser(subparsers, parent_parser):
         help="show history of uuid within the range; FORMAT : yyyymmdd")
 
 def add_amend_parser(subparsers, parent_parser):
+    """
+    Bash "amend" subcommand handler for the Transaction Family : Artifact
+    
+    Args:
+        subparsers (ArgumentParser): Subcommand parser
+        parent_parser (ArgumentParser):
+            ArgumentParser object containing all the parameters
+            
+    """
     parser = subparsers.add_parser("amend", parents=[parent_parser])
 
     parser.add_argument(
@@ -209,6 +249,15 @@ def add_amend_parser(subparsers, parent_parser):
         help="disable client validation")
     
 def add_artifact_parser(subparsers, parent_parser):
+    """
+    Bash "AddArtifact" subcommand handler for the Transaction Family : Artifact
+    
+    Args:
+        subparsers (ArgumentParser): Subcommand parser
+        parent_parser (ArgumentParser):
+            ArgumentParser object containing all the parameters
+    
+    """
     parser = subparsers.add_parser("AddArtifact", parents=[parent_parser])
     
     parser.add_argument(
@@ -243,6 +292,15 @@ def add_artifact_parser(subparsers, parent_parser):
         help="removes the sub artifact")
     
 def add_uri_to_artifact_parser(subparsers, parent_parser):
+    """
+    Bash "AddURI" subcommand handler for the Transaction Family : Artifact
+    
+    Args:
+        subparsers (ArgumentParser): Subcommand parser
+        parent_parser (ArgumentParser):
+            ArgumentParser object containing all the parameters
+    
+    """
     parser = subparsers.add_parser("AddURI", parents=[parent_parser])
     
     parser.add_argument(
@@ -299,6 +357,18 @@ def add_uri_to_artifact_parser(subparsers, parent_parser):
 #                                   CREATE                                     #
 ################################################################################    
 def create_parent_parser(prog_name):
+    """
+    Instantiates the ArgumentParser for the program.
+    
+    Args:
+        prog_name (str): Name of the Transaction Family
+    
+    Returns:
+        type: ArgumentParser
+        ArgumentParser object with the basic configurations to perform a method
+        for the program.
+    
+    """
     parent_parser = argparse.ArgumentParser(prog=prog_name, add_help=False)
     parent_parser.add_argument(
         "-v", "--verbose",
@@ -320,6 +390,20 @@ def create_parent_parser(prog_name):
     return parent_parser
 
 def create_parser(prog_name):
+    """
+    Creates the ArgumentParser object which parses the bash input and stored
+    the required parameters to perfrom the command on the
+    Transaction Family : Artifact
+    
+    Args:
+        prog_name (str): Name of the Transaction Family
+        
+    Returns:
+        type: ArgumentParser
+        ArgumentParser object with all the required parameters stored to
+        perform a method for the program.
+    
+    """
     parent_parser = create_parent_parser(prog_name)
 
     parser = argparse.ArgumentParser(
@@ -341,6 +425,23 @@ def create_parser(prog_name):
 #                               FUNCTIONS                                      #
 ################################################################################
 def do_list_artifact(args, config):
+    """
+    Lists out all the state associating with the UUIDs in the
+    Transaction Family : Artifact
+    
+    Args:
+        config (ConfigParser): ConfigParser which contains the default url
+    
+    Returns:
+        type: str
+        String representing JSON object which allows the client to know that
+        the call was either a success or a failure.
+    
+    Raises:
+        ArtifactException:
+            * If failed to retrieve the list
+            
+    """
     b_url = config.get("DEFAULT", "url")
     client = ArtifactBatch(base_url=b_url)
     result = client.list_artifact()
@@ -356,6 +457,25 @@ def do_list_artifact(args, config):
         raise ArtifactException("Could not retrieve artifact listing.")
 
 def do_retrieve_artifact(args, config):
+    """
+    Retrieves the state associating with the UUID in the
+    Transaction Family : Artifact
+    
+    Args:
+        args (ArgumentParser):
+            ArgumentParser object containing required parameters
+        config (ConfigParser): ConfigParser which contains the default url
+        
+    Returns:
+        type: str
+        String representing JSON object which allows the client to know that
+        the call was either a success or a failure.
+    
+    Raises:
+        ArtifactException:
+            * If failed to retrieve the uuid
+    
+    """
     all_flag    = args.all
     range_flag  = args.range
     
@@ -380,6 +500,21 @@ def do_retrieve_artifact(args, config):
         raise ArtifactException("Artifact not found {}".format(artifact_id))
 
 def do_create_artifact(args, config):
+    """
+    Creates the state associating with the UUID in the
+    Transaction Family : Artifact
+    
+    Args:
+        args (ArgumentParser):
+            ArgumentParser object containing required parameters
+        config (ConfigParser): ConfigParser which contains the default url
+        
+    Returns:
+        type: str
+        String representing JSON object which allows the client to know that
+        the call was either a success or a failure.
+    
+    """
     artifact_id         = args.artifact_id
     artifact_alias      = args.alias
     artifact_name       = args.artifact_name
@@ -425,6 +560,21 @@ def do_create_artifact(args, config):
         print(output)
 
 def do_amend_artifact(args, config):
+    """
+    Amends the state associating with the UUID in the
+    Transaction Family : Artifact
+    
+    Args:
+        args (ArgumentParser):
+            ArgumentParser object containing required parameters
+        config (ConfigParser): ConfigParser which contains the default url
+        
+    Returns:
+        type: str
+        String representing JSON object which allows the client to know that
+        the call was either a success or a failure.
+    
+    """
     artifact_id         = args.artifact_id
     artifact_alias      = args.alias
     artifact_name       = args.artifact_name
@@ -470,6 +620,21 @@ def do_amend_artifact(args, config):
         print(output)   
 
 def do_add_sub_artifact(args, config):
+    """
+    Establishes relationship between Artifact and Sub-Artifact in the state
+    associating with the UUID of the Transaction Family : Artifact
+    
+    Args:
+        args (ArgumentParser):
+            ArgumentParser object containing required parameters
+        config (ConfigParser): ConfigParser which contains the default url
+        
+    Returns:
+        type: str
+        String representing JSON object which allows the client to know that
+        the call was either a success or a failure.
+        
+    """
     deleteSub       = args.delete
     
     artifact_id     = args.artifact_id
@@ -511,6 +676,21 @@ def do_add_sub_artifact(args, config):
         print(output)
     
 def do_add_uri_to_artifact(args, config):
+    """
+    Establishes relationship between Artifact and URI in the state
+    associating with the UUID of the Transaction Family : Artifact
+    
+    Args:
+        args (ArgumentParser):
+            ArgumentParser object containing required parameters
+        config (ConfigParser): ConfigParser which contains the default url
+        
+    Returns:
+        type: str
+        String representing JSON object which allows the client to know that
+        the call was either a success or a failure.
+        
+    """
     deleteURI       = args.delete
     
     artifact_id     = args.artifact_id
@@ -557,11 +737,40 @@ def do_add_uri_to_artifact(args, config):
 #                                  PRINT                                       #
 ################################################################################
 def load_config():
+    """
+    Helps construct ConfigParser object pertaining default url for
+    the sawtooth validator.
+    
+    Returns:
+        type: ConfigParser
+        ConfigParser object with default url.
+    
+    """
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     return config
 
 def print_msg(response, cmd=None):
+    """
+    Helps create the return message for the terminal or the web-browser.
+    
+    Args:
+        response (None or list containing None and str):
+            Contains the data for the function to construct return message
+        cmd (None or str): The subcommand which was performed
+    
+    Returns:
+        type: str
+        String representing JSON object which allows the client to know that
+        the call was either a success or a failure. 
+    
+    Raises:
+        ArtifactException:
+            * If response is None
+            * If response is unknown
+            * If response is a list with None
+    
+    """
     try:
         if type(response) is list and response[0] == None:
             if len(response) > 1:
@@ -597,6 +806,15 @@ def print_msg(response, cmd=None):
         return output
 
 def ret_msg(status, message, result_type, result):
+    """
+    Helps create the message to be returned.
+    
+    Returns:
+        type: str
+        String representing JSON object which allows the client to know that
+        the call was either a success or a failure.
+    
+    """
     msgJSON = "{}"
     key = json.loads(msgJSON)
     key["status"] = status
@@ -663,6 +881,9 @@ def main_wrapper():
 #                                 API                                          #
 ################################################################################
 def api_do_create_artifact(args, config):
+    """
+    API version of "do_create_artifact" function.
+    """
     param_check = _payload_check_(args, creation=True)
     
     if param_check[0]:
@@ -711,6 +932,9 @@ def api_do_create_artifact(args, config):
         return output
 
 def api_do_amend_artifact(args, config):
+    """
+    API version of "do_amend_artifact" function.
+    """
     param_check = _payload_check_(args)
     
     if param_check[0]:
@@ -761,6 +985,9 @@ def api_do_amend_artifact(args, config):
         return output
 
 def api_do_list_artifact(config):
+    """
+    API version of "do_list_artifact" function.
+    """
     b_url = config.get("DEFAULT", "url")
     client = ArtifactBatch(base_url=b_url)
     artifact_list = client.list_artifact()
@@ -782,7 +1009,9 @@ def api_do_list_artifact(config):
 def api_do_retrieve_artifact(
         artifact_id, config, all_flag=False, range_flag=None
     ):
-    
+    """
+    API version of "do_retrieve_artifact" function.
+    """
     if range_flag != None:
         all_flag = True
     
@@ -795,7 +1024,15 @@ def api_do_retrieve_artifact(
         if all_flag == False:
             output = ret_msg("success", "OK", "ArtifactRecord", data.decode())
         else:
-            output = ret_msg("success", "OK", "ArtifactRecord", data)
+            if range_flag == None:
+                output = ret_msg("success", "OK", "ArtifactRecord", data)
+            else:
+                if len(data) != 0:
+                    output = ret_msg(
+                        "success", "OK", "ArtifactRecord", json.dumps(data[0])
+                    )
+                else:
+                    output = ret_msg("success", "OK", "ArtifactRecord", "{}")
         
         return output
     else:
@@ -807,6 +1044,9 @@ def api_do_retrieve_artifact(
                 )
                 
 def api_do_add_sub_artifact(args, config, del_flag=False):
+    """
+    API version of "do_add_sub_artifact" function.
+    """
     param_check = _payload_check_(args, cmd="AddArtifact")
     
     if param_check[0]:
@@ -851,6 +1091,9 @@ def api_do_add_sub_artifact(args, config, del_flag=False):
         return output
         
 def api_do_add_uri_to_artifact(args, config, del_flag=False):
+    """
+    API version of "do_add_uri_to_artifact" function.
+    """
     param_check = _payload_check_(args, cmd="AddURI")
     
     if param_check[0]:
@@ -904,6 +1147,20 @@ def api_do_add_uri_to_artifact(args, config, del_flag=False):
 #                           API PRIVATE FUNCTIONS                              #
 ################################################################################
 def _payload_check_(args, creation=False, cmd=None):
+    """
+    Checks payload for correct JSON format for a given command.
+    
+    Args:
+        args (dict): Pass in payload
+        creation (bool): True if "create", false otherwise
+        cmd (None or str): str if "Add...", None otherwise
+    
+    Returns:
+        type: list containing bool or bool and str
+        List with False or list with True and error message. False stands for
+        do not terminate the process.
+        
+    """
     if cmd != None:
         if cmd == "AddArtifact":
             if "relation" not in args:
@@ -980,6 +1237,19 @@ def _payload_check_(args, creation=False, cmd=None):
                 return [False]
 
 def _null_cast(dic, key):
+    """
+    Allows the user to load value, given key from the dictionary. If the key
+    is not found, return "null".
+    
+    Args:
+        dic (dict): Dictionary in look for (key, value) pair
+        key (str): Key to look search in the dictionary
+        
+    Returns:
+        type: str
+        Either "null" string or previous data stored in the field.
+    
+    """
     if key not in dic:
         return "null"
     return dic[key]

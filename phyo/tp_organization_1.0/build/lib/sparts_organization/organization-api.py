@@ -1,5 +1,4 @@
-
-# copyright 2017 Wind River Systems
+# Copyright 2017 Wind River Systems
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -12,25 +11,50 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ------------------------------------------------------------------------------
-
+################################################################################
+#                         LIBRARIES & DEPENDENCIES                             #
+################################################################################
 from flask import Flask, jsonify, make_response, request, json
 import organization_cli
 import configparser
 ################################################################################
-#                               LIBS & DEPS                                    #
+#                                FLASK APP                                     #
 ################################################################################
 app = Flask(__name__)
 
 # PING
 @app.route("/tp/organization/ping", methods=["GET"])
 def get_ping_result():
+    """
+    Allows the client side API call to "ping" the port localhost:851 to ensure
+    that the port is up and running.
     
-    output = ret_msg("success","OK","EmptyRecord","Organization")
+    Returns:
+        type: str
+        String representing JSON object which allows the client to know that
+        the call was either a success or a failure.
+        
+    """
+    output = ret_msg("success", "OK", "EmptyRecord", "Organization")
     return output 
 
 # CREATE
 @app.route("/tp/organization", methods=["POST"])
 def create_organization():
+    """
+    Allows the client side API call to "create" the organization given a correct
+    JSON formatted payload.
+    
+    Returns:
+        type: str
+        String representing JSON object which allows the client to know that
+        the call was either a success or a failure.
+        
+    Raises:
+        Exception:
+            * If the request does not contain JSON payload
+        
+    """
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
@@ -48,6 +72,20 @@ def create_organization():
 # AMEND
 @app.route("/tp/organization/amend", methods=["POST"])
 def amend_organization():
+    """
+    Allows the client side API call to "amend" the organization given a correct
+    JSON formatted payload.
+    
+    Returns:
+        type: str
+        String representing JSON object which allows the client to know that
+        the call was either a success or a failure.
+        
+    Raises:
+        Exception:
+            * If the request does not contain JSON payload
+            
+    """
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
@@ -65,6 +103,20 @@ def amend_organization():
 # LIST
 @app.route("/tp/organization", methods=["GET"])
 def list_organization():
+    """
+    Allows the client side API call to "list" the organization.
+    
+    Returns:
+        type: str
+        String representing JSON object which contains the result of
+        the "organization list-organization" if the call was a success; else,
+        JSON object which contains error message.
+        
+    Raises:
+        Exception:
+            * If the request does not contain JSON payload
+    
+    """
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
@@ -78,6 +130,20 @@ def list_organization():
 # RETRIEVE MOST RECENT BY UUID
 @app.route("/tp/organization/<string:organization_id>", methods=["GET"])
 def retrieve_organization(organization_id):
+    """
+    Allows the client side API call to "retrieve" the organization.
+    
+    Returns:
+        type: str
+        String representing JSON object which contains the result of
+        the "organization retrieve {uuid}" if the call was a success; else,
+        JSON object which contains error message.
+        
+    Raises:
+        Exception:
+            * If the request does not contain JSON payload
+    
+    """
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
@@ -93,6 +159,21 @@ def retrieve_organization(organization_id):
 # RETRIEVE HISTORY OF UUID
 @app.route("/tp/organization/history/<string:organization_id>", methods=["GET"])
 def retrieve_organization_history(organization_id):
+    """
+    Allows the client side API call to "retrieve" the organization and display
+    its history up to its creation block.
+    
+    Returns:
+        type: str
+        String representing JSON object which contains the result of
+        the "organization retrieve --all {uuid}" if the call was a success;
+        else, JSON object which contains error message.
+        
+    Raises:
+        Exception:
+            * If the request does not contain JSON payload
+    
+    """
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
@@ -110,12 +191,27 @@ def retrieve_organization_history(organization_id):
     methods=["GET"]
 )
 def retrieve_organization_history_date(organization_id, START):
+    """
+    Allows the client side API call to "retrieve" the organization and display
+    its history for the specified date.
+    
+    Returns:
+        type: str
+        String representing JSON object which contains the result of
+        the "organization retrieve --range START END {uuid}" if the call was
+        a success; else, JSON object which contains error message.
+        
+    Raises:
+        Exception:
+            * If the request does not contain JSON payload
+    
+    """
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
     try:
         output = organization_cli.api_do_retrieve_organization(
-                        organization_id, config, range_flag=[START, START]
+                        organization_id, config, range_flag=["0", START]
                     )
         return output
     except Exception as e:
@@ -124,6 +220,20 @@ def retrieve_organization_history_date(organization_id, START):
 # ADD PART
 @app.route("/tp/organization/addpart", methods=["POST"])
 def add_part_organization():
+    """
+    Allows the client side API call to "AddPart" to the organization given
+    a correct JSON formatted payload.
+    
+    Returns:
+        type: str
+        String representing JSON object which allows the client to know that
+        the call was either a success or a failure.
+        
+    Raises:
+        Exception:
+            * If the request does not contain JSON payload
+    
+    """
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
@@ -140,6 +250,20 @@ def add_part_organization():
 # ADD PART --DELETE
 @app.route("/tp/organization/addpart/delete", methods=["POST"])
 def add_part_organization_delete():
+    """
+    Allows the client side API call to "AddPart --delete" to the organization
+    given a correct JSON formatted payload.
+    
+    Returns:
+        type: str
+        String representing JSON object which allows the client to know that
+        the call was either a success or a failure.
+        
+    Raises:
+        Exception:
+            * If the request does not contain JSON payload
+    
+    """
     config = configparser.ConfigParser()
     config.set("DEFAULT", "url", "http://127.0.0.1:8008")
     
@@ -155,23 +279,32 @@ def add_part_organization_delete():
 ################################################################################
 #                                   TEST                                       #
 ################################################################################
-@app.route("/tp/test", methods=["POST"])
-def testing_():
-    try:
-        return json.dumps(request.json)
-    except Exception as e:
-        return e
+# @app.route("/tp/test", methods=["POST"])
+# def testing_():
+#     try:
+#         return json.dumps(request.json)
+#     except Exception as e:
+#         return e
 
-@app.route("/tp/test", methods=["GET"])
-def testing_get():
-    try:
-        return "phyo test get was called successfully"
-    except Exception as e:
-        return e
+# @app.route("/tp/test", methods=["GET"])
+# def testing_get():
+#     try:
+#         return "phyo test get was called successfully"
+#     except Exception as e:
+#         return e
 ################################################################################
 #                                  PRINT                                       #
 ################################################################################
 def ret_msg(status, message, result_type, result):
+    """
+    Helps create the message to be returned.
+    
+    Returns:
+        type: str
+        String representing JSON object which allows the client to know that
+        the call was either a success or a failure.
+    
+    """
     msgJSON = "{}"
     key = json.loads(msgJSON)
     key["status"] = status
@@ -180,10 +313,6 @@ def ret_msg(status, message, result_type, result):
     key["result"] = result
     msgJSON = json.dumps(key)
     return msgJSON
-    
-# @app.errorhandler(500)
-# def custom500(message):
-#     return "yolo"
 ################################################################################
 #                                   MAIN                                       #
 ################################################################################
