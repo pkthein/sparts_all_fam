@@ -1,295 +1,122 @@
-<h3>Table of Contents</h3>
-    <ul>
-        <li><a href='#head'>Changes to SParts Family</a></li>
-        <ul>
-            <li><a href='#general_change'>General Changes</a></li>
-            <ul>
-                <li><a href='#change'>Changes</a></li>
-                <li><a href='#new_cmd'>New CMD calls</a></li>
-            </ul>
-            <li><a href='#specific_change'>Specific Changes</a></li>
-            <ul>
-                <li><a href='#cat_fam'>Category Family</a></li>
-                <li><a href='#org_fam'>Organization Family</a></li>
-                <li><a href='#pt_fam'>Part Family</a></li>
-                <li><a href='#art_fam'>Artifact Family</a></li>
-            </ul>
-        </ul>    
-    </ul>
-
+<!--
+# Wind River copyright notice and Apache license notice wording:
+# Copyright 2019 Wind River Systems
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
+#           http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+-->
+<h1>Guide on Creating Docker Image for Development</h1>
 
-<h1 id='head'>Changes to SParts Family</h1>
-
-**_Note: all the changes that are made here are on the 'kernal' side of the sParts and no changes has been made on the 'application' side._**
-
-**_Important: Users need to create their own personalized docker image via running 'docker-compose build'. First the user must uncomment lines 5-7 in docker-compose.yaml file._**
+**_Important: Both docker and docker-compose are required to proceed with the guide._**
 
 ```
-from
-
-5|      #  build:
-6|      #  context: .
-7|      #  dockerfile: sParts.Dockerfile
-
-to
-
-5|        build:
-6|        context: .
-7|        dockerfile: sParts.Dockerfile
+$ docker -v
+Docker version 18.xx.x-ce, build xxxxxxxxxxxxx
+$ docker-compose -v
+docker-compose version 1.xx.x, build xxxxxxx
 ```
 
-**_Once lines 5-7 are uncomment, make sure to uncomment everything in sParts.Dockerfile except line 4. Then call:_**
+**_If either one of these terminal command failed, please sure to install them before proceeding._**
 
-```bash
-    $ docker-compose build
+* **_Guide on installing docker._**
+
+```
+https://docs.docker.com/install/linux/docker-ce/ubuntu/
 ```
 
-**_in the terminal. As of now, the image will be named 'phyohtut/sparts-test:part' since that is what is stored in line 8 of 'docker-compose.yaml' file._**
+* **_Guide on installing docker-compose._**
 
-##
-
-<h2 id='general_change'>General Changes</h2>
-
-<h4 id='change'>Changes</h4>
-
-* Data and Payloads are now stored as JSON rather than CSV for all the families except the 'User Family'.
-* Admin will already register as soon as the docker-compose file is run by using:
-
-```bash
-    $ docker-compose down
-    $ docker-compose up
+```
+https://docs.docker.com/compose/install/
 ```
 
-* Test-script called 'lazy_user.py' will initialize first 57 blocks for the user to play around with kernal commands.
-* Ability to amend states if mistakes were made.
-* Ability to rebuild the states of the object associated with the specific uuid given a timeframe.
-* UTC timestamp added for all the families.
-* Fixes to compensate for the new data storage.
-* Most of the logics are done in batch.py to reduce the workload on handler.py, validator. 
 
-<h4 id='new_cmd'>New CMD calls</h4>
+<hr>
 
-###### amend:
+<h2>Setting Up and Running the Customized Container for sParts</h2>
 
-allows the permissioned users to amend the fields related to uuid.
 
-```bash
-    $ artifact amend {art_id} {art_alias} {art_name} {art_type} {art_checksum} {art_label} {art_openchain} {pri_key} {pub_key}
-    $ organization amend {org_id} {org_alias} {org_name} {org_type} {org_description} {org_url} {pri_key} {pub_key}
-    $ pt amend {pt_id} {pt_name} {pt_checksum} {pt_version} {pt_alias} {pt_license} {pt_label} {pt_description} {pri_key} {pub_key}
-    $ category amend {cat_id} {cat_name} {description} {pri_key} {pub_key}
+```
+$ git clone https://github.com/Wind-River/sparts-node-instance.git
+$ cd sparts-node-instance
 ```
 
-Note:
+Please edit the following parameters inside the docker-compose.yaml file before running either 'docker-compose build' or 'docker-compose up'.
 
-* At least one of the fields must be different from its pior state for the cmd to process successfully.
-* The object that the user is trying to call this cmd on must be first created or the cmd will throw an error.
-
-###### retrieve --all:
-
-allows the user to get all the historical data regarding the specific uuid.
-
-```bash
-    $ artifact retrieve --all {art_id}
-    $ organization retrieve --all {org_id}
-    $ pt retrieve --all {pt_id}
-    $ category retrieve --all {cat_id}
+```
+docker-compose.yaml
+.
+.
+.
+18| services:
+19|     shell:
+20|        build:
+21|            context: .                       # current directory
+22|            dockerfile: sParts.Dockerfile    # docker build config file
+23|        image: sparts-test:1.1               # the name of the image
+24|        environment:
+25|            - NAME_=proto                    # the name of admin
+26|            - EMAIL_=test@test.com           # the email of the admin 
+27|            - ROLE_=admin                    # the role of the admin (admin, member)
+28|        container_name: proto                # name of the container
+.
+.
+.
 ```
 
-Note:
+Once the parameters above are modified to user's heart content, please save the file and run the following:
 
-* The object that the user is trying to call this cmd on must exists or the cmd will throw an error.
-
-###### retrieve --range:
-
-allows the user to get all the historical data regarding the specific uuid within the specified range.
-
-```bash
-    $ artifact retrieve --range yyyymmdd yyyymmdd {art_id}
-    $ organization retrieve --range yyyymmdd yyyymmdd {org_id}
-    $ pt retrieve --range yyyymmdd yyyymmdd {pt_id}
-    $ category retrieve --range yyyymmdd yyyymmdd {cat_id}
+```
+$ docker-compose build
+$ docker-compose up
 ```
 
-Note:
+Once the commands above are run, please open another terminal and run the following:
 
-* The object that the user is trying to call this cmd on must exists or the cmd will throw an error.
-* If the user does not follow the range format as show above, the cmd will not work properly.
-
-## 
-
-<h2 id='specific_change'>Specific Changes</h2>
-
-<h3 id='cat_fam'>Category Family</h3>
-
-* Not Applicable.
-
-<h3 id='org_fam'>Organization Family</h3>
-
-* Added the delete option for 'AddPart' in order to amend mistakes.
-* In order to reduce the footprint on leaf nodes, "pt_list' only stores the uuid of the designated Part.
-
-###### AddPart
-
-allows the user to establish relationship between Organization and Part.
-
-```bash
-    $ organization AddPart {org_id} {pt_id} {pri_key} {pub_key}
+```
+$ docker exec -it proto bash
 ```
 
-Note:
+_Note: 'proto' is used above since the field associating to the name of the conatiner is 'proto' in docker-compose.yaml._
 
-* Part must exists for this cmd to run successfully.
-* The cmd will fail if there exists exact Part in Organization.
+<hr>
 
-###### AddPart --delete
+<h2>Bind-Mounting and Modifying</h2>
 
-allows the user to sever the established relationship between Organization and Part. (Mainly to amend mistakes).
+In order to modify the files locally and sync with the docker container, the user is required to bind-mount the directories or files. If possible, refrain from bind-mounting directories unless the user is certain that the whole directory needs editing. For instance, if the user want to modify the sparts-api.py inside the container, the user must first look for the file inside the container. once the user has found the location of the file inside the container, the user needs to copy that file from docker container.
 
-```bash
-    $ organization AddPart --delete {org_id} {pt_id} {pri_key} {pub_key}
+```
+docker cp {container_name}:{path inside the container}/{filename} ./{path on host}/{filename}
+
+	$ docker cp proto:/project/sparts-api.py ./api/sparts-api.py
 ```
 
-Note:
+The copying step is important for bind-mounting since if the user bind-mount a blank file to file inside the container, the file inside the container will become a blank file. As a result, copying step is intergral for this operation. Once the user has copy the file into the host machine, please insert the following lines into 'docker-compose.yaml' between 'tty: ...' and 'entrypoint:...'.
 
-* In order to amend mistakes, the user must first call the delete option and then invoke the 'Add' function again.
-* For Organization to successfully call this cmd, the Part has to exists in the Organization.
-
-<h3 id='pt_fam'>Part Family</h3>
-
-* Added the delete option for all the 'Add' functions in order to amend mistakes.
-* In order to reduce the footprint on leaf nodes, respective list only stores the uuid of the designated Artifact, Category, or Supplier (Organization).
-
-###### AddArtifact
-
-allows the user to establish relationship between Part and Artifact.
-
-```bash
-    $ pt AddArtifact {pt_id} {art_id} {pri_key} {pub_key}
+```
+.
+.
+.
+33|		tty: true
+34|		volumes:
+35|			- ./api/sparts-api.py:/project/sparts-api.py
+36|		entrypoint: ...
+.
+.
+.
 ```
 
-Note:
+Although bind-mount is strongly recommanded, it is not required for editing the container.
 
-* Artifact must exists for this cmd to run successfully.
-* The cmd will fail if there exists exact Artifact in Part.
+<hr>
 
-###### AddArtifact --delete
-
-allows the user to sever the established relationship between Part and Artifact.
-
-```bash
-    $ pt AddArtifact --delete {pt_id} {art_id} {pri_key} {pub_key}
-```
-
-Note:
-
-* In order to amend mistakes, the user must first call the delete option and then invoke the 'Add' function again.
-* For Part to successfully call this cmd, the Artifact has to exists in the Part. 
-
-###### AddCategory
-
-allows the user to establish relationship between Part and Category.
-
-```bash
-    $ pt AddCategory {pt_id} {cat_id} {pri_key} {pub_key}
-```
-
-Note:
-
-* Category must exists for this cmd to run successfully.
-* The cmd will fail if there exists exact Category uuid in Part.
-
-###### AddCategory --delete
-
-allows the user to sever the established relationship between Part and Category.
-
-```bash
-    $ pt AddCategory --delete {pt_id} {cat_id} {pri_key} {pub_key}
-```
-
-Note:
-
-* In order to amend mistakes, the user must first call the delete option and then invoke the 'Add' function again.
-* For Part to successfully call this cmd, the Category has to exists in the Part.
-
-###### AddSupplier
-
-allows the user to establish relationship between Part and Organization.
-
-```bash
-    $ pt AddSupplier {pt_id} {org_id} {pri_key} {pub_key}
-```
-
-Note:
-
-* Organization must exists for this cmd to run successfully.
-* The cmd will fail if there exists exact Organization uuid in Part.
-
-###### AddSupplier --delete
-
-allows the user to sever established relationship between Part and Organization.
-
-```bash
-    $ pt AddSupplier --delete {pt_id} {org_id} {pri_key} {pub_key}
-```
-
-Note:
-
-* In order to amend mistakes, the user must first call the delete option and then invoke the 'Add' function again.
-* For Part to successfully call this cmd, the Organization has to exists in the Part.
-
-<h3 id='art_fam'>Artifact Family</h3>
-
-* Added the delete option for all the 'Add' functions in order to amend mistakes.
-
-###### AddArtifact
-
-allows the user to establish relationship between Artifact and Sub-Artifact.
-
-```bash
-    $ artifact AddArtifact {art_id} {sub_art_id} {path} {pri_key} {pub_key}
-```
-
-Note:
-
-* Sub-Artifact (Artifact which the user is trying add) must exists for this cmd to run successfully.
-* Identical Sub-Artifact cannot be added.
-
-###### AddArtifact --delete
-
-allows the user to sever the established relationship between Artifact and Sub-Artifact.
-
-```bash
-    $ artifact AddArtifact --delete {art_id} {sub_art_id} {path} {pri_key} {pub_key}
-```
-
-Note:
-
-* In order to amend mistakes, the user must first call the delete option and then invoke the 'Add' function again.
-* For Artifact to successfully call this cmd, the Sub-Artifact and its path must be identical to the one stored in Artifact.
-
-###### AddURI
-
-allows the user to establish relationship between Artifact and URI.
-
-```bash
-    $ artifact AddURI {art_id} {uri_version} {uri_checksum} {uri_content_type} {uri_size} {uri_type} {location} {pri_key} {pub_key}
-```
-
-Note:
-
-* Identical URI cannot be added.
-
-###### AddURI --delete
-
-allows the user to sever the established relationship between Artifact and URI.
-
-```bash
-    $ artifact AddURI --delete {art_id} {uri_version} {uri_checksum} {uri_content_type} {uri_size} {uri_type} {location} {pri_key} {pub_key}
-```
-
-Note:
-
-* In order to amend mistakes, the user must first call the delete option and then invoke the 'Add' function again.
-* For Artifact to successfully call this cmd, the URI and all of its dependencies must be identical to the one stored in Artifact.
+<h2></h2>
