@@ -119,4 +119,63 @@ Although bind-mount is strongly recommanded, it is not required for editing the 
 
 <hr>
 
-<h2></h2>
+<h2>Modifying the Dockerfile</h2>
+
+Most important part of creating one's own image. Assume the user has modified a file and wants to add it into the new image of the container. Then, please make sure to add the file into 'sParts.Dockerfile' before running 'docker-compose build'. In the most cases, the user will not need to modify 'RUN' section of the 'sParts.Dockerfile' and simply adding 'COPY' before 'RUN' should allow the user to re-image the image easily. Remember to change the name of the new image inside 'docker-compose yaml'.
+
+```
+docker-compose.yaml
+.
+.
+.
+18| services:
+19|     shell:
+20|        build:
+21|            context: .                       # current directory
+22|            dockerfile: sParts.Dockerfile    # docker build config file
+23|        image: sparts-test:1.1.x             # the name of the image
+.
+.
+.
+```
+
+Creating image from the base image only requires the user to simply add the 'COPY'. 
+
+```
+sParts.Dockerfile
+.
+.
+.
+16|	FROM sameerfarooq/sparts-test:latest		# this is the base image and this requires the user to have allow the other copies
+.
+.
+.
+48| COPY ...
+.
+.
+.
+```
+
+If the user choose to create the image from previous image, the user may replace all the 'COPY' functions inside 'sParts.Dockerfile'.
+
+```
+sParts.Dockerfile
+.
+.
+.
+16| FROM sparts-test:1.1
+17| COPY ...
+18| RUN ...
+.
+.
+.
+```
+
+Once the sParts.Dockerfile is modified, the new image can be built simply by running:
+
+```
+$ docker-compose build
+```
+
+Enjoy!
+

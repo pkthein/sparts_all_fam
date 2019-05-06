@@ -1,4 +1,0 @@
-[console_scripts]
-tp_user = sawtooth_user.processor.main:main
-user = sawtooth_user.user_cli:main_wrapper
-
